@@ -1,0 +1,54 @@
+# Deploying the backend to your VPS
+
+One-time server setup (Ubuntu/Debian, as a sudo user):
+
+```bash
+# 1. System packages
+sudo apt update && sudo apt install -y python3 python3-venv postgresql nginx git certbot python3-certbot-nginx
+
+# 2. A dedicated system user and app directory
+sudo useradd --system --create-home --shell /bin/bash maat
+sudo mkdir -p /srv/maat && sudo chown maat:maat /srv/maat
+
+# 3. Database
+sudo -u postgres psql -c "CREATE ROLE maat WITH LOGIN PASSWORD 'choose-a-strong-password';"
+sudo -u postgres psql -c "CREATE DATABASE maat OWNER maat;"
+
+# 4. Code
+sudo -u maat git clone git@github.com:hopeogbons/maat.git /srv/maat
+
+# 5. Environment file (fill in real values, see backend/.env.example)
+sudo -u maat cp /srv/maat/backend/.env.example /srv/maat/backend/.env
+sudo -u maat nano /srv/maat/backend/.env
+#   DEBUG=False
+#   SECRET_KEY=<generated>
+#   ALLOWED_HOSTS=api.yourdomain.com
+#   DATABASE_URL=postgres://maat:<password>@localhost:5432/maat
+#   CORS_ALLOWED_ORIGINS=https://<your-app>.vercel.app
+#   CORS_ALLOWED_ORIGIN_REGEXES=^https://<your-app>-.*\.vercel\.app$
+#   CSRF_TRUSTED_ORIGINS=https://<your-app>.vercel.app
+
+# 6. Let the maat user restart its own service without a password
+echo "maat ALL=(root) NOPASSWD: /bin/systemctl restart maat-api, /bin/systemctl status maat-api" | sudo tee /etc/sudoers.d/maat-api
+
+# 7. First install (creates venv, migrates, collects static, starts nothing yet)
+sudo -u maat bash -c 'cd /srv/maat/backend && python3 -m venv .venv && .venv/bin/pip install -r requirements.txt && .venv/bin/python manage.py migrate && .venv/bin/python manage.py collectstatic --noinput'
+
+# 8. systemd + nginx
+sudo cp /srv/maat/backend/deploy/maat-api.service /etc/systemd/system/
+sudo systemctl daemon-reload && sudo systemctl enable --now maat-api
+sudo cp /srv/maat/backend/deploy/nginx-maat-api.conf /etc/nginx/sites-available/maat-api
+sudo sed -i 's/api.yourdomain.com/api.YOUR-REAL-DOMAIN/' /etc/nginx/sites-available/maat-api
+sudo ln -s /etc/nginx/sites-available/maat-api /etc/nginx/sites-enabled/maat-api
+sudo nginx -t && sudo systemctl reload nginx
+sudo certbot --nginx -d api.YOUR-REAL-DOMAIN
+
+# 9. Verify
+curl https://api.YOUR-REAL-DOMAIN/api/health/
+```
+
+Every later release:
+
+```bash
+ssh maat@your-vps 'bash /srv/maat/backend/deploy/deploy.sh'
+```
