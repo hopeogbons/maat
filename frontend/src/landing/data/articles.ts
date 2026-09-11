@@ -1,10 +1,4 @@
-export type Verdict = 'verified' | 'unverified' | 'insufficient'
-
-export const VERDICT_LABEL: Record<Verdict, string> = {
-  verified: 'Verified',
-  unverified: 'Unverified',
-  insufficient: 'Insufficient evidence',
-}
+import type { Verdict } from '@/i18n'
 
 export interface Article {
   slug: string
@@ -124,20 +118,3 @@ export const ARTICLES: Article[] = [
 ]
 
 export const ALL_TAGS: string[] = [...new Set(ARTICLES.flatMap((a) => a.tags))].sort()
-
-export const TRENDING_TAGS = [
-  'Fuel price',
-  'School calendar',
-  'Vaccines',
-  'Voter registration',
-  'New tax',
-  'Curfew',
-  'Scholarships',
-  'Passport fees',
-  'Exchange rate',
-  'Recruitment',
-  'Flooding',
-  'Bridge closure',
-  'Minimum wage',
-  'Exam dates',
-]

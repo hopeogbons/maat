@@ -1,9 +1,10 @@
+import { formatDate, MESSAGES } from '@/i18n'
 import type { MaatClient, Source, VerifyOptions, VerifyResult } from './types'
 
 /**
  * Demo client used when no real client is supplied. It rotates through the
- * three verdict states so every state can be seen quickly. Sources are sample
- * data; the URLs point at example.org on purpose.
+ * three verdict states so every state can be seen quickly, answering in the
+ * requested language. Sources are sample data; the URLs point at example.org.
  */
 
 const SAMPLE_SOURCES: Record<'verified' | 'unverified', Source> = {
@@ -26,13 +27,15 @@ function excerpt(text: string, max = 80): string {
   return clean.length > max ? `${clean.slice(0, max - 1)}…` : clean
 }
 
-function buildResult(index: number, subject: string): VerifyResult {
+function buildResult(index: number, subject: string, options?: VerifyOptions): VerifyResult {
+  const language = options?.language ?? 'en'
+  const templates = MESSAGES[language].mock
   switch (index % 3) {
     case 0: {
       const source = SAMPLE_SOURCES.verified
       return {
         verdict: 'verified',
-        answer: `An official record supports this. ${source.issuer} published a notice on 3 September 2026 that confirms the claim about “${subject}” as described. Open the original for the exact wording and any conditions that apply.`,
+        answer: templates.verified(subject, source.issuer, formatDate(source.date, language)),
         source,
       }
     }
@@ -40,15 +43,12 @@ function buildResult(index: number, subject: string): VerifyResult {
       const source = SAMPLE_SOURCES.unverified
       return {
         verdict: 'unverified',
-        answer: `This does not match the official record. ${source.issuer} addressed “${subject}” on 28 August 2026 and its statement contradicts the version that is circulating. Treat the rumour as unconfirmed unless the issuing body says otherwise.`,
+        answer: templates.unverified(subject, source.issuer, formatDate(source.date, language)),
         source,
       }
     }
     default:
-      return {
-        verdict: 'insufficient',
-        answer: `I could not find a verified source that addresses “${subject}”. That does not make it false, only unconfirmed.`,
-      }
+      return { verdict: 'insufficient', answer: templates.insufficient(subject) }
   }
 }
 
@@ -80,11 +80,11 @@ export function createMockClient({ delayMs = 900 }: MockClientOptions = {}): Maa
 
   async function respond(subject: string, options?: VerifyOptions): Promise<VerifyResult> {
     await wait(delayMs, options?.signal)
-    return buildResult(counter++, subject)
+    return buildResult(counter++, subject, options)
   }
 
   return {
     verifyText: (text, options) => respond(excerpt(text), options),
-    verifyVoice: (file, options) => respond(`voice note ${file.name}`, options),
+    verifyVoice: (file, options) => respond(file.name, options),
   }
 }

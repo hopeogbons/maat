@@ -1,0 +1,164 @@
+import type { Messages } from '../messages'
+
+/** Yorùbá */
+export const yo: Messages = {
+  meta: {
+    title: "Maat · Ṣé o gbọ́ nǹkan? Ṣàyẹ̀wò rẹ̀ kí o tó pín in.",
+    description:
+      "Ṣé o gbọ́ àhesọ? Maat ń wọ̀n ọ́n pẹ̀lú àwọn ìwé ìjọba, ó sì ń fún ọ ní ìdájọ́ tí o lè gbẹ́kẹ̀lé: orísun, àjọ tó gbé e jáde, ọjọ́ rẹ̀, àti ọ̀nà sí ìwé àkọ́kọ́.",
+  },
+  common: {
+    verifyRumour: "Ṣàyẹ̀wò àhesọ",
+    readVerifications: "Ka àwọn àyẹ̀wò",
+    language: "Èdè",
+    chooseLanguage: "Yan èdè rẹ",
+    comingSoon: "Ń bọ̀ láìpẹ́",
+    back: "Padà",
+    close: "Pa dé",
+  },
+  countries: { NG: "Nàìjíríà", KE: "Kẹ́nyà" },
+  nav: { howItWorks: "Bí ó ṣe ń ṣiṣẹ́", verifications: "Àwọn àyẹ̀wò", contact: "Kàn sí wa" },
+  hero: {
+    quote: "Ṣé o gbọ́ nǹkan? Ṣàyẹ̀wò rẹ̀ kí o tó pín in.",
+    explanation:
+      "Ní Íjíbítì àtijọ́, a máa ń wọn ọkàn pẹ̀lú ìyẹ́ Maat, òrìṣà òtítọ́, ọkàn tó fúyẹ́ bí òtítọ́ nìkan ló lè kọjá. Maat ń ṣe bákan náà pẹ̀lú ohun tí o gbọ́: a ń wọn ọ̀rọ̀ náà pẹ̀lú ìwé ìjọba, ìwọ yóò sì gba ìdájọ́ tí o lè gbẹ́kẹ̀lé.",
+    promises: [
+      "A ń wọn gbogbo ọ̀rọ̀ pẹ̀lú ìwé ìjọba",
+      "Gbogbo ìdáhùn ní orísun àti ọ̀nà sí ìwé àkọ́kọ́",
+      "Tí kò bá sí orísun, Maat yóò sọ bẹ́ẹ̀",
+    ],
+    scrollCue: "Lọ sí bí ó ṣe ń ṣiṣẹ́",
+  },
+  trending: {
+    label: "Ọ̀rọ̀ tó gbòde",
+    tags: [
+      "Iye owó epo",
+      "Kàlẹ́ńdà ilé ẹ̀kọ́",
+      "Abẹ́rẹ́ àjẹsára",
+      "Ìforúkọsílẹ̀ olùdìbò",
+      "Owó orí tuntun",
+      "Ìdènà ìrìn àjò",
+      "Ẹ̀bùn ẹ̀kọ́",
+      "Owó ìwé ìrìnnà",
+      "Ìpààrọ̀ owó",
+      "Ìgbaniṣíṣẹ́",
+      "Ìkún omi",
+      "Títì afárá pa",
+      "Owó oṣù tó kéré jù",
+      "Ọjọ́ ìdánwò",
+    ],
+  },
+  how: {
+    eyebrow: "Bí ó ṣe ń ṣiṣẹ́",
+    title: "Ìgbésẹ̀ mẹ́ta láti àhesọ dé ẹ̀rí",
+    lead:
+      "Maat ni òrìṣà òtítọ́, ìdọ́gba àti ìdájọ́ òdodo ti Íjíbítì àtijọ́. Ní Gbọ̀ngàn Òtítọ́ Méjì, a máa ń gbé gbogbo ọkàn sórí òṣùwọ̀n rẹ̀, ní ìdojúkọ ìyẹ́ náà, a sì ń dájọ́ nípa ìwúwo nìkan.",
+    intro:
+      "Bákan náà ni Maat ń dájọ́ àhesọ. Kò sí àbá, kò sí èrò ara ẹni: ó ń sọ ohun tí ìwé ìjọba fi ìdí rẹ̀ múlẹ̀ nìkan, ó sì ń sọ fún ọ nígbà tí kò rí i.",
+    steps: [
+      {
+        title: "Ránṣẹ́",
+        text: "Kọ àhesọ náà tàbí fi ìránṣẹ́ ohùn ránṣẹ́ nínú ìjíròrò tó wà ní igun ojú ìwé yìí. Sọ ibi tí o ti rí i bí o bá lè.",
+      },
+      {
+        title: "Wọ̀n",
+        text: "Maat ń wá àwọn ìwé ìròyìn ìjọba, ìwé àkíyèsí àti àwọn gbólóhùn fún oníròyìn láti ọ̀dọ̀ àwọn àjọ tó gbé wọn jáde, ó sì ń wọn ọ̀rọ̀ náà pẹ̀lú ohun tí wọ́n sọ gangan.",
+      },
+      {
+        title: "Tọ́ka orísun",
+        text: "Ìwọ yóò gba ìdájọ́, ìdáhùn ní èdè tó rọrùn, orísun pẹ̀lú àjọ tó gbé e jáde àti ọjọ́ rẹ̀, àti ọ̀nà sí ìwé àkọ́kọ́.",
+      },
+    ],
+    legendIntro: "Gbogbo ìdájọ́ jẹ́ ọ̀kan nínú mẹ́ta:",
+    legend: {
+      verified: "ẹ̀rí fi ìdí rẹ̀ múlẹ̀",
+      unverified: "ẹ̀rí tako o",
+      insufficient: "kò sí orísun tí a fi ìdí rẹ̀ múlẹ̀",
+    },
+  },
+  verdict: { verified: "A fi ìdí rẹ̀ múlẹ̀", unverified: "Kò fi ìdí rẹ̀ múlẹ̀", insufficient: "Ẹ̀rí kò tó" },
+  articles: {
+    eyebrow: "Àwọn àyẹ̀wò",
+    title: "Àwọn àhesọ tí a ti wọ̀n",
+    intro: "Gbogbo àpilẹ̀kọ fi ìdájọ́ hàn, ohun tí ẹ̀rí sọ, àti ìwé tó ti wá.",
+    count: (shown, total) => `${shown} nínú ${total} àyẹ̀wò`,
+    filterLabel: "Ṣàtò nípa kókó",
+    allTopics: "Gbogbo kókó",
+    minutes: (n) => `ìṣẹ́jú ${n}`,
+    checked: (date) => `A ṣàyẹ̀wò ní ${date}`,
+    noSource: "Kò sí orísun tí a fi ìdí rẹ̀ múlẹ̀",
+    read: "Kà á",
+  },
+  footer: {
+    blurb:
+      "A sọ ọ́ ní orúkọ òrìṣà tó ń wọn gbogbo ọkàn pẹ̀lú ìyẹ́. Maat ń wọn àhesọ pẹ̀lú ìwé ìjọba, ó sì ń fi ìwé tó wà lẹ́yìn gbogbo ìdáhùn hàn ọ́.",
+    verify: "Àyẹ̀wò",
+    about: "Nípa wa",
+    contact: "Kàn sí wa",
+    links: {
+      latest: "Àwọn àyẹ̀wò tuntun",
+      how: "Bí ó ṣe ń ṣiṣẹ́",
+      submit: "Fi àhesọ ránṣẹ́",
+      methodology: "Ọ̀nà iṣẹ́ wa",
+      sources: "Àwọn orísun tí a ń lò",
+      aboutMaat: "Nípa Maat",
+      team: "Ẹgbẹ́ wa",
+      partners: "Alábàáṣiṣẹ́pọ̀",
+      press: "Oníròyìn",
+      careers: "Iṣẹ́",
+    },
+    helplineHours: "Ìpè ọ̀fẹ́, ojoojúmọ́, aago méje àárọ̀ sí aago mẹ́wàá alẹ́",
+    whatsapp: "WhatsApp",
+    pressLabel: "Oníròyìn",
+    digestTitle: "Àkótán ọ̀sẹ̀",
+    digestText: "Àwọn àhesọ tí a wọ̀n ní ọ̀sẹ̀ yìí, nínú ímeèlì kan.",
+    emailLabel: "Àdírẹ́sì ímeèlì",
+    subscribe: "Forúkọ sílẹ̀",
+    digestThanks: "A dúpẹ́. Retí àkótán àkọ́kọ́ ní ọjọ́ Ẹtì.",
+    copyright: (year) => `© ${year} Maat. A ń wọn àhesọ pẹ̀lú ẹ̀rí.`,
+    privacy: "Àṣírí",
+    terms: "Àwọn òfin",
+    corrections: "Àtúnṣe",
+    accessibility: "Ìráyè",
+  },
+  widget: {
+    open: "Ṣí Maat, olùrànlọ́wọ́ àyẹ̀wò àhesọ",
+    close: "Pa Maat dé",
+    dialog: "Àyẹ̀wò àhesọ Maat",
+    subtitle: "Àyẹ̀wò àhesọ",
+    tagline: "Ṣé o gbọ́ nǹkan? Ṣàyẹ̀wò rẹ̀ kí o tó pín in.",
+    legend: {
+      verified: "Ìwé ìjọba tí o lè ṣí fi ìdí rẹ̀ múlẹ̀.",
+      unverified: "Ẹ̀rí ìjọba tako àhesọ náà.",
+      insufficient: "Kò sí orísun tí a fi ìdí rẹ̀ múlẹ̀, nítorí náà Maat sọ bẹ́ẹ̀ dípò kí ó ṣe àbá.",
+    },
+    start: "Bẹ̀rẹ̀ ìjíròrò",
+    greeting:
+      "Ẹ n lẹ́, èmi ni Maat. Sọ ohun tí o gbọ́ fún mi, ní kíkọ tàbí ìránṣẹ́ ohùn, èmi yóò ṣàyẹ̀wò rẹ̀ pẹ̀lú ìwé ìjọba, èmi yóò sì fi ìwé tó wà lẹ́yìn ìdáhùn náà hàn ọ́.",
+    placeholder: "Kí ni o gbọ́?",
+    inputLabel: "Ohun tí o gbọ́",
+    send: "Ránṣẹ́",
+    voiceUpload: "Gbé ìránṣẹ́ ohùn sókè",
+    voiceNote: "Ìránṣẹ́ ohùn",
+    citedSource: "Orísun",
+    openOriginal: "Ṣí ìwé àkọ́kọ́",
+    abstentionTitle: "Kò sí orísun tí a fi ìdí rẹ̀ múlẹ̀",
+    abstentionText:
+      "Maat ń fún ni ní ìdájọ́ tó ní orísun nìkan. Fi ẹni tó sọ ọ́ kún un, ibi àti ìgbà, tàbí fi ọ̀nà sí ibi tí o ti rí i ránṣẹ́, kí o sì tún gbìyànjú.",
+    errorGeneric: "Maat kò lè ṣe èyí ní ìsinsìnyí. Jọ̀wọ́ tún gbìyànjú.",
+    errorNetwork: "A kò lè dé ọ̀dọ̀ Maat. Ṣàyẹ̀wò ìsopọ̀ rẹ kí o sì tún gbìyànjú.",
+    checking: "Maat ń ṣàyẹ̀wò",
+    back: "Padà sí ìbẹ̀rẹ̀",
+    maximise: "Fẹ̀ ẹ́ sí i",
+    restore: "Dá ìwọ̀n padà",
+    language: "Èdè",
+  },
+  mock: {
+    verified: (subject, issuer, date) =>
+      `Ẹ̀rí ìjọba fi ìdí èyí múlẹ̀. ${issuer} gbé ìkéde jáde ní ${date} tó fi ìdí ọ̀rọ̀ nípa “${subject}” múlẹ̀ bí a ti ṣàlàyé rẹ̀. Ṣí ìwé àkọ́kọ́ láti rí ọ̀rọ̀ gangan àti àwọn ipò tó wà.`,
+    unverified: (subject, issuer, date) =>
+      `Èyí kò bá ẹ̀rí ìjọba mu. ${issuer} sọ̀rọ̀ nípa “${subject}” ní ${date}, gbólóhùn rẹ̀ sì tako ohun tí ń tàn kálẹ̀. Ka àhesọ náà sí èyí tí kò ní ìdí àyàfi tí àjọ náà bá sọ bẹ́ẹ̀.`,
+    insufficient: (subject) =>
+      `Mi ò rí orísun tí a fi ìdí rẹ̀ múlẹ̀ nípa “${subject}”. Èyí kò túmọ̀ sí pé irọ́ ni, kò kàn ní ìdí.`,
+  },
+}

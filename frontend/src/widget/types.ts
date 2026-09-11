@@ -1,10 +1,6 @@
-export type Verdict = 'verified' | 'unverified' | 'insufficient'
+import type { AvailableLanguageCode, Verdict } from '@/i18n'
 
-export const VERDICT_LABEL: Record<Verdict, string> = {
-  verified: 'Verified',
-  unverified: 'Unverified',
-  insufficient: 'Insufficient evidence',
-}
+export type { Verdict }
 
 /** A citation to the document that supports the verdict. */
 export interface Source {
@@ -20,7 +16,7 @@ export interface Source {
 
 export interface VerifyResult {
   verdict: Verdict
-  /** Plain-language answer shown to the user. */
+  /** Plain-language answer shown to the user, in the requested language. */
   answer: string
   /** Present for verified/unverified verdicts; absent when evidence is insufficient. */
   source?: Source
@@ -28,6 +24,8 @@ export interface VerifyResult {
 
 export interface VerifyOptions {
   signal?: AbortSignal
+  /** Language the user is reading in; the answer should come back in it. */
+  language?: AvailableLanguageCode
 }
 
 /**
@@ -42,6 +40,5 @@ export interface MaatClient {
 export type Message =
   | { id: string; role: 'user'; kind: 'text'; text: string }
   | { id: string; role: 'user'; kind: 'voice'; file: File; objectUrl: string }
-  | { id: string; role: 'assistant'; kind: 'text'; text: string }
   | { id: string; role: 'assistant'; kind: 'verdict'; result: VerifyResult }
-  | { id: string; role: 'assistant'; kind: 'error'; text: string }
+  | { id: string; role: 'assistant'; kind: 'error'; reason: 'generic' | 'network' }

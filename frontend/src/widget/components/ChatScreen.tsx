@@ -1,4 +1,5 @@
 import { ArrowLeft, X } from 'lucide-react'
+import { useLanguage } from '@/i18n'
 import { Button } from '../ui/button'
 import type { Message } from '../types'
 import { Composer } from './Composer'
@@ -27,22 +28,22 @@ export function ChatScreen({
   onBack,
   onClose,
 }: ChatScreenProps) {
-  const headerButton =
-    'maat:text-primary-foreground/80 maat:hover:bg-white/10 maat:hover:text-primary-foreground'
+  const { t } = useLanguage()
+  const headerButton = 'maat:text-primary-foreground/80 maat:hover:bg-white/10 maat:hover:text-primary-foreground'
 
   return (
     <div className="maat:flex maat:h-full maat:flex-col">
       <header className="maat:flex maat:items-center maat:gap-2 maat:bg-primary maat:px-2 maat:py-2.5 maat:text-primary-foreground">
-        <Button variant="ghost" size="icon-sm" aria-label="Back to welcome" onClick={onBack} className={headerButton}>
+        <Button variant="ghost" size="icon-sm" aria-label={t.widget.back} onClick={onBack} className={headerButton}>
           <ArrowLeft />
         </Button>
         <Emblem size="sm" />
         <div className="maat:min-w-0 maat:flex-1">
           <p className="maat:font-heading maat:text-sm maat:leading-tight maat:font-semibold">Maat</p>
-          <p className="maat:text-xs maat:text-primary-foreground/70">Rumour verification</p>
+          <p className="maat:text-xs maat:text-primary-foreground/70">{t.widget.subtitle}</p>
         </div>
         <ExpandToggle expanded={expanded} onToggle={onToggleExpand} className={headerButton} />
-        <Button variant="ghost" size="icon-sm" aria-label="Close Maat" onClick={onClose} className={headerButton}>
+        <Button variant="ghost" size="icon-sm" aria-label={t.widget.close} onClick={onClose} className={headerButton}>
           <X />
         </Button>
       </header>

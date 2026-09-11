@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
+import { useLanguage } from '@/i18n'
 import { ChatScreen } from './components/ChatScreen'
+import { LanguageScreen } from './components/LanguageScreen'
 import { Launcher } from './components/Launcher'
 import { Panel } from './components/Panel'
 import { WelcomeScreen } from './components/WelcomeScreen'
@@ -20,13 +22,14 @@ export interface MaatWidgetProps {
 }
 
 type Phase = 'closed' | 'open' | 'closing'
-type View = 'welcome' | 'chat'
+type View = 'welcome' | 'chat' | 'language'
 
 const CLOSE_FALLBACK_MS = 320
 
 export function MaatWidget({ client, defaultOpen = false }: MaatWidgetProps) {
   const resolvedClient = useMemo(() => client ?? createMockClient(), [client])
   const chat = useChat(resolvedClient)
+  const { t } = useLanguage()
 
   const [phase, setPhase] = useState<Phase>(defaultOpen ? 'open' : 'closed')
   const [view, setView] = useState<View>('welcome')
@@ -43,6 +46,7 @@ export function MaatWidget({ client, defaultOpen = false }: MaatWidgetProps) {
     launcherRef.current?.focus()
   }, [])
   const toggle = useCallback(() => (isOpen ? close() : open()), [isOpen, close, open])
+  const toggleExpand = useCallback(() => setExpanded((value) => !value), [])
 
   // Safety net in case the exit animation never fires its end event.
   useEffect(() => {
@@ -80,27 +84,31 @@ export function MaatWidget({ client, defaultOpen = false }: MaatWidgetProps) {
       {isMounted && (
         <Panel
           id={panelId}
+          label={t.widget.dialog}
           state={isOpen ? 'open' : 'closed'}
           expanded={expanded}
           onAnimationEnd={() => {
             if (phase === 'closing') setPhase('closed')
           }}
         >
-          {view === 'welcome' ? (
+          {view === 'welcome' && (
             <WelcomeScreen
               expanded={expanded}
-              onToggleExpand={() => setExpanded((value) => !value)}
+              onToggleExpand={toggleExpand}
+              onLanguage={() => setView('language')}
               onStart={() => setView('chat')}
               onClose={close}
             />
-          ) : (
+          )}
+          {view === 'language' && <LanguageScreen onBack={() => setView('welcome')} onClose={close} />}
+          {view === 'chat' && (
             <ChatScreen
               messages={chat.messages}
               pending={chat.pending}
               onSendText={chat.sendText}
               onSendVoice={chat.sendVoice}
               expanded={expanded}
-              onToggleExpand={() => setExpanded((value) => !value)}
+              onToggleExpand={toggleExpand}
               onBack={() => setView('welcome')}
               onClose={close}
             />

@@ -1,6 +1,6 @@
 import { cn } from 'cn'
 import { CircleAlert, CircleDashed, ShieldCheck, type LucideIcon } from 'lucide-react'
-import { VERDICT_LABEL, type Verdict } from '../data/articles'
+import { useLanguage, type Verdict } from '@/i18n'
 
 const STYLES: Record<Verdict, { icon: LucideIcon; className: string }> = {
   verified: { icon: ShieldCheck, className: 'border-verified/30 bg-verified-soft text-verified' },
@@ -9,6 +9,7 @@ const STYLES: Record<Verdict, { icon: LucideIcon; className: string }> = {
 }
 
 export function VerdictBadge({ verdict, className }: { verdict: Verdict; className?: string }) {
+  const { t } = useLanguage()
   const { icon: Icon, className: tone } = STYLES[verdict]
   return (
     <span
@@ -19,7 +20,7 @@ export function VerdictBadge({ verdict, className }: { verdict: Verdict; classNa
       )}
     >
       <Icon className="size-3.5" />
-      {VERDICT_LABEL[verdict]}
+      {t.verdict[verdict]}
     </span>
   )
 }

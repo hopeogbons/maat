@@ -1,16 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { getLanguage } from '@/i18n'
 import type { MaatClient, Message, VerifyResult } from '../types'
-
-const GREETING =
-  'Hi, I’m Maat. Send me a rumour as text or a voice note and I’ll answer with a verdict and the document it comes from.'
 
 let nextId = 0
 const uid = () => `maat-${Date.now().toString(36)}-${(nextId++).toString(36)}`
 
 export function useChat(client: MaatClient) {
-  const [messages, setMessages] = useState<Message[]>(() => [
-    { id: uid(), role: 'assistant', kind: 'text', text: GREETING },
-  ])
+  const [messages, setMessages] = useState<Message[]>([])
   const [pending, setPending] = useState(false)
   const abortRef = useRef<AbortController | null>(null)
   const objectUrls = useRef<string[]>([])
@@ -38,11 +34,8 @@ export function useChat(client: MaatClient) {
         setMessages((prev) => [...prev, { id: uid(), role: 'assistant', kind: 'verdict', result }])
       } catch (error) {
         if (controller.signal.aborted) return
-        const text =
-          error instanceof Error && error.name !== 'TypeError'
-            ? 'Maat could not process that just now. Please try again.'
-            : 'Maat could not be reached. Check your connection and try again.'
-        setMessages((prev) => [...prev, { id: uid(), role: 'assistant', kind: 'error', text }])
+        const reason = error instanceof TypeError ? 'network' : 'generic'
+        setMessages((prev) => [...prev, { id: uid(), role: 'assistant', kind: 'error', reason }])
       } finally {
         if (abortRef.current === controller) {
           abortRef.current = null
@@ -58,7 +51,7 @@ export function useChat(client: MaatClient) {
       const trimmed = text.trim()
       if (!trimmed) return
       void run({ id: uid(), role: 'user', kind: 'text', text: trimmed }, (signal) =>
-        client.verifyText(trimmed, { signal }),
+        client.verifyText(trimmed, { signal, language: getLanguage() }),
       )
     },
     [client, run],
@@ -69,7 +62,7 @@ export function useChat(client: MaatClient) {
       const objectUrl = URL.createObjectURL(file)
       objectUrls.current.push(objectUrl)
       void run({ id: uid(), role: 'user', kind: 'voice', file, objectUrl }, (signal) =>
-        client.verifyVoice(file, { signal }),
+        client.verifyVoice(file, { signal, language: getLanguage() }),
       )
     },
     [client, run],

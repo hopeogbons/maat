@@ -1,8 +1,10 @@
+import { useLanguage } from '@/i18n'
 import { Emblem } from './Emblem'
 
 export function TypingIndicator() {
+  const { t } = useLanguage()
   return (
-    <div className="maat:flex maat:items-end maat:gap-2" aria-label="Maat is checking">
+    <div className="maat:flex maat:items-end maat:gap-2" role="status" aria-label={t.widget.checking}>
       <Emblem size="xs" className="maat:mb-0.5" />
       <div className="maat:flex maat:items-center maat:gap-1 maat:rounded-2xl maat:rounded-bl-md maat:bg-card maat:px-3.5 maat:py-3 maat:ring-1 maat:ring-foreground/10">
         {[0, 1, 2].map((i) => (

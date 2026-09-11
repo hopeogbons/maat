@@ -1,6 +1,7 @@
+import { useLanguage } from '@/i18n'
 import { useAutoScroll } from '../hooks/useAutoScroll'
 import type { Message } from '../types'
-import { MessageBubble } from './MessageBubble'
+import { AssistantBubble, MessageBubble } from './MessageBubble'
 import { TypingIndicator } from './TypingIndicator'
 
 interface MessageListProps {
@@ -9,6 +10,7 @@ interface MessageListProps {
 }
 
 export function MessageList({ messages, pending }: MessageListProps) {
+  const { t } = useLanguage()
   const ref = useAutoScroll<HTMLDivElement>(`${messages.length}:${pending ? 1 : 0}`)
 
   return (
@@ -20,6 +22,11 @@ export function MessageList({ messages, pending }: MessageListProps) {
       className="maat:flex-1 maat:overflow-y-auto maat:overscroll-contain maat:bg-muted/50 maat:px-3 maat:py-4"
     >
       <ol className="maat:mx-auto maat:flex maat:w-full maat:max-w-2xl maat:flex-col maat:gap-3">
+        <li className="maat:animate-fade-up maat:motion-reduce:animate-none">
+          <AssistantBubble>
+            <p className="maat:whitespace-pre-wrap">{t.widget.greeting}</p>
+          </AssistantBubble>
+        </li>
         {messages.map((message) => (
           <li key={message.id} className="maat:animate-fade-up maat:motion-reduce:animate-none">
             <MessageBubble message={message} />

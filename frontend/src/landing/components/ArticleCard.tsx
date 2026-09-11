@@ -1,13 +1,12 @@
 import { cn } from 'cn'
 import { ArrowUpRight, Clock, Landmark } from 'lucide-react'
+import { formatDate, useLanguage } from '@/i18n'
 import type { Article } from '../data/articles'
 import { VerdictBadge } from './VerdictBadge'
 import { VERDICT_BAR } from './verdictStyles'
 
-const dateFormatter = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
-const formatDate = (iso: string) => dateFormatter.format(new Date(`${iso}T00:00:00`))
-
 export function ArticleCard({ article, onTagClick }: { article: Article; onTagClick: (tag: string) => void }) {
+  const { t, code } = useLanguage()
   const href = `/verifications/${article.slug}`
   return (
     <article className="group relative flex flex-col overflow-hidden rounded-2xl border border-line bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg">
@@ -17,7 +16,7 @@ export function ArticleCard({ article, onTagClick }: { article: Article; onTagCl
           <VerdictBadge verdict={article.verdict} />
           <span className="inline-flex items-center gap-1 text-xs text-ink-muted">
             <Clock className="size-3.5" />
-            {article.readMinutes} min
+            {t.articles.minutes(article.readMinutes)}
           </span>
         </div>
 
@@ -48,16 +47,16 @@ export function ArticleCard({ article, onTagClick }: { article: Article; onTagCl
               <p className="inline-flex items-center gap-1.5">
                 <Landmark className="size-3.5 shrink-0 text-gold-dark" />
                 <span className="truncate">
-                  {article.source.issuer} · {formatDate(article.source.date)}
+                  {article.source.issuer} · {formatDate(article.source.date, code, 'short')}
                 </span>
               </p>
             ) : (
-              <p className="italic">No verified source found</p>
+              <p className="italic">{t.articles.noSource}</p>
             )}
-            <p className="mt-1">Checked {formatDate(article.published)}</p>
+            <p className="mt-1">{t.articles.checked(formatDate(article.published, code, 'short'))}</p>
           </div>
           <span className="inline-flex shrink-0 items-center gap-1 font-semibold text-teal transition group-hover:text-gold-dark">
-            Read
+            {t.articles.read}
             <ArrowUpRight className="size-4" />
           </span>
         </div>

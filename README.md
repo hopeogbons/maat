@@ -12,6 +12,7 @@ maat/
 │   ├── deploy/   systemd unit, nginx site, deploy script, VPS guide
 │   └── scripts/  create_local_db.sh
 └── frontend/     Vite + React + TypeScript + Tailwind v4 + shadcn/ui, deployed to Vercel
+    ├── src/i18n/        languages, translations and the language store
     ├── src/landing/     the landing page (hero, how it works, verifications, footer)
     ├── src/lib/api.ts   fetch wrapper for the Django API
     └── src/widget/      the Maat chat widget (self-contained, see below)
@@ -44,13 +45,6 @@ widget in the bottom-right corner (add `?open` to the URL to start with it
 open). In development the Vite dev server proxies `/api/*` to Django, so no
 CORS configuration is needed.
 
-Useful commands:
-
-```bash
-cd backend && .venv/bin/python manage.py test          # backend tests (needs CREATEDB on the role)
-cd frontend && npm run build                          # type-check + production build
-```
-
 ## The landing page
 
 `frontend/src/landing/` is the public site: a full-screen teal hero with the
@@ -71,14 +65,40 @@ footer with helpline, WhatsApp, email, social links and a digest sign-up.
   `window.dispatchEvent(new CustomEvent('maat:open'))`; see
   `src/landing/widgetBridge.ts`.
 
+## Languages
+
+Every string on the landing page and in the widget is translated. The picker
+(globe button in the header, and on the widget's welcome screen) lists English
+on its own at the top, then Nigeria and Kenya as sections that expand into
+their languages. No flags are used.
+
+| Country | Available now | Listed as coming soon |
+|---------|---------------|-----------------------|
+| (shared) | English | |
+| Nigeria | Hausa, Yorùbá, Igbo, Naijá (Nigerian Pidgin) | |
+| Kenya | Kiswahili | Gĩkũyũ, Dholuo, Luluhya, Kalenjin, Kikamba, Af-Soomaali |
+
+- `src/i18n/languages.ts` is the registry. Flip `available` to `true` once a
+  translation exists.
+- `src/i18n/locales/<code>.ts` holds one language. Each file must implement
+  the whole `Messages` shape from `src/i18n/messages.ts`, so a missing string
+  fails the build instead of silently showing English.
+- The choice is stored in `localStorage` under `maat:language`, applied to
+  `<html lang>`, and detected from the browser's languages on first visit.
+- The widget sends the current language to the backend in `VerifyOptions.language`
+  so answers can come back in it. The demo client already does.
+- Sample article content in `src/landing/data/articles.ts` is not translated;
+  in production that comes from the backend per article.
+
 ## The Maat widget
 
 `frontend/src/widget/` is a floating chat widget for the rumour-verification
 assistant. A circular launcher in the bottom-right corner toggles a panel that
 is 380px wide on desktop and full screen on phones.
 
-- **Welcome view**: the Maat mark, "Send a rumour, get a cited answer", a
-  legend of the three verdicts and a button into the conversation.
+- **Welcome view**: the Maat mark, "Heard something? Verify it before you
+  share it.", a legend of the three verdicts, a language button and a button
+  into the conversation.
 - **Conversation view**: header with back arrow, a message list pinned to the
   newest message, and an input bar with send and voice-note upload.
 - **Sizes**: 380px card on desktop with a maximise control (before the close

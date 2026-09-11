@@ -3,6 +3,7 @@ import type { AnimationEvent, ReactNode } from 'react'
 
 interface PanelProps {
   id: string
+  label: string
   state: 'open' | 'closed'
   /** Desktop only: fill the viewport (with a margin) instead of the 380px card. */
   expanded: boolean
@@ -15,12 +16,12 @@ interface PanelProps {
  * anchored above the launcher from the `sm` breakpoint (scales in), or a
  * large centred panel when maximised.
  */
-export function Panel({ id, state, expanded, onAnimationEnd, children }: PanelProps) {
+export function Panel({ id, label, state, expanded, onAnimationEnd, children }: PanelProps) {
   return (
     <section
       id={id}
       role="dialog"
-      aria-label="Maat rumour verification"
+      aria-label={label}
       data-state={state}
       onAnimationEnd={(event) => {
         if (event.target === event.currentTarget) onAnimationEnd(event)

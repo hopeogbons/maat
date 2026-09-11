@@ -1,10 +1,12 @@
 import { cn } from 'cn'
 import { Newspaper } from 'lucide-react'
 import { useState } from 'react'
+import { useLanguage } from '@/i18n'
 import { ALL_TAGS, ARTICLES } from '../data/articles'
 import { ArticleCard } from './ArticleCard'
 
 export function Articles() {
+  const { t } = useLanguage()
   const [activeTag, setActiveTag] = useState<string | null>(null)
   const visible = activeTag ? ARTICLES.filter((a) => a.tags.includes(activeTag)) : ARTICLES
 
@@ -13,25 +15,21 @@ export function Articles() {
       <div className="mx-auto max-w-6xl px-6 sm:px-10">
         <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <div className="max-w-2xl">
-            <p className="text-xs font-bold tracking-widest text-gold-dark uppercase">Verifications</p>
+            <p className="text-xs font-bold tracking-widest text-gold-dark uppercase">{t.articles.eyebrow}</p>
             <h2 className="mt-2 text-3xl font-extrabold tracking-tight text-teal-deep sm:text-4xl">
-              Rumours we have weighed
+              {t.articles.title}
             </h2>
-            <p className="mt-3 text-lg text-ink-muted">
-              Every article shows the verdict, what the record says, and the document it comes from.
-            </p>
+            <p className="mt-3 text-lg text-ink-muted">{t.articles.intro}</p>
           </div>
           <p className="inline-flex items-center gap-2 text-sm text-ink-muted">
             <Newspaper className="size-4 text-gold-dark" />
-            <span aria-live="polite">
-              {visible.length} of {ARTICLES.length} verifications
-            </span>
+            <span aria-live="polite">{t.articles.count(visible.length, ARTICLES.length)}</span>
           </p>
         </div>
 
-        <div className="mt-8 flex flex-wrap gap-2" role="group" aria-label="Filter by topic">
+        <div className="mt-8 flex flex-wrap gap-2" role="group" aria-label={t.articles.filterLabel}>
           <FilterChip active={activeTag === null} onClick={() => setActiveTag(null)}>
-            All topics
+            {t.articles.allTopics}
           </FilterChip>
           {ALL_TAGS.map((tag) => (
             <FilterChip key={tag} active={activeTag === tag} onClick={() => setActiveTag(tag)}>

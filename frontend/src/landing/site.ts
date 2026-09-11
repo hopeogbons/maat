@@ -1,13 +1,14 @@
 import type { ComponentType, SVGProps } from 'react'
+import type { Messages } from '@/i18n'
 import { FacebookIcon, InstagramIcon, LinkedInIcon, XIcon, YouTubeIcon } from './components/BrandIcons'
 
 /**
  * Contact details and links shown in the header and footer. Placeholders:
- * change them here and every mention on the page updates.
+ * change them here and every mention on the page updates. Labels come from
+ * the translations in src/i18n/locales.
  */
 export const SITE = {
   name: 'Maat',
-  tagline: 'Send a rumour, get a cited answer',
   domain: 'maatverify.com',
   email: 'hello@maatverify.com',
   pressEmail: 'press@maatverify.com',
@@ -15,7 +16,6 @@ export const SITE = {
     display: '0800 000 MAAT',
     digits: '0800 000 6228',
     tel: '+2348000006228',
-    hours: 'Free to call, every day, 7am to 10pm',
   },
   whatsapp: {
     display: '+234 800 000 6228',
@@ -29,8 +29,8 @@ export const SITE = {
     { name: 'Instagram', handle: '@maatverify', href: 'https://instagram.com/maatverify', icon: InstagramIcon },
   ] satisfies { name: string; handle: string; href: string; icon: ComponentType<SVGProps<SVGSVGElement>> }[],
   nav: [
-    { label: 'How it works', href: '#how-it-works' },
-    { label: 'Verifications', href: '#verifications' },
-    { label: 'Contact', href: '#contact' },
-  ],
+    { key: 'howItWorks', href: '#how-it-works' },
+    { key: 'verifications', href: '#verifications' },
+    { key: 'contact', href: '#contact' },
+  ] satisfies { key: keyof Messages['nav']; href: string }[],
 } as const

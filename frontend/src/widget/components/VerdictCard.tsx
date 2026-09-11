@@ -1,9 +1,9 @@
 import { cn } from 'cn'
 import { CircleAlert, CircleDashed, ExternalLink, ShieldCheck, type LucideIcon } from 'lucide-react'
+import { formatDate, useLanguage, type Verdict } from '@/i18n'
 import { Badge } from '../ui/badge'
 import { Card, CardContent, CardHeader } from '../ui/card'
-import { formatDate } from '../lib/format'
-import { VERDICT_LABEL, type Source, type Verdict, type VerifyResult } from '../types'
+import type { Source, VerifyResult } from '../types'
 
 const STYLES: Record<Verdict, { icon: LucideIcon; badge: string; bar: string }> = {
   verified: {
@@ -24,6 +24,7 @@ const STYLES: Record<Verdict, { icon: LucideIcon; badge: string; bar: string }> 
 }
 
 export function VerdictCard({ result }: { result: VerifyResult }) {
+  const { t } = useLanguage()
   const { icon: Icon, badge, bar } = STYLES[result.verdict]
 
   return (
@@ -32,7 +33,7 @@ export function VerdictCard({ result }: { result: VerifyResult }) {
       <CardHeader className="maat:px-3.5">
         <Badge variant="outline" className={cn('maat:h-6 maat:px-2.5', badge)}>
           <Icon />
-          {VERDICT_LABEL[result.verdict]}
+          {t.verdict[result.verdict]}
         </Badge>
       </CardHeader>
       <CardContent className="maat:flex maat:flex-col maat:gap-2.5 maat:px-3.5">
@@ -44,12 +45,15 @@ export function VerdictCard({ result }: { result: VerifyResult }) {
 }
 
 function SourceBlock({ source }: { source: Source }) {
+  const { t, code } = useLanguage()
   return (
     <div className="maat:rounded-lg maat:bg-muted maat:p-2.5">
-      <p className="maat:text-[11px] maat:font-medium maat:tracking-wide maat:text-muted-foreground maat:uppercase">Cited source</p>
+      <p className="maat:text-[11px] maat:font-medium maat:tracking-wide maat:text-muted-foreground maat:uppercase">
+        {t.widget.citedSource}
+      </p>
       <p className="maat:mt-0.5 maat:font-medium maat:text-foreground">{source.title}</p>
       <p className="maat:text-xs maat:text-muted-foreground">
-        {source.issuer} · <time dateTime={source.date}>{formatDate(source.date)}</time>
+        {source.issuer} · <time dateTime={source.date}>{formatDate(source.date, code)}</time>
       </p>
       <a
         href={source.url}
@@ -57,7 +61,7 @@ function SourceBlock({ source }: { source: Source }) {
         rel="noopener noreferrer"
         className="maat:mt-2 maat:inline-flex maat:items-center maat:gap-1 maat:text-xs maat:font-medium maat:text-primary maat:underline-offset-2 maat:hover:underline"
       >
-        Open original document
+        {t.widget.openOriginal}
         <ExternalLink className="maat:size-3.5" />
       </a>
     </div>
@@ -66,13 +70,11 @@ function SourceBlock({ source }: { source: Source }) {
 
 /** Abstention state: no verified source, so no verdict is asserted. */
 function Abstention() {
+  const { t } = useLanguage()
   return (
     <div className="maat:rounded-lg maat:border maat:border-dashed maat:border-insufficient/40 maat:p-2.5 maat:text-xs maat:text-muted-foreground">
-      <p className="maat:font-medium maat:text-foreground">No verified source found</p>
-      <p className="maat:mt-0.5">
-        Maat only gives a verdict it can cite. Add who said it, where and when, or share a link to where
-        you saw it, and try again.
-      </p>
+      <p className="maat:font-medium maat:text-foreground">{t.widget.abstentionTitle}</p>
+      <p className="maat:mt-0.5">{t.widget.abstentionText}</p>
     </div>
   )
 }

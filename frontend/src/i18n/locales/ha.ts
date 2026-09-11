@@ -1,0 +1,164 @@
+import type { Messages } from '../messages'
+
+/** Hausa */
+export const ha: Messages = {
+  meta: {
+    title: "Maat · Ka ji wani abu? Tabbatar kafin ka yaɗa.",
+    description:
+      "Ka ji jita-jita? Maat na auna ta da takardun hukuma, ta kuma ba da hukunci da za ka amince da shi: madogara, hukumar da ta bayar, ranar, da mahaɗi zuwa ainihin takardar.",
+  },
+  common: {
+    verifyRumour: "Duba jita-jita",
+    readVerifications: "Karanta tabbatarwa",
+    language: "Harshe",
+    chooseLanguage: "Zaɓi harshenka",
+    comingSoon: "Nan ba da daɗewa ba",
+    back: "Koma",
+    close: "Rufe",
+  },
+  countries: { NG: "Najeriya", KE: "Kenya" },
+  nav: { howItWorks: "Yadda yake aiki", verifications: "Tabbatarwa", contact: "Tuntuɓe mu" },
+  hero: {
+    quote: "Ka ji wani abu? Tabbatar kafin ka yaɗa.",
+    explanation:
+      "A Masar ta dā, ana auna zuciya da gashin Maat, allahiyar gaskiya, zuciya mai sauƙi kamar gaskiya ce kawai ke wucewa. Maat na yin haka da abin da ka ji: ana auna maganar da bayanan hukuma, kai kuma ka sami hukunci da za ka amince da shi.",
+    promises: [
+      "Kowace magana ana auna ta da takardun hukuma",
+      "Kowace amsa tana da madogara da mahaɗi zuwa asali",
+      "Idan babu madogara, Maat za ta faɗa",
+    ],
+    scrollCue: "Gangara zuwa yadda yake aiki",
+  },
+  trending: {
+    label: "Abin da ake magana",
+    tags: [
+      "Farashin man fetur",
+      "Kalandar makaranta",
+      "Alluran rigakafi",
+      "Rajistar masu zaɓe",
+      "Sabon haraji",
+      "Dokar hana zirga-zirga",
+      "Tallafin karatu",
+      "Kuɗin fasfo",
+      "Canjin kuɗi",
+      "Ɗaukar ma'aikata",
+      "Ambaliya",
+      "Rufe gada",
+      "Mafi ƙarancin albashi",
+      "Ranakun jarrabawa",
+    ],
+  },
+  how: {
+    eyebrow: "Yadda yake aiki",
+    title: "Matakai uku daga jita-jita zuwa hujja",
+    lead:
+      "Maat ita ce allahiyar gaskiya, daidaito da adalci ta Masar ta dā. A Zauren Gaskiya Biyu, ana sa kowace zuciya a kan ma'aunin ta, gaban gashin, ana kuma yanke hukunci da nauyi kawai.",
+    intro:
+      "Maat na hukunta jita-jita haka nan. Babu zato, babu ra'ayi: tana bayar da abin da takardar hukuma ta tabbatar kawai, ta kuma faɗa idan ba ta samu ba.",
+    steps: [
+      {
+        title: "Aika",
+        text: "Rubuta jita-jitar ko ka aika da saƙon murya a cikin hirar da ke gefen wannan shafi. Faɗi inda ka gan ta idan za ka iya.",
+      },
+      {
+        title: "Auna",
+        text: "Maat na bincika gazette, da'irori da sanarwar manema labarai daga hukumomin da suka bayar, ta kuma auna maganar da abin da suka faɗa.",
+      },
+      {
+        title: "Kawo madogara",
+        text: "Za ka sami hukunci, amsa a sauƙaƙe, madogara tare da hukumar da ta bayar da ranar, da mahaɗi zuwa ainihin takardar.",
+      },
+    ],
+    legendIntro: "Kowane hukunci ɗaya ne daga cikin uku:",
+    legend: {
+      verified: "bayanai sun tabbatar da shi",
+      unverified: "bayanai sun saɓa masa",
+      insufficient: "ba a sami tabbataccen madogara ba",
+    },
+  },
+  verdict: { verified: "An tabbatar", unverified: "Ba a tabbatar ba", insufficient: "Babu isasshen shaida" },
+  articles: {
+    eyebrow: "Tabbatarwa",
+    title: "Jita-jitar da muka auna",
+    intro: "Kowace maƙala na nuna hukunci, abin da bayanai suka ce, da takardar da ya fito daga ciki.",
+    count: (shown, total) => `${shown} daga cikin ${total} tabbatarwa`,
+    filterLabel: "Tace bisa batu",
+    allTopics: "Duk batutuwa",
+    minutes: (n) => `minti ${n}`,
+    checked: (date) => `An duba ${date}`,
+    noSource: "Ba a sami tabbataccen madogara ba",
+    read: "Karanta",
+  },
+  footer: {
+    blurb:
+      "An sa mata suna bayan allahiyar da ke auna kowace zuciya da gashi. Maat na auna jita-jita da bayanan hukuma, ta kuma nuna maka takardar da ke bayan kowace amsa.",
+    verify: "Tabbatarwa",
+    about: "Game da mu",
+    contact: "Tuntuɓe mu",
+    links: {
+      latest: "Sabbin tabbatarwa",
+      how: "Yadda yake aiki",
+      submit: "Aiko da jita-jita",
+      methodology: "Hanyoyinmu",
+      sources: "Madogaran da muke amfani da su",
+      aboutMaat: "Game da Maat",
+      team: "Ƙungiyar",
+      partners: "Abokan hulɗa",
+      press: "Manema labarai",
+      careers: "Ayyuka",
+    },
+    helplineHours: "Kira kyauta, kowace rana, 7 na safe zuwa 10 na dare",
+    whatsapp: "WhatsApp",
+    pressLabel: "Manema labarai",
+    digestTitle: "Taƙaitawar mako",
+    digestText: "Jita-jitar da muka auna a wannan mako, a imel ɗaya.",
+    emailLabel: "Adireshin imel",
+    subscribe: "Yi rajista",
+    digestThanks: "Mun gode. Za ka sami taƙaitawa ta farko ranar Juma'a.",
+    copyright: (year) => `© ${year} Maat. Muna auna jita-jita da bayanan hukuma.`,
+    privacy: "Sirri",
+    terms: "Sharuɗɗa",
+    corrections: "Gyare-gyare",
+    accessibility: "Samun dama",
+  },
+  widget: {
+    open: "Buɗe Maat, mataimakiyar tabbatar da jita-jita",
+    close: "Rufe Maat",
+    dialog: "Tabbatar da jita-jita na Maat",
+    subtitle: "Tabbatar da jita-jita",
+    tagline: "Ka ji wani abu? Tabbatar kafin ka yaɗa.",
+    legend: {
+      verified: "Takardar hukuma da za ka iya buɗewa ta tabbatar da shi.",
+      unverified: "Bayanan hukuma sun saɓa wa jita-jitar.",
+      insufficient: "Ba a sami tabbataccen madogara ba, don haka Maat ta faɗa maimakon zato.",
+    },
+    start: "Fara hira",
+    greeting:
+      "Sannu, ni ce Maat. Faɗa mini abin da ka ji, a rubuce ko saƙon murya, zan duba shi da bayanan hukuma, in nuna maka takardar da ke bayan amsar.",
+    placeholder: "Me ka ji?",
+    inputLabel: "Abin da ka ji",
+    send: "Aika",
+    voiceUpload: "Ɗora saƙon murya",
+    voiceNote: "Saƙon murya",
+    citedSource: "Madogara",
+    openOriginal: "Buɗe ainihin takardar",
+    abstentionTitle: "Ba a sami tabbataccen madogara ba",
+    abstentionText:
+      "Maat na bayar da hukunci mai madogara kawai. Ƙara wanda ya faɗa, inda da lokacin, ko ka aiko da mahaɗin inda ka gan ta, sannan ka sake gwadawa.",
+    errorGeneric: "Maat ba ta iya sarrafa wannan a yanzu ba. Da fatan za a sake gwadawa.",
+    errorNetwork: "Ba a iya isa ga Maat ba. Duba haɗin yanar gizonka ka sake gwadawa.",
+    checking: "Maat na dubawa",
+    back: "Koma farko",
+    maximise: "Faɗaɗa",
+    restore: "Mayar da girman",
+    language: "Harshe",
+  },
+  mock: {
+    verified: (subject, issuer, date) =>
+      `Bayanan hukuma sun tabbatar da wannan. ${issuer} ta wallafa sanarwa a ${date} da ta tabbatar da maganar “${subject}” kamar yadda aka bayyana. Buɗe ainihin takardar don ganin ainihin kalmomin da duk wani sharaɗi.`,
+    unverified: (subject, issuer, date) =>
+      `Wannan bai dace da bayanan hukuma ba. ${issuer} ta yi magana kan “${subject}” a ${date}, sanarwarta kuma ta saɓa wa abin da ake yaɗawa. Ka ɗauki jita-jitar a matsayin wadda ba a tabbatar ba sai hukumar ta ce in ba haka ba.`,
+    insufficient: (subject) =>
+      `Ban sami tabbataccen madogara da ta yi magana kan “${subject}” ba. Wannan ba ya nufin ƙarya ce, kawai ba a tabbatar ba.`,
+  },
+}
