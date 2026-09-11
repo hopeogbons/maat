@@ -4,6 +4,7 @@ import { useLanguage, type Verdict } from '@/i18n'
 import { Button } from '../ui/button'
 import { Emblem } from './Emblem'
 import { ExpandToggle } from './ExpandToggle'
+import { FloatingIcons } from './FloatingIcons'
 
 interface WelcomeScreenProps {
   expanded: boolean
@@ -24,8 +25,9 @@ export function WelcomeScreen({ expanded, onToggleExpand, onLanguage, onStart, o
   const headerButton = 'maat:text-primary-foreground/80 maat:hover:bg-white/10 maat:hover:text-primary-foreground'
   return (
     <div className="maat:flex maat:h-full maat:flex-col">
-      <div className="maat:relative maat:bg-[linear-gradient(160deg,var(--teal-deep),var(--primary))] maat:px-6 maat:pt-14 maat:pb-8 maat:text-primary-foreground">
-        <div className="maat:absolute maat:top-3 maat:right-3 maat:left-3 maat:flex maat:items-center maat:justify-between maat:gap-1">
+      <div className="maat:relative maat:isolate maat:overflow-hidden maat:bg-[linear-gradient(160deg,var(--teal-deep),var(--primary))] maat:px-6 maat:pt-14 maat:pb-8 maat:text-primary-foreground">
+        <FloatingIcons />
+        <div className="maat:absolute maat:top-3 maat:right-3 maat:left-3 maat:z-20 maat:flex maat:items-center maat:justify-between maat:gap-1">
           <Button
             variant="ghost"
             size="sm"
@@ -43,7 +45,7 @@ export function WelcomeScreen({ expanded, onToggleExpand, onLanguage, onStart, o
             </Button>
           </div>
         </div>
-        <div className="maat:mx-auto maat:w-full maat:max-w-xl">
+        <div className="maat:relative maat:z-10 maat:mx-auto maat:w-full maat:max-w-xl">
           <Emblem size="lg" />
           <h2 className="maat:mt-4 maat:font-heading maat:text-3xl maat:font-semibold maat:tracking-tight">Maat</h2>
           <p className="maat:mt-1 maat:text-base maat:text-primary-foreground/80">{t.widget.tagline}</p>
