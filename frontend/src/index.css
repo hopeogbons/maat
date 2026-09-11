@@ -1,47 +1,102 @@
 /*
- * Host page styles. Deliberately opinionated (serif type, element-level
- * button styles) to demonstrate that the Maat widget neither inherits from
- * nor leaks into the page it is mounted on.
+ * Site-wide styles for the Maat landing page. This is a normal, unprefixed
+ * Tailwind setup scanning only the landing page files. The chat widget has
+ * its own prefixed, isolated stylesheet in src/widget/widget.css.
  */
-:root {
-  color-scheme: light;
+@import "tailwindcss" source(none);
+@source "./landing";
+@source "./App.tsx";
+
+@theme {
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
+  --font-serif: Georgia, "Times New Roman", serif;
+
+  /* Brand: deep teal with a warm gold accent on a warm neutral ground. */
+  --color-teal-deep: oklch(0.29 0.055 210);
+  --color-teal: oklch(0.37 0.065 205);
+  --color-teal-soft: oklch(0.94 0.02 200);
+  --color-gold: oklch(0.77 0.13 85);
+  --color-gold-dark: oklch(0.27 0.05 80);
+  --color-gold-soft: oklch(0.96 0.045 90);
+  --color-sand: oklch(0.975 0.008 85);
+  --color-ink: oklch(0.2 0.01 210);
+  --color-ink-muted: oklch(0.5 0.01 210);
+  --color-line: oklch(0.9 0.006 200);
+
+  /* Verdicts: muted green, amber, grey. Never red. */
+  --color-verified: oklch(0.52 0.08 155);
+  --color-verified-soft: oklch(0.955 0.03 155);
+  --color-unverified: oklch(0.6 0.13 72);
+  --color-unverified-soft: oklch(0.965 0.04 85);
+  --color-insufficient: oklch(0.5 0 0);
+  --color-insufficient-soft: oklch(0.95 0 0);
+
+  --animate-float: float 9s ease-in-out infinite;
+  --animate-float-slow: float 14s ease-in-out infinite;
+  --animate-drift: drift 18s ease-in-out infinite;
+  --animate-marquee: marquee 45s linear infinite;
+  --animate-rise: rise 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0) rotate(var(--rot, 0deg));
+    }
+    50% {
+      transform: translateY(-18px) rotate(calc(var(--rot, 0deg) + 6deg));
+    }
+  }
+  @keyframes drift {
+    0%,
+    100% {
+      transform: translate(0, 0) rotate(var(--rot, 0deg));
+    }
+    33% {
+      transform: translate(14px, -22px) rotate(calc(var(--rot, 0deg) - 5deg));
+    }
+    66% {
+      transform: translate(-10px, -8px) rotate(calc(var(--rot, 0deg) + 4deg));
+    }
+  }
+  @keyframes marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
 }
 
-body {
-  margin: 0;
-  background: #f5f1ea;
-  color: #2b2b2b;
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: 18px;
-  line-height: 1.7;
-}
-
-button {
-  font-family: Georgia, serif;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.host {
-  max-width: 40rem;
-  margin: 0 auto;
-  padding: 4rem 1.25rem 8rem;
-}
-
-.host h1 {
-  font-size: 2.25rem;
-  font-weight: 400;
-  letter-spacing: -0.01em;
-  margin: 0 0 1rem;
-}
-
-.host p {
-  margin: 0 0 1.25rem;
-}
-
-.host .note {
-  border-left: 3px solid #c9a86a;
-  padding-left: 1rem;
-  color: #5a5348;
-  font-style: italic;
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+  body {
+    background-color: var(--color-sand);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  ::selection {
+    background-color: var(--color-gold-soft);
+    color: var(--color-gold-dark);
+  }
 }

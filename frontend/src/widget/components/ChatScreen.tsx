@@ -3,6 +3,7 @@ import { Button } from '../ui/button'
 import type { Message } from '../types'
 import { Composer } from './Composer'
 import { Emblem } from './Emblem'
+import { ExpandToggle } from './ExpandToggle'
 import { MessageList } from './MessageList'
 
 interface ChatScreenProps {
@@ -10,11 +11,22 @@ interface ChatScreenProps {
   pending: boolean
   onSendText: (text: string) => void
   onSendVoice: (file: File) => void
+  expanded: boolean
+  onToggleExpand: () => void
   onBack: () => void
   onClose: () => void
 }
 
-export function ChatScreen({ messages, pending, onSendText, onSendVoice, onBack, onClose }: ChatScreenProps) {
+export function ChatScreen({
+  messages,
+  pending,
+  onSendText,
+  onSendVoice,
+  expanded,
+  onToggleExpand,
+  onBack,
+  onClose,
+}: ChatScreenProps) {
   const headerButton =
     'maat:text-primary-foreground/80 maat:hover:bg-white/10 maat:hover:text-primary-foreground'
 
@@ -29,6 +41,7 @@ export function ChatScreen({ messages, pending, onSendText, onSendVoice, onBack,
           <p className="maat:font-heading maat:text-sm maat:leading-tight maat:font-semibold">Maat</p>
           <p className="maat:text-xs maat:text-primary-foreground/70">Rumour verification</p>
         </div>
+        <ExpandToggle expanded={expanded} onToggle={onToggleExpand} className={headerButton} />
         <Button variant="ghost" size="icon-sm" aria-label="Close Maat" onClick={onClose} className={headerButton}>
           <X />
         </Button>

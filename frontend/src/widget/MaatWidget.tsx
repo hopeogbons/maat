@@ -9,6 +9,9 @@ import { createMockClient } from './mockClient'
 import type { MaatClient } from './types'
 import './widget.css'
 
+/** Dispatch `window.dispatchEvent(new CustomEvent('maat:open'))` to open the panel from the host page. */
+export const OPEN_EVENT = 'maat:open'
+
 export interface MaatWidgetProps {
   /** Backend adapter. Defaults to a demo client that rotates through verdicts. */
   client?: MaatClient
@@ -27,6 +30,7 @@ export function MaatWidget({ client, defaultOpen = false }: MaatWidgetProps) {
 
   const [phase, setPhase] = useState<Phase>(defaultOpen ? 'open' : 'closed')
   const [view, setView] = useState<View>('welcome')
+  const [expanded, setExpanded] = useState(false)
   const panelId = useId()
   const launcherRef = useRef<HTMLButtonElement>(null)
 
@@ -47,6 +51,12 @@ export function MaatWidget({ client, defaultOpen = false }: MaatWidgetProps) {
     return () => window.clearTimeout(timer)
   }, [phase])
 
+  // The host page can open the panel by dispatching the `maat:open` event.
+  useEffect(() => {
+    window.addEventListener(OPEN_EVENT, open)
+    return () => window.removeEventListener(OPEN_EVENT, open)
+  }, [open])
+
   // Escape closes the panel.
   useEffect(() => {
     if (!isOpen) return
@@ -63,25 +73,34 @@ export function MaatWidget({ client, defaultOpen = false }: MaatWidgetProps) {
         ref={launcherRef}
         open={isOpen}
         panelId={panelId}
-        hideWhilePanelShown={isMounted}
+        hideOnMobile={isMounted}
+        hidden={isMounted && expanded}
         onClick={toggle}
       />
       {isMounted && (
         <Panel
           id={panelId}
           state={isOpen ? 'open' : 'closed'}
+          expanded={expanded}
           onAnimationEnd={() => {
             if (phase === 'closing') setPhase('closed')
           }}
         >
           {view === 'welcome' ? (
-            <WelcomeScreen onStart={() => setView('chat')} onClose={close} />
+            <WelcomeScreen
+              expanded={expanded}
+              onToggleExpand={() => setExpanded((value) => !value)}
+              onStart={() => setView('chat')}
+              onClose={close}
+            />
           ) : (
             <ChatScreen
               messages={chat.messages}
               pending={chat.pending}
               onSendText={chat.sendText}
               onSendVoice={chat.sendVoice}
+              expanded={expanded}
+              onToggleExpand={() => setExpanded((value) => !value)}
               onBack={() => setView('welcome')}
               onClose={close}
             />

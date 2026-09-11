@@ -12,6 +12,7 @@ maat/
 │   ├── deploy/   systemd unit, nginx site, deploy script, VPS guide
 │   └── scripts/  create_local_db.sh
 └── frontend/     Vite + React + TypeScript + Tailwind v4 + shadcn/ui, deployed to Vercel
+    ├── src/landing/     the landing page (hero, how it works, verifications, footer)
     ├── src/lib/api.ts   fetch wrapper for the Django API
     └── src/widget/      the Maat chat widget (self-contained, see below)
 ```
@@ -38,10 +39,10 @@ npm install
 npm run dev                                 # http://localhost:5173
 ```
 
-Open http://localhost:5173. You get a demo host page with the Maat widget in
-the bottom-right corner (add `?open` to the URL to start with it open). In
-development the Vite dev server proxies `/api/*` to Django, so no CORS
-configuration is needed.
+Open http://localhost:5173. You get the Maat landing page with the chat
+widget in the bottom-right corner (add `?open` to the URL to start with it
+open). In development the Vite dev server proxies `/api/*` to Django, so no
+CORS configuration is needed.
 
 Useful commands:
 
@@ -49,6 +50,26 @@ Useful commands:
 cd backend && .venv/bin/python manage.py test          # backend tests (needs CREATEDB on the role)
 cd frontend && npm run build                          # type-check + production build
 ```
+
+## The landing page
+
+`frontend/src/landing/` is the public site: a full-screen teal hero with the
+feather wordmark, the tagline as a quote, an explanation of the goddess Maat
+and faded icons drifting in the background; a trending-topics ribbon; a
+three-step "how it works"; a filterable grid of verification articles; and a
+footer with helpline, WhatsApp, email, social links and a digest sign-up.
+
+- Contact details, social handles and nav links live in
+  `src/landing/site.ts`. They are placeholders: change them there once.
+- The verification articles in `src/landing/data/articles.ts` are sample
+  content. Their "Read" links point at `/verifications/<slug>`, which does not
+  exist yet.
+- The landing page uses a normal, unprefixed Tailwind setup in
+  `src/index.css` that only scans `src/landing/` and `App.tsx`. The widget
+  keeps its own isolated stylesheet.
+- Any element on the page can open the chat with
+  `window.dispatchEvent(new CustomEvent('maat:open'))`; see
+  `src/landing/widgetBridge.ts`.
 
 ## The Maat widget
 
@@ -60,6 +81,9 @@ is 380px wide on desktop and full screen on phones.
   legend of the three verdicts and a button into the conversation.
 - **Conversation view**: header with back arrow, a message list pinned to the
   newest message, and an input bar with send and voice-note upload.
+- **Sizes**: 380px card on desktop with a maximise control (before the close
+  button) that expands it to a centred 960px panel; full screen on phones,
+  where the maximise control is hidden because there is nothing to gain.
 - **Reply cards** show the verdict, the answer, the cited source with issuing
   body and date, and a link to the original document. When no verified source
   exists the card shows an explicit abstention instead of a citation.

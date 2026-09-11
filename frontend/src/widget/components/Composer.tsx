@@ -34,7 +34,11 @@ export function Composer({ disabled, onSendText, onSendVoice }: ComposerProps) {
   }
 
   return (
-    <form onSubmit={submit} className="maat:flex maat:items-center maat:gap-2 maat:border-t maat:border-border maat:bg-background maat:p-3">
+    <form
+      onSubmit={submit}
+      className="maat:border-t maat:border-border maat:bg-background maat:p-3"
+    >
+      <div className="maat:mx-auto maat:flex maat:w-full maat:max-w-2xl maat:items-center maat:gap-2">
       <input
         ref={fileRef}
         type="file"
@@ -74,6 +78,7 @@ export function Composer({ disabled, onSendText, onSendVoice }: ComposerProps) {
       >
         <SendHorizontal />
       </Button>
+      </div>
     </form>
   )
 }
