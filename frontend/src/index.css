@@ -1,33 +1,47 @@
+/*
+ * Host page styles. Deliberately opinionated (serif type, element-level
+ * button styles) to demonstrate that the Maat widget neither inherits from
+ * nor leaks into the page it is mounted on.
+ */
 :root {
-  --bg: #fafafa;
-  --surface: #ffffff;
-  --surface-2: #f4f4f5;
-  --border: #e4e4e7;
-  --text: #18181b;
-  --muted: #71717a;
-
-  color-scheme: light dark;
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  line-height: 1.5;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #09090b;
-    --surface: #18181b;
-    --surface-2: #27272a;
-    --border: #3f3f46;
-    --text: #fafafa;
-    --muted: #a1a1aa;
-  }
-}
-
-* {
-  box-sizing: border-box;
+  color-scheme: light;
 }
 
 body {
   margin: 0;
-  background: var(--bg);
-  color: var(--text);
+  background: #f5f1ea;
+  color: #2b2b2b;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 18px;
+  line-height: 1.7;
+}
+
+button {
+  font-family: Georgia, serif;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.host {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 4rem 1.25rem 8rem;
+}
+
+.host h1 {
+  font-size: 2.25rem;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  margin: 0 0 1rem;
+}
+
+.host p {
+  margin: 0 0 1.25rem;
+}
+
+.host .note {
+  border-left: 3px solid #c9a86a;
+  padding-left: 1rem;
+  color: #5a5348;
+  font-style: italic;
 }
