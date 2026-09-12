@@ -3,9 +3,9 @@ import type { Messages } from '../messages'
 /** Yorùbá */
 export const yo: Messages = {
   meta: {
-    title: "Maat · Ṣé o gbọ́ nǹkan? Ṣàyẹ̀wò rẹ̀ kí o tó pín in.",
+    title: "Ma’at · Ṣé o gbọ́ nǹkan? Ṣàyẹ̀wò rẹ̀ kí o tó pín in.",
     description:
-      "Ṣé o gbọ́ àhesọ? Maat ń wọ̀n ọ́n pẹ̀lú àwọn ìwé ìjọba, ó sì ń fún ọ ní ìdájọ́ tí o lè gbẹ́kẹ̀lé: orísun, àjọ tó gbé e jáde, ọjọ́ rẹ̀, àti ọ̀nà sí ìwé àkọ́kọ́.",
+      "Ṣé o gbọ́ àhesọ? Ma’at ń wọ̀n ọ́n pẹ̀lú àwọn ìwé ìjọba, ó sì ń fún ọ ní ìdájọ́ tí o lè gbẹ́kẹ̀lé: orísun, àjọ tó gbé e jáde, ọjọ́ rẹ̀, àti ọ̀nà sí ìwé àkọ́kọ́.",
   },
   common: {
     verifyRumour: "Ṣàyẹ̀wò àhesọ",
@@ -22,11 +22,11 @@ export const yo: Messages = {
   hero: {
     quote: "Ṣé o gbọ́ nǹkan? Ṣàyẹ̀wò rẹ̀ kí o tó pín in.",
     explanation:
-      "Ní Íjíbítì àtijọ́, a máa ń wọn ọkàn pẹ̀lú ìyẹ́ Maat, òrìṣà òtítọ́, ọkàn tó fúyẹ́ bí òtítọ́ nìkan ló lè kọjá. Maat ń ṣe bákan náà pẹ̀lú ohun tí o gbọ́: a ń wọn ọ̀rọ̀ náà pẹ̀lú ìwé ìjọba, ìwọ yóò sì gba ìdájọ́ tí o lè gbẹ́kẹ̀lé.",
+      "Ní Íjíbítì àtijọ́, a máa ń wọn ọkàn pẹ̀lú ìyẹ́ Ma’at, òrìṣà òtítọ́, ọkàn tó fúyẹ́ bí òtítọ́ nìkan ló lè kọjá. Ma’at ń ṣe bákan náà pẹ̀lú ohun tí o gbọ́: a ń wọn ọ̀rọ̀ náà pẹ̀lú ìwé ìjọba, ìwọ yóò sì gba ìdájọ́ tí o lè gbẹ́kẹ̀lé.",
     promises: [
       "A ń wọn gbogbo ọ̀rọ̀ pẹ̀lú ìwé ìjọba",
       "Gbogbo ìdáhùn ní orísun àti ọ̀nà sí ìwé àkọ́kọ́",
-      "Tí kò bá sí orísun, Maat yóò sọ bẹ́ẹ̀",
+      "Tí kò bá sí orísun, Ma’at yóò sọ bẹ́ẹ̀",
     ],
     scrollCue: "Lọ sí bí ó ṣe ń ṣiṣẹ́",
   },
@@ -53,9 +53,9 @@ export const yo: Messages = {
     eyebrow: "Bí ó ṣe ń ṣiṣẹ́",
     title: "Ìgbésẹ̀ mẹ́ta láti àhesọ dé ẹ̀rí",
     lead:
-      "Maat ni òrìṣà òtítọ́, ìdọ́gba àti ìdájọ́ òdodo ti Íjíbítì àtijọ́. Ní Gbọ̀ngàn Òtítọ́ Méjì, a máa ń gbé gbogbo ọkàn sórí òṣùwọ̀n rẹ̀, ní ìdojúkọ ìyẹ́ náà, a sì ń dájọ́ nípa ìwúwo nìkan.",
+      "Ma’at ni òrìṣà òtítọ́, ìdọ́gba àti ìdájọ́ òdodo ti Íjíbítì àtijọ́. Ní Gbọ̀ngàn Òtítọ́ Méjì, a máa ń gbé gbogbo ọkàn sórí òṣùwọ̀n rẹ̀, ní ìdojúkọ ìyẹ́ náà, a sì ń dájọ́ nípa ìwúwo nìkan.",
     intro:
-      "Bákan náà ni Maat ń dájọ́ àhesọ. Kò sí àbá, kò sí èrò ara ẹni: ó ń sọ ohun tí ìwé ìjọba fi ìdí rẹ̀ múlẹ̀ nìkan, ó sì ń sọ fún ọ nígbà tí kò rí i.",
+      "Bákan náà ni Ma’at ń dájọ́ àhesọ. Kò sí àbá, kò sí èrò ara ẹni: ó ń sọ ohun tí ìwé ìjọba fi ìdí rẹ̀ múlẹ̀ nìkan, ó sì ń sọ fún ọ nígbà tí kò rí i.",
     steps: [
       {
         title: "Ránṣẹ́",
@@ -63,7 +63,7 @@ export const yo: Messages = {
       },
       {
         title: "Wọ̀n",
-        text: "Maat ń wá àwọn ìwé ìròyìn ìjọba, ìwé àkíyèsí àti àwọn gbólóhùn fún oníròyìn láti ọ̀dọ̀ àwọn àjọ tó gbé wọn jáde, ó sì ń wọn ọ̀rọ̀ náà pẹ̀lú ohun tí wọ́n sọ gangan.",
+        text: "Ma’at ń wá àwọn ìwé ìròyìn ìjọba, ìwé àkíyèsí àti àwọn gbólóhùn fún oníròyìn láti ọ̀dọ̀ àwọn àjọ tó gbé wọn jáde, ó sì ń wọn ọ̀rọ̀ náà pẹ̀lú ohun tí wọ́n sọ gangan.",
       },
       {
         title: "Tọ́ka orísun",
@@ -92,7 +92,7 @@ export const yo: Messages = {
   },
   footer: {
     blurb:
-      "A sọ ọ́ ní orúkọ òrìṣà tó ń wọn gbogbo ọkàn pẹ̀lú ìyẹ́. Maat ń wọn àhesọ pẹ̀lú ìwé ìjọba, ó sì ń fi ìwé tó wà lẹ́yìn gbogbo ìdáhùn hàn ọ́.",
+      "A sọ ọ́ ní orúkọ òrìṣà tó ń wọn gbogbo ọkàn pẹ̀lú ìyẹ́. Ma’at ń wọn àhesọ pẹ̀lú ìwé ìjọba, ó sì ń fi ìwé tó wà lẹ́yìn gbogbo ìdáhùn hàn ọ́.",
     verify: "Àyẹ̀wò",
     about: "Nípa wa",
     contact: "Kàn sí wa",
@@ -102,7 +102,7 @@ export const yo: Messages = {
       submit: "Fi àhesọ ránṣẹ́",
       methodology: "Ọ̀nà iṣẹ́ wa",
       sources: "Àwọn orísun tí a ń lò",
-      aboutMaat: "Nípa Maat",
+      aboutMaat: "Nípa Ma’at",
       team: "Ẹgbẹ́ wa",
       partners: "Alábàáṣiṣẹ́pọ̀",
       press: "Oníròyìn",
@@ -116,26 +116,26 @@ export const yo: Messages = {
     emailLabel: "Àdírẹ́sì ímeèlì",
     subscribe: "Forúkọ sílẹ̀",
     digestThanks: "A dúpẹ́. Retí àkótán àkọ́kọ́ ní ọjọ́ Ẹtì.",
-    copyright: (year) => `© ${year} Maat. A ń wọn àhesọ pẹ̀lú ẹ̀rí.`,
+    copyright: (year) => `© ${year} Ma’at. A ń wọn àhesọ pẹ̀lú ẹ̀rí.`,
     privacy: "Àṣírí",
     terms: "Àwọn òfin",
     corrections: "Àtúnṣe",
     accessibility: "Ìráyè",
   },
   widget: {
-    open: "Ṣí Maat, olùrànlọ́wọ́ àyẹ̀wò àhesọ",
-    close: "Pa Maat dé",
-    dialog: "Àyẹ̀wò àhesọ Maat",
+    open: "Ṣí Ma’at, olùrànlọ́wọ́ àyẹ̀wò àhesọ",
+    close: "Pa Ma’at dé",
+    dialog: "Àyẹ̀wò àhesọ Ma’at",
     subtitle: "Àyẹ̀wò àhesọ",
     tagline: "Ṣé o gbọ́ nǹkan? Ṣàyẹ̀wò rẹ̀ kí o tó pín in.",
     legend: {
       verified: "Ìwé ìjọba tí o lè ṣí fi ìdí rẹ̀ múlẹ̀.",
       unverified: "Ẹ̀rí ìjọba tako àhesọ náà.",
-      insufficient: "Kò sí orísun tí a fi ìdí rẹ̀ múlẹ̀, nítorí náà Maat sọ bẹ́ẹ̀ dípò kí ó ṣe àbá.",
+      insufficient: "Kò sí orísun tí a fi ìdí rẹ̀ múlẹ̀, nítorí náà Ma’at sọ bẹ́ẹ̀ dípò kí ó ṣe àbá.",
     },
     start: "Bẹ̀rẹ̀ ìjíròrò",
     greeting:
-      "Ẹ n lẹ́, èmi ni Maat. Sọ ohun tí o gbọ́ fún mi, ní kíkọ tàbí ìránṣẹ́ ohùn, èmi yóò ṣàyẹ̀wò rẹ̀ pẹ̀lú ìwé ìjọba, èmi yóò sì fi ìwé tó wà lẹ́yìn ìdáhùn náà hàn ọ́.",
+      "Ẹ n lẹ́, èmi ni Ma’at. Sọ ohun tí o gbọ́ fún mi, ní kíkọ tàbí ìránṣẹ́ ohùn, èmi yóò ṣàyẹ̀wò rẹ̀ pẹ̀lú ìwé ìjọba, èmi yóò sì fi ìwé tó wà lẹ́yìn ìdáhùn náà hàn ọ́.",
     placeholder: "Kí ni o gbọ́?",
     inputLabel: "Ohun tí o gbọ́",
     send: "Ránṣẹ́",
@@ -145,10 +145,10 @@ export const yo: Messages = {
     openOriginal: "Ṣí ìwé àkọ́kọ́",
     abstentionTitle: "Kò sí orísun tí a fi ìdí rẹ̀ múlẹ̀",
     abstentionText:
-      "Maat ń fún ni ní ìdájọ́ tó ní orísun nìkan. Fi ẹni tó sọ ọ́ kún un, ibi àti ìgbà, tàbí fi ọ̀nà sí ibi tí o ti rí i ránṣẹ́, kí o sì tún gbìyànjú.",
-    errorGeneric: "Maat kò lè ṣe èyí ní ìsinsìnyí. Jọ̀wọ́ tún gbìyànjú.",
-    errorNetwork: "A kò lè dé ọ̀dọ̀ Maat. Ṣàyẹ̀wò ìsopọ̀ rẹ kí o sì tún gbìyànjú.",
-    checking: "Maat ń ṣàyẹ̀wò",
+      "Ma’at ń fún ni ní ìdájọ́ tó ní orísun nìkan. Fi ẹni tó sọ ọ́ kún un, ibi àti ìgbà, tàbí fi ọ̀nà sí ibi tí o ti rí i ránṣẹ́, kí o sì tún gbìyànjú.",
+    errorGeneric: "Ma’at kò lè ṣe èyí ní ìsinsìnyí. Jọ̀wọ́ tún gbìyànjú.",
+    errorNetwork: "A kò lè dé ọ̀dọ̀ Ma’at. Ṣàyẹ̀wò ìsopọ̀ rẹ kí o sì tún gbìyànjú.",
+    checking: "Ma’at ń ṣàyẹ̀wò",
     back: "Padà sí ìbẹ̀rẹ̀",
     maximise: "Fẹ̀ ẹ́ sí i",
     restore: "Dá ìwọ̀n padà",

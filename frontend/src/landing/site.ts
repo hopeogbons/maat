@@ -8,7 +8,7 @@ import { FacebookIcon, InstagramIcon, LinkedInIcon, XIcon, YouTubeIcon } from '.
  * the translations in src/i18n/locales.
  */
 export const SITE = {
-  name: 'Maat',
+  name: 'Ma’at',
   domain: 'maatverify.com',
   email: 'hello@maatverify.com',
   pressEmail: 'press@maatverify.com',

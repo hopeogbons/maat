@@ -3,9 +3,9 @@ import type { Messages } from '../messages'
 /** Naijá (Nigerian Pidgin) */
 export const pcm: Messages = {
   meta: {
-    title: "Maat · You hear something? Verify am before you share am.",
+    title: "Ma’at · You hear something? Verify am before you share am.",
     description:
-      "You hear rumour? Maat go weigh am with official document and give you verdict wey you fit trust: the source, the office wey release am, the date, and link go the original.",
+      "You hear rumour? Ma’at go weigh am with official document and give you verdict wey you fit trust: the source, the office wey release am, the date, and link go the original.",
   },
   common: {
     verifyRumour: "Verify rumour",
@@ -22,11 +22,11 @@ export const pcm: Messages = {
   hero: {
     quote: "You hear something? Verify am before you share am.",
     explanation:
-      "For ancient Egypt, dem dey weigh heart against the feather of Maat, the goddess of truth, and na only heart wey light like truth fit pass. Maat dey do the same thing with wetin you hear: the claim dey weigh against official record, and you go get verdict wey you fit trust.",
+      "For ancient Egypt, dem dey weigh heart against the feather of Ma’at, the goddess of truth, and na only heart wey light like truth fit pass. Ma’at dey do the same thing with wetin you hear: the claim dey weigh against official record, and you go get verdict wey you fit trust.",
     promises: [
       "Every claim dey weigh against official document",
       "Every answer get source and link go the original",
-      "If source no dey, Maat go talk am",
+      "If source no dey, Ma’at go talk am",
     ],
     scrollCue: "Scroll go how e dey work",
   },
@@ -53,9 +53,9 @@ export const pcm: Messages = {
     eyebrow: "How e dey work",
     title: "Three steps from rumour to record",
     lead:
-      "Maat na the goddess of truth, balance and justice for ancient Egypt. For the Hall of Two Truths, dem dey put every heart for her scale, opposite the feather, and na the weight alone dey decide.",
+      "Ma’at na the goddess of truth, balance and justice for ancient Egypt. For the Hall of Two Truths, dem dey put every heart for her scale, opposite the feather, and na the weight alone dey decide.",
     intro:
-      "Na so Maat dey judge rumour too. No guess, no opinion: e go only talk wetin official document support, and go tell you if e no find any.",
+      "Na so Ma’at dey judge rumour too. No guess, no opinion: e go only talk wetin official document support, and go tell you if e no find any.",
     steps: [
       {
         title: "Send",
@@ -63,7 +63,7 @@ export const pcm: Messages = {
       },
       {
         title: "Weigh",
-        text: "Maat go search gazette, circular and press statement from the office wey release dem, and weigh the claim against wetin dem really talk.",
+        text: "Ma’at go search gazette, circular and press statement from the office wey release dem, and weigh the claim against wetin dem really talk.",
       },
       {
         title: "Cite",
@@ -92,7 +92,7 @@ export const pcm: Messages = {
   },
   footer: {
     blurb:
-      "We name am after the goddess wey dey weigh every heart against feather. Maat dey weigh rumour against official record and show you the document behind every answer.",
+      "We name am after the goddess wey dey weigh every heart against feather. Ma’at dey weigh rumour against official record and show you the document behind every answer.",
     verify: "Verify",
     about: "About",
     contact: "Contact",
@@ -102,7 +102,7 @@ export const pcm: Messages = {
       submit: "Send rumour",
       methodology: "How we dey do am",
       sources: "Sources wey we dey use",
-      aboutMaat: "About Maat",
+      aboutMaat: "About Ma’at",
       team: "The team",
       partners: "Partners",
       press: "Press",
@@ -116,26 +116,26 @@ export const pcm: Messages = {
     emailLabel: "Email address",
     subscribe: "Subscribe",
     digestThanks: "Thank you. Expect the first digest on Friday.",
-    copyright: (year) => `© ${year} Maat. We dey weigh rumour against the record.`,
+    copyright: (year) => `© ${year} Ma’at. We dey weigh rumour against the record.`,
     privacy: "Privacy",
     terms: "Terms",
     corrections: "Corrections",
     accessibility: "Accessibility",
   },
   widget: {
-    open: "Open Maat, the rumour verification assistant",
-    close: "Close Maat",
-    dialog: "Maat rumour verification",
+    open: "Open Ma’at, the rumour verification assistant",
+    close: "Close Ma’at",
+    dialog: "Ma’at rumour verification",
     subtitle: "Rumour verification",
     tagline: "You hear something? Verify am before you share am.",
     legend: {
       verified: "Official document wey you fit open support am.",
       unverified: "Official record contradict the rumour.",
-      insufficient: "No verified source, so Maat go talk am instead of guess.",
+      insufficient: "No verified source, so Ma’at go talk am instead of guess.",
     },
     start: "Start conversation",
     greeting:
-      "How far, na Maat be this. Tell me wetin you hear, as text or voice note, I go verify am with official record and show you the document behind the answer.",
+      "How far, na Ma’at be this. Tell me wetin you hear, as text or voice note, I go verify am with official record and show you the document behind the answer.",
     placeholder: "Wetin you hear?",
     inputLabel: "Wetin you hear",
     send: "Send",
@@ -145,10 +145,10 @@ export const pcm: Messages = {
     openOriginal: "Open original document",
     abstentionTitle: "No verified source",
     abstentionText:
-      "Maat dey only give verdict wey e fit cite. Add who talk am, where and when, or share link of where you see am, then try again.",
-    errorGeneric: "Maat no fit process that one now. Abeg try again.",
-    errorNetwork: "We no fit reach Maat. Check your connection and try again.",
-    checking: "Maat dey verify",
+      "Ma’at dey only give verdict wey e fit cite. Add who talk am, where and when, or share link of where you see am, then try again.",
+    errorGeneric: "Ma’at no fit process that one now. Abeg try again.",
+    errorNetwork: "We no fit reach Ma’at. Check your connection and try again.",
+    checking: "Ma’at dey verify",
     back: "Go back to start",
     maximise: "Make am big",
     restore: "Return the size",

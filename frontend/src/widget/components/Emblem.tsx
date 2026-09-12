@@ -7,7 +7,7 @@ const SIZES = {
   lg: { box: 'maat:size-14', icon: 'maat:size-7' },
 } as const
 
-/** The Maat mark: a feather, after the goddess of truth, on warm gold. */
+/** The Ma’at mark: a feather, after the goddess of truth, on warm gold. */
 export function Emblem({ size = 'sm', className }: { size?: keyof typeof SIZES; className?: string }) {
   const s = SIZES[size]
   return (

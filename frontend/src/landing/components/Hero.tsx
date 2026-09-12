@@ -24,7 +24,7 @@ export function Hero() {
           >
             <Feather className="size-10 sm:size-12" strokeWidth={2.25} />
           </span>
-          <h1 className="mt-6 text-6xl font-extrabold tracking-tight sm:text-7xl md:text-8xl">Maat</h1>
+          <h1 className="mt-6 text-6xl font-extrabold tracking-tight sm:text-7xl md:text-8xl">Ma’at</h1>
           <p className="mt-4 font-serif text-xl text-gold italic sm:text-2xl md:text-3xl">{t.hero.quote}</p>
         </div>
 

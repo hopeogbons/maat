@@ -6,7 +6,7 @@ import type { Message } from '../types'
 import { Emblem } from './Emblem'
 import { VerdictCard } from './VerdictCard'
 
-/** Left-aligned bubble with the Maat mark, for plain assistant text. */
+/** Left-aligned bubble with the Ma’at mark, for plain assistant text. */
 export function AssistantBubble({ children }: { children: ReactNode }) {
   return (
     <div className="maat:flex maat:items-end maat:gap-2">

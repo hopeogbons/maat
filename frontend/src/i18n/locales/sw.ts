@@ -3,9 +3,9 @@ import type { Messages } from '../messages'
 /** Kiswahili */
 export const sw: Messages = {
   meta: {
-    title: "Maat · Umesikia jambo? Lihakiki kabla ya kulishiriki.",
+    title: "Ma’at · Umesikia jambo? Lihakiki kabla ya kulishiriki.",
     description:
-      "Umesikia uvumi? Maat huupima dhidi ya nyaraka rasmi na kutoa uamuzi unaoweza kuuamini: chanzo, taasisi iliyoitoa, tarehe, na kiungo cha hati asili.",
+      "Umesikia uvumi? Ma’at huupima dhidi ya nyaraka rasmi na kutoa uamuzi unaoweza kuuamini: chanzo, taasisi iliyoitoa, tarehe, na kiungo cha hati asili.",
   },
   common: {
     verifyRumour: "Hakiki uvumi",
@@ -22,11 +22,11 @@ export const sw: Messages = {
   hero: {
     quote: "Umesikia jambo? Lihakiki kabla ya kulishiriki.",
     explanation:
-      "Katika Misri ya kale, moyo ulipimwa dhidi ya unyoya wa Maat, mungu wa kike wa ukweli, na moyo mwepesi kama ukweli pekee ndio ulipita. Maat hufanya vivyo hivyo na ulichosikia: dai hupimwa dhidi ya rekodi rasmi, nawe unapata uamuzi unaoweza kuuamini.",
+      "Katika Misri ya kale, moyo ulipimwa dhidi ya unyoya wa Ma’at, mungu wa kike wa ukweli, na moyo mwepesi kama ukweli pekee ndio ulipita. Ma’at hufanya vivyo hivyo na ulichosikia: dai hupimwa dhidi ya rekodi rasmi, nawe unapata uamuzi unaoweza kuuamini.",
     promises: [
       "Kila dai hupimwa dhidi ya nyaraka rasmi",
       "Kila jibu lina chanzo na kiungo cha hati asili",
-      "Kukiwa hakuna chanzo, Maat husema hivyo",
+      "Kukiwa hakuna chanzo, Ma’at husema hivyo",
     ],
     scrollCue: "Nenda kwenye jinsi inavyofanya kazi",
   },
@@ -53,9 +53,9 @@ export const sw: Messages = {
     eyebrow: "Jinsi inavyofanya kazi",
     title: "Hatua tatu kutoka uvumi hadi rekodi",
     lead:
-      "Maat ni mungu wa kike wa ukweli, usawa na haki wa Misri ya kale. Katika Ukumbi wa Kweli Mbili, kila moyo uliwekwa kwenye mizani yake, mkabala na unyoya, na uzito pekee ndio ulioamua.",
+      "Ma’at ni mungu wa kike wa ukweli, usawa na haki wa Misri ya kale. Katika Ukumbi wa Kweli Mbili, kila moyo uliwekwa kwenye mizani yake, mkabala na unyoya, na uzito pekee ndio ulioamua.",
     intro:
-      "Ndivyo Maat inavyohukumu uvumi pia. Hakuna kubahatisha wala maoni: huripoti tu kile ambacho hati rasmi inathibitisha, na hukuambia inaposhindwa kuipata.",
+      "Ndivyo Ma’at inavyohukumu uvumi pia. Hakuna kubahatisha wala maoni: huripoti tu kile ambacho hati rasmi inathibitisha, na hukuambia inaposhindwa kuipata.",
     steps: [
       {
         title: "Tuma",
@@ -63,7 +63,7 @@ export const sw: Messages = {
       },
       {
         title: "Pima",
-        text: "Maat hutafuta katika gazeti rasmi, waraka na taarifa kwa vyombo vya habari kutoka kwa taasisi zilizozitoa, na kupima dai dhidi ya kile zinachosema hasa.",
+        text: "Ma’at hutafuta katika gazeti rasmi, waraka na taarifa kwa vyombo vya habari kutoka kwa taasisi zilizozitoa, na kupima dai dhidi ya kile zinachosema hasa.",
       },
       {
         title: "Taja chanzo",
@@ -92,7 +92,7 @@ export const sw: Messages = {
   },
   footer: {
     blurb:
-      "Imepewa jina la mungu wa kike aliyepima kila moyo dhidi ya unyoya. Maat hupima uvumi dhidi ya rekodi rasmi na kukuonyesha hati iliyo nyuma ya kila jibu.",
+      "Imepewa jina la mungu wa kike aliyepima kila moyo dhidi ya unyoya. Ma’at hupima uvumi dhidi ya rekodi rasmi na kukuonyesha hati iliyo nyuma ya kila jibu.",
     verify: "Hakiki",
     about: "Kuhusu",
     contact: "Wasiliana",
@@ -102,7 +102,7 @@ export const sw: Messages = {
       submit: "Tuma uvumi",
       methodology: "Mbinu zetu",
       sources: "Vyanzo tunavyotumia",
-      aboutMaat: "Kuhusu Maat",
+      aboutMaat: "Kuhusu Ma’at",
       team: "Timu",
       partners: "Washirika",
       press: "Vyombo vya habari",
@@ -116,26 +116,26 @@ export const sw: Messages = {
     emailLabel: "Anwani ya barua pepe",
     subscribe: "Jisajili",
     digestThanks: "Asante. Tarajia muhtasari wa kwanza Ijumaa.",
-    copyright: (year) => `© ${year} Maat. Tunapima uvumi dhidi ya rekodi.`,
+    copyright: (year) => `© ${year} Ma’at. Tunapima uvumi dhidi ya rekodi.`,
     privacy: "Faragha",
     terms: "Masharti",
     corrections: "Masahihisho",
     accessibility: "Ufikivu",
   },
   widget: {
-    open: "Fungua Maat, msaidizi wa uhakiki wa uvumi",
-    close: "Funga Maat",
-    dialog: "Uhakiki wa uvumi wa Maat",
+    open: "Fungua Ma’at, msaidizi wa uhakiki wa uvumi",
+    close: "Funga Ma’at",
+    dialog: "Uhakiki wa uvumi wa Ma’at",
     subtitle: "Uhakiki wa uvumi",
     tagline: "Umesikia jambo? Lihakiki kabla ya kulishiriki.",
     legend: {
       verified: "Inaungwa mkono na hati rasmi unayoweza kufungua.",
       unverified: "Rekodi rasmi inapinga uvumi huo.",
-      insufficient: "Hakuna chanzo kilichothibitishwa, kwa hivyo Maat husema hivyo badala ya kubahatisha.",
+      insufficient: "Hakuna chanzo kilichothibitishwa, kwa hivyo Ma’at husema hivyo badala ya kubahatisha.",
     },
     start: "Anza mazungumzo",
     greeting:
-      "Habari, mimi ni Maat. Niambie ulichosikia, kwa maandishi au ujumbe wa sauti, nami nitakihakiki dhidi ya rekodi rasmi na kukuonyesha hati iliyo nyuma ya jibu.",
+      "Habari, mimi ni Ma’at. Niambie ulichosikia, kwa maandishi au ujumbe wa sauti, nami nitakihakiki dhidi ya rekodi rasmi na kukuonyesha hati iliyo nyuma ya jibu.",
     placeholder: "Umesikia nini?",
     inputLabel: "Ulichosikia",
     send: "Tuma",
@@ -145,10 +145,10 @@ export const sw: Messages = {
     openOriginal: "Fungua hati asili",
     abstentionTitle: "Hakuna chanzo kilichothibitishwa",
     abstentionText:
-      "Maat hutoa tu uamuzi inaoweza kutaja chanzo chake. Ongeza aliyesema, wapi na lini, au shiriki kiungo cha ulipouona, kisha jaribu tena.",
-    errorGeneric: "Maat haikuweza kushughulikia hilo sasa hivi. Tafadhali jaribu tena.",
-    errorNetwork: "Haikuwezekana kufikia Maat. Angalia muunganisho wako na ujaribu tena.",
-    checking: "Maat inahakiki",
+      "Ma’at hutoa tu uamuzi inaoweza kutaja chanzo chake. Ongeza aliyesema, wapi na lini, au shiriki kiungo cha ulipouona, kisha jaribu tena.",
+    errorGeneric: "Ma’at haikuweza kushughulikia hilo sasa hivi. Tafadhali jaribu tena.",
+    errorNetwork: "Haikuwezekana kufikia Ma’at. Angalia muunganisho wako na ujaribu tena.",
+    checking: "Ma’at inahakiki",
     back: "Rudi mwanzo",
     maximise: "Panua",
     restore: "Rudisha ukubwa",

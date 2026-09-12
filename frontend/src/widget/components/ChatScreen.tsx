@@ -39,7 +39,7 @@ export function ChatScreen({
         </Button>
         <Emblem size="sm" />
         <div className="maat:min-w-0 maat:flex-1">
-          <p className="maat:font-heading maat:text-sm maat:leading-tight maat:font-semibold">Maat</p>
+          <p className="maat:font-heading maat:text-sm maat:leading-tight maat:font-semibold">Ma’at</p>
           <p className="maat:text-xs maat:text-primary-foreground/70">{t.widget.subtitle}</p>
         </div>
         <ExpandToggle expanded={expanded} onToggle={onToggleExpand} className={headerButton} />

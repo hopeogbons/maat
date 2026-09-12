@@ -3,9 +3,9 @@ import type { Messages } from '../messages'
 /** Hausa */
 export const ha: Messages = {
   meta: {
-    title: "Maat · Ka ji wani abu? Tabbatar kafin ka yaɗa.",
+    title: "Ma’at · Ka ji wani abu? Tabbatar kafin ka yaɗa.",
     description:
-      "Ka ji jita-jita? Maat na auna ta da takardun hukuma, ta kuma ba da hukunci da za ka amince da shi: madogara, hukumar da ta bayar, ranar, da mahaɗi zuwa ainihin takardar.",
+      "Ka ji jita-jita? Ma’at na auna ta da takardun hukuma, ta kuma ba da hukunci da za ka amince da shi: madogara, hukumar da ta bayar, ranar, da mahaɗi zuwa ainihin takardar.",
   },
   common: {
     verifyRumour: "Duba jita-jita",
@@ -22,11 +22,11 @@ export const ha: Messages = {
   hero: {
     quote: "Ka ji wani abu? Tabbatar kafin ka yaɗa.",
     explanation:
-      "A Masar ta dā, ana auna zuciya da gashin Maat, allahiyar gaskiya, zuciya mai sauƙi kamar gaskiya ce kawai ke wucewa. Maat na yin haka da abin da ka ji: ana auna maganar da bayanan hukuma, kai kuma ka sami hukunci da za ka amince da shi.",
+      "A Masar ta dā, ana auna zuciya da gashin Ma’at, allahiyar gaskiya, zuciya mai sauƙi kamar gaskiya ce kawai ke wucewa. Ma’at na yin haka da abin da ka ji: ana auna maganar da bayanan hukuma, kai kuma ka sami hukunci da za ka amince da shi.",
     promises: [
       "Kowace magana ana auna ta da takardun hukuma",
       "Kowace amsa tana da madogara da mahaɗi zuwa asali",
-      "Idan babu madogara, Maat za ta faɗa",
+      "Idan babu madogara, Ma’at za ta faɗa",
     ],
     scrollCue: "Gangara zuwa yadda yake aiki",
   },
@@ -53,9 +53,9 @@ export const ha: Messages = {
     eyebrow: "Yadda yake aiki",
     title: "Matakai uku daga jita-jita zuwa hujja",
     lead:
-      "Maat ita ce allahiyar gaskiya, daidaito da adalci ta Masar ta dā. A Zauren Gaskiya Biyu, ana sa kowace zuciya a kan ma'aunin ta, gaban gashin, ana kuma yanke hukunci da nauyi kawai.",
+      "Ma’at ita ce allahiyar gaskiya, daidaito da adalci ta Masar ta dā. A Zauren Gaskiya Biyu, ana sa kowace zuciya a kan ma'aunin ta, gaban gashin, ana kuma yanke hukunci da nauyi kawai.",
     intro:
-      "Maat na hukunta jita-jita haka nan. Babu zato, babu ra'ayi: tana bayar da abin da takardar hukuma ta tabbatar kawai, ta kuma faɗa idan ba ta samu ba.",
+      "Ma’at na hukunta jita-jita haka nan. Babu zato, babu ra'ayi: tana bayar da abin da takardar hukuma ta tabbatar kawai, ta kuma faɗa idan ba ta samu ba.",
     steps: [
       {
         title: "Aika",
@@ -63,7 +63,7 @@ export const ha: Messages = {
       },
       {
         title: "Auna",
-        text: "Maat na bincika gazette, da'irori da sanarwar manema labarai daga hukumomin da suka bayar, ta kuma auna maganar da abin da suka faɗa.",
+        text: "Ma’at na bincika gazette, da'irori da sanarwar manema labarai daga hukumomin da suka bayar, ta kuma auna maganar da abin da suka faɗa.",
       },
       {
         title: "Kawo madogara",
@@ -92,7 +92,7 @@ export const ha: Messages = {
   },
   footer: {
     blurb:
-      "An sa mata suna bayan allahiyar da ke auna kowace zuciya da gashi. Maat na auna jita-jita da bayanan hukuma, ta kuma nuna maka takardar da ke bayan kowace amsa.",
+      "An sa mata suna bayan allahiyar da ke auna kowace zuciya da gashi. Ma’at na auna jita-jita da bayanan hukuma, ta kuma nuna maka takardar da ke bayan kowace amsa.",
     verify: "Tabbatarwa",
     about: "Game da mu",
     contact: "Tuntuɓe mu",
@@ -102,7 +102,7 @@ export const ha: Messages = {
       submit: "Aiko da jita-jita",
       methodology: "Hanyoyinmu",
       sources: "Madogaran da muke amfani da su",
-      aboutMaat: "Game da Maat",
+      aboutMaat: "Game da Ma’at",
       team: "Ƙungiyar",
       partners: "Abokan hulɗa",
       press: "Manema labarai",
@@ -116,26 +116,26 @@ export const ha: Messages = {
     emailLabel: "Adireshin imel",
     subscribe: "Yi rajista",
     digestThanks: "Mun gode. Za ka sami taƙaitawa ta farko ranar Juma'a.",
-    copyright: (year) => `© ${year} Maat. Muna auna jita-jita da bayanan hukuma.`,
+    copyright: (year) => `© ${year} Ma’at. Muna auna jita-jita da bayanan hukuma.`,
     privacy: "Sirri",
     terms: "Sharuɗɗa",
     corrections: "Gyare-gyare",
     accessibility: "Samun dama",
   },
   widget: {
-    open: "Buɗe Maat, mataimakiyar tabbatar da jita-jita",
-    close: "Rufe Maat",
-    dialog: "Tabbatar da jita-jita na Maat",
+    open: "Buɗe Ma’at, mataimakiyar tabbatar da jita-jita",
+    close: "Rufe Ma’at",
+    dialog: "Tabbatar da jita-jita na Ma’at",
     subtitle: "Tabbatar da jita-jita",
     tagline: "Ka ji wani abu? Tabbatar kafin ka yaɗa.",
     legend: {
       verified: "Takardar hukuma da za ka iya buɗewa ta tabbatar da shi.",
       unverified: "Bayanan hukuma sun saɓa wa jita-jitar.",
-      insufficient: "Ba a sami tabbataccen madogara ba, don haka Maat ta faɗa maimakon zato.",
+      insufficient: "Ba a sami tabbataccen madogara ba, don haka Ma’at ta faɗa maimakon zato.",
     },
     start: "Fara hira",
     greeting:
-      "Sannu, ni ce Maat. Faɗa mini abin da ka ji, a rubuce ko saƙon murya, zan duba shi da bayanan hukuma, in nuna maka takardar da ke bayan amsar.",
+      "Sannu, ni ce Ma’at. Faɗa mini abin da ka ji, a rubuce ko saƙon murya, zan duba shi da bayanan hukuma, in nuna maka takardar da ke bayan amsar.",
     placeholder: "Me ka ji?",
     inputLabel: "Abin da ka ji",
     send: "Aika",
@@ -145,10 +145,10 @@ export const ha: Messages = {
     openOriginal: "Buɗe ainihin takardar",
     abstentionTitle: "Ba a sami tabbataccen madogara ba",
     abstentionText:
-      "Maat na bayar da hukunci mai madogara kawai. Ƙara wanda ya faɗa, inda da lokacin, ko ka aiko da mahaɗin inda ka gan ta, sannan ka sake gwadawa.",
-    errorGeneric: "Maat ba ta iya sarrafa wannan a yanzu ba. Da fatan za a sake gwadawa.",
-    errorNetwork: "Ba a iya isa ga Maat ba. Duba haɗin yanar gizonka ka sake gwadawa.",
-    checking: "Maat na dubawa",
+      "Ma’at na bayar da hukunci mai madogara kawai. Ƙara wanda ya faɗa, inda da lokacin, ko ka aiko da mahaɗin inda ka gan ta, sannan ka sake gwadawa.",
+    errorGeneric: "Ma’at ba ta iya sarrafa wannan a yanzu ba. Da fatan za a sake gwadawa.",
+    errorNetwork: "Ba a iya isa ga Ma’at ba. Duba haɗin yanar gizonka ka sake gwadawa.",
+    checking: "Ma’at na dubawa",
     back: "Koma farko",
     maximise: "Faɗaɗa",
     restore: "Mayar da girman",

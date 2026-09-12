@@ -15,7 +15,7 @@ maat/
     ├── src/i18n/        languages, translations and the language store
     ├── src/landing/     the landing page (hero, how it works, verifications, footer)
     ├── src/lib/api.ts   fetch wrapper for the Django API
-    └── src/widget/      the Maat chat widget (self-contained, see below)
+    └── src/widget/      the Ma’at chat widget (self-contained, see below)
 ```
 
 ## Local development
@@ -40,7 +40,7 @@ npm install
 npm run dev                                 # http://localhost:5173
 ```
 
-Open http://localhost:5173. You get the Maat landing page with the chat
+Open http://localhost:5173. You get the Ma’at landing page with the chat
 widget in the bottom-right corner (add `?open` to the URL to start with it
 open). In development the Vite dev server proxies `/api/*` to Django, so no
 CORS configuration is needed.
@@ -48,7 +48,7 @@ CORS configuration is needed.
 ## The landing page
 
 `frontend/src/landing/` is the public site: a full-screen teal hero with the
-feather wordmark, the tagline as a quote, an explanation of the goddess Maat
+feather wordmark, the tagline as a quote, an explanation of the goddess Ma’at
 and faded icons drifting in the background; a trending-topics ribbon; a
 three-step "how it works"; a filterable grid of verification articles; and a
 footer with helpline, WhatsApp, email, social links and a digest sign-up.
@@ -76,7 +76,7 @@ card, amber (never red) error state.
 - After signing in you land on `/accounts/`, a small account page with a link
   to the admin (for staff) and a **Sign out** button. Sign-out is a POST, as
   Django requires, and shows a signed-out page.
-- Every one of these pages puts the Maat logo top-left and links it, and the
+- Every one of these pages puts the Ma’at logo top-left and links it, and the
   "Back to the site" links, to `FRONTEND_URL`. Set that env var on the VPS to
   the Vercel address so signing out lands people back on the landing page.
 - The frontend builds the link from `VITE_API_BASE_URL` in production and
@@ -110,13 +110,13 @@ their languages. No flags are used.
 - Sample article content in `src/landing/data/articles.ts` is not translated;
   in production that comes from the backend per article.
 
-## The Maat widget
+## The Ma’at widget
 
 `frontend/src/widget/` is a floating chat widget for the rumour-verification
 assistant. A circular launcher in the bottom-right corner toggles a panel that
 is 380px wide on desktop and full screen on phones.
 
-- **Welcome view**: the Maat mark, "Heard something? Verify it before you
+- **Welcome view**: the Ma’at mark, "Heard something? Verify it before you
   share it.", a legend of the three verdicts, a language button and a button
   into the conversation.
 - **Conversation view**: header with back arrow, a message list pinned to the

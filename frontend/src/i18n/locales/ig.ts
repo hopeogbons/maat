@@ -3,9 +3,9 @@ import type { Messages } from '../messages'
 /** Igbo */
 export const ig: Messages = {
   meta: {
-    title: "Maat · Ị nụrụ ihe? Nyochaa ya tupu ị kesaa ya.",
+    title: "Ma’at · Ị nụrụ ihe? Nyochaa ya tupu ị kesaa ya.",
     description:
-      "Ị nụrụ asịrị? Maat na-atụle ya site n'akwụkwọ gọọmentị ma nye gị mkpebi ị pụrụ ịtụkwasị obi: ebe o si, ụlọ ọrụ wepụtara ya, ụbọchị, na njikọ gaa n'akwụkwọ mbụ.",
+      "Ị nụrụ asịrị? Ma’at na-atụle ya site n'akwụkwọ gọọmentị ma nye gị mkpebi ị pụrụ ịtụkwasị obi: ebe o si, ụlọ ọrụ wepụtara ya, ụbọchị, na njikọ gaa n'akwụkwọ mbụ.",
   },
   common: {
     verifyRumour: "Nyochaa asịrị",
@@ -22,11 +22,11 @@ export const ig: Messages = {
   hero: {
     quote: "Ị nụrụ ihe? Nyochaa ya tupu ị kesaa ya.",
     explanation:
-      "N'Ijipt oge ochie, a na-atụ obi na nku Maat, chi nwanyị nke eziokwu, naanị obi dị mfe ka eziokwu na-agafe. Maat na-eme otu ihe ahụ n'ihe ị nụrụ: a na-atụle nkwupụta ahụ site n'ihe ndekọ gọọmentị, ị nwetakwa mkpebi ị pụrụ ịtụkwasị obi.",
+      "N'Ijipt oge ochie, a na-atụ obi na nku Ma’at, chi nwanyị nke eziokwu, naanị obi dị mfe ka eziokwu na-agafe. Ma’at na-eme otu ihe ahụ n'ihe ị nụrụ: a na-atụle nkwupụta ahụ site n'ihe ndekọ gọọmentị, ị nwetakwa mkpebi ị pụrụ ịtụkwasị obi.",
     promises: [
       "A na-atụle nkwupụta ọ bụla site n'akwụkwọ gọọmentị",
       "Azịza ọ bụla nwere ebe o si na njikọ gaa n'akwụkwọ mbụ",
-      "Ọ bụrụ na enweghị ebe o si, Maat ga-ekwu ya",
+      "Ọ bụrụ na enweghị ebe o si, Ma’at ga-ekwu ya",
     ],
     scrollCue: "Gaa n'otú ọ si arụ ọrụ",
   },
@@ -53,9 +53,9 @@ export const ig: Messages = {
     eyebrow: "Otú ọ si arụ ọrụ",
     title: "Nzọụkwụ atọ site n'asịrị ruo n'ihe ndekọ",
     lead:
-      "Maat bụ chi nwanyị nke eziokwu, nha anya na ikpe ziri ezi n'Ijipt oge ochie. N'Ụlọ Eziokwu Abụọ, a na-etinye obi ọ bụla n'ihe ọtụtụ ya, n'akụkụ nku ahụ, a na-ekpekwa ya naanị site n'ịdị arọ.",
+      "Ma’at bụ chi nwanyị nke eziokwu, nha anya na ikpe ziri ezi n'Ijipt oge ochie. N'Ụlọ Eziokwu Abụọ, a na-etinye obi ọ bụla n'ihe ọtụtụ ya, n'akụkụ nku ahụ, a na-ekpekwa ya naanị site n'ịdị arọ.",
     intro:
-      "Otú ahụ ka Maat si ekpe asịrị. Enweghị ịkọ nkọ, enweghị echiche onwe: ọ na-ekwu naanị ihe akwụkwọ gọọmentị kwadoro, ma gwa gị mgbe ọ hụghị ya.",
+      "Otú ahụ ka Ma’at si ekpe asịrị. Enweghị ịkọ nkọ, enweghị echiche onwe: ọ na-ekwu naanị ihe akwụkwọ gọọmentị kwadoro, ma gwa gị mgbe ọ hụghị ya.",
     steps: [
       {
         title: "Zipu",
@@ -63,7 +63,7 @@ export const ig: Messages = {
       },
       {
         title: "Tụlee",
-        text: "Maat na-achọ n'akwụkwọ gazet, akwụkwọ ozi na nkwupụta ndị nta akụkọ sitere n'ụlọ ọrụ wepụtara ha, ma tụlee nkwupụta ahụ site n'ihe ha kwuru n'ezie.",
+        text: "Ma’at na-achọ n'akwụkwọ gazet, akwụkwọ ozi na nkwupụta ndị nta akụkọ sitere n'ụlọ ọrụ wepụtara ha, ma tụlee nkwupụta ahụ site n'ihe ha kwuru n'ezie.",
       },
       {
         title: "Gosi ebe o si",
@@ -92,7 +92,7 @@ export const ig: Messages = {
   },
   footer: {
     blurb:
-      "A kpọrọ ya aha chi nwanyị nke na-atụ obi ọ bụla na nku. Maat na-atụle asịrị site n'ihe ndekọ gọọmentị ma gosi gị akwụkwọ dị n'azụ azịza ọ bụla.",
+      "A kpọrọ ya aha chi nwanyị nke na-atụ obi ọ bụla na nku. Ma’at na-atụle asịrị site n'ihe ndekọ gọọmentị ma gosi gị akwụkwọ dị n'azụ azịza ọ bụla.",
     verify: "Nyocha",
     about: "Maka anyị",
     contact: "Kpọtụrụ anyị",
@@ -102,7 +102,7 @@ export const ig: Messages = {
       submit: "Zipu asịrị",
       methodology: "Usoro anyị",
       sources: "Ebe anyị si enweta",
-      aboutMaat: "Maka Maat",
+      aboutMaat: "Maka Ma’at",
       team: "Ndị otu anyị",
       partners: "Ndị mmekọ",
       press: "Ndị nta akụkọ",
@@ -116,26 +116,26 @@ export const ig: Messages = {
     emailLabel: "Adreesị email",
     subscribe: "Debanye aha",
     digestThanks: "Daalụ. Lee anya nchịkọta mbụ na Fraịde.",
-    copyright: (year) => `© ${year} Maat. Anyị na-atụle asịrị site n'ihe ndekọ.`,
+    copyright: (year) => `© ${year} Ma’at. Anyị na-atụle asịrị site n'ihe ndekọ.`,
     privacy: "Nzuzo",
     terms: "Usoro iwu",
     corrections: "Mmezi",
     accessibility: "Ohere nnweta",
   },
   widget: {
-    open: "Mepee Maat, onye enyemaka nyocha asịrị",
-    close: "Mechie Maat",
-    dialog: "Nyocha asịrị Maat",
+    open: "Mepee Ma’at, onye enyemaka nyocha asịrị",
+    close: "Mechie Ma’at",
+    dialog: "Nyocha asịrị Ma’at",
     subtitle: "Nyocha asịrị",
     tagline: "Ị nụrụ ihe? Nyochaa ya tupu ị kesaa ya.",
     legend: {
       verified: "Akwụkwọ gọọmentị ị pụrụ imepe kwadoro ya.",
       unverified: "Ihe ndekọ gọọmentị megidere asịrị ahụ.",
-      insufficient: "Ahụghị ebe o si e nyochara, ya mere Maat kwuru ya kama ịkọ nkọ.",
+      insufficient: "Ahụghị ebe o si e nyochara, ya mere Ma’at kwuru ya kama ịkọ nkọ.",
     },
     start: "Malite mkparịta ụka",
     greeting:
-      "Ndewo, abụ m Maat. Gwa m ihe ị nụrụ, n'ederede ma ọ bụ ozi olu, m ga-enyocha ya site n'ihe ndekọ gọọmentị ma gosi gị akwụkwọ dị n'azụ azịza ahụ.",
+      "Ndewo, abụ m Ma’at. Gwa m ihe ị nụrụ, n'ederede ma ọ bụ ozi olu, m ga-enyocha ya site n'ihe ndekọ gọọmentị ma gosi gị akwụkwọ dị n'azụ azịza ahụ.",
     placeholder: "Gịnị ka ị nụrụ?",
     inputLabel: "Ihe ị nụrụ",
     send: "Zipu",
@@ -145,10 +145,10 @@ export const ig: Messages = {
     openOriginal: "Mepee akwụkwọ mbụ",
     abstentionTitle: "Ahụghị ebe o si e nyochara",
     abstentionText:
-      "Maat na-enye naanị mkpebi o nwere ike igosi ebe o si. Tinye onye kwuru ya, ebe na mgbe, ma ọ bụ zipu njikọ ebe ị hụrụ ya, ma nwaa ọzọ.",
-    errorGeneric: "Maat enweghị ike ịrụ nke ahụ ugbu a. Biko nwaa ọzọ.",
-    errorNetwork: "Enweghị ike iru Maat. Lelee njikọ gị ma nwaa ọzọ.",
-    checking: "Maat na-enyocha",
+      "Ma’at na-enye naanị mkpebi o nwere ike igosi ebe o si. Tinye onye kwuru ya, ebe na mgbe, ma ọ bụ zipu njikọ ebe ị hụrụ ya, ma nwaa ọzọ.",
+    errorGeneric: "Ma’at enweghị ike ịrụ nke ahụ ugbu a. Biko nwaa ọzọ.",
+    errorNetwork: "Enweghị ike iru Ma’at. Lelee njikọ gị ma nwaa ọzọ.",
+    checking: "Ma’at na-enyocha",
     back: "Laghachi na mmalite",
     maximise: "Gbasaa",
     restore: "Weghachi nha",

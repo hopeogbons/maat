@@ -8,11 +8,11 @@ interface BrandProps {
   className?: string
 }
 
-/** The Maat wordmark: a feather on gold, after the goddess who weighs truth. */
+/** The Ma’at wordmark: a feather on gold, after the goddess who weighs truth. */
 export function Brand({ tone = 'light', size = 'sm', className }: BrandProps) {
   const large = size === 'lg'
   return (
-    <a href="#top" className={cn('inline-flex items-center gap-2.5', className)} aria-label="Maat, back to top">
+    <a href="#top" className={cn('inline-flex items-center gap-2.5', className)} aria-label="Ma’at, back to top">
       <span
         aria-hidden="true"
         className={cn(
@@ -29,7 +29,7 @@ export function Brand({ tone = 'light', size = 'sm', className }: BrandProps) {
           tone === 'light' ? 'text-white' : 'text-teal-deep',
         )}
       >
-        Maat
+        Ma’at
       </span>
     </a>
   )

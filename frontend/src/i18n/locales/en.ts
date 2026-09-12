@@ -2,9 +2,9 @@ import type { Messages } from '../messages'
 
 export const en: Messages = {
   meta: {
-    title: "Maat · Heard something? Verify it before you share it.",
+    title: "Ma’at · Heard something? Verify it before you share it.",
     description:
-      "Heard a rumour? Maat weighs it against official documents and answers with a verdict you can trust: the source, its issuing body, the date and a link to the original.",
+      "Heard a rumour? Ma’at weighs it against official documents and answers with a verdict you can trust: the source, its issuing body, the date and a link to the original.",
   },
   common: {
     verifyRumour: "Verify a rumour",
@@ -21,11 +21,11 @@ export const en: Messages = {
   hero: {
     quote: "Heard something? Verify it before you share it.",
     explanation:
-      "In ancient Egypt a heart was weighed against the feather of Maat, goddess of truth, and only a heart as light as the truth could pass. Maat does the same with what you have heard: the claim is weighed against the official record, and you get a verdict you can trust.",
+      "In ancient Egypt a heart was weighed against the feather of Ma’at, goddess of truth, and only a heart as light as the truth could pass. Ma’at does the same with what you have heard: the claim is weighed against the official record, and you get a verdict you can trust.",
     promises: [
       "Every claim weighed against official documents",
       "Every answer cited, with a link to the original",
-      "When there is no source, Maat says so",
+      "When there is no source, Ma’at says so",
     ],
     scrollCue: "Scroll to how it works",
   },
@@ -52,9 +52,9 @@ export const en: Messages = {
     eyebrow: "How it works",
     title: "Three steps from rumour to record",
     lead:
-      "Maat is the ancient Egyptian goddess of truth, balance and justice. In the Hall of Two Truths every heart was placed on her scales, opposite the feather, and judged by weight alone.",
+      "Ma’at is the ancient Egyptian goddess of truth, balance and justice. In the Hall of Two Truths every heart was placed on her scales, opposite the feather, and judged by weight alone.",
     intro:
-      "Maat judges rumours the same way. No guesswork and no opinion: it only reports what an official document supports, and tells you when it cannot find one.",
+      "Ma’at judges rumours the same way. No guesswork and no opinion: it only reports what an official document supports, and tells you when it cannot find one.",
     steps: [
       {
         title: "Send",
@@ -62,7 +62,7 @@ export const en: Messages = {
       },
       {
         title: "Weigh",
-        text: "Maat searches gazettes, circulars and press statements from the issuing bodies and weighs the claim against what they actually say.",
+        text: "Ma’at searches gazettes, circulars and press statements from the issuing bodies and weighs the claim against what they actually say.",
       },
       {
         title: "Cite",
@@ -91,7 +91,7 @@ export const en: Messages = {
   },
   footer: {
     blurb:
-      "Named after the goddess who weighed every heart against a feather. Maat weighs rumours against the official record and shows you the document behind every answer.",
+      "Named after the goddess who weighed every heart against a feather. Ma’at weighs rumours against the official record and shows you the document behind every answer.",
     verify: "Verify",
     about: "About",
     contact: "Contact",
@@ -101,7 +101,7 @@ export const en: Messages = {
       submit: "Submit a rumour",
       methodology: "Our methodology",
       sources: "Sources we use",
-      aboutMaat: "About Maat",
+      aboutMaat: "About Ma’at",
       team: "The team",
       partners: "Partners",
       press: "Press",
@@ -115,26 +115,26 @@ export const en: Messages = {
     emailLabel: "Email address",
     subscribe: "Subscribe",
     digestThanks: "Thanks. Look out for the first digest on Friday.",
-    copyright: (year) => `© ${year} Maat. Weighing rumours against the record.`,
+    copyright: (year) => `© ${year} Ma’at. Weighing rumours against the record.`,
     privacy: "Privacy",
     terms: "Terms",
     corrections: "Corrections",
     accessibility: "Accessibility",
   },
   widget: {
-    open: "Open Maat, the rumour verification assistant",
-    close: "Close Maat",
-    dialog: "Maat rumour verification",
+    open: "Open Ma’at, the rumour verification assistant",
+    close: "Close Ma’at",
+    dialog: "Ma’at rumour verification",
     subtitle: "Rumour verification",
     tagline: "Heard something? Verify it before you share it.",
     legend: {
       verified: "Backed by an official document you can open.",
       unverified: "The official record contradicts the rumour.",
-      insufficient: "No verified source found, so Maat says so rather than guess.",
+      insufficient: "No verified source found, so Ma’at says so rather than guess.",
     },
     start: "Start a conversation",
     greeting:
-      "Hi, I’m Maat. Tell me what you heard, in text or a voice note, and I’ll verify it against the official record and show you the document behind the answer.",
+      "Hi, I’m Ma’at. Tell me what you heard, in text or a voice note, and I’ll verify it against the official record and show you the document behind the answer.",
     placeholder: "What did you hear?",
     inputLabel: "What you heard",
     send: "Send",
@@ -144,10 +144,10 @@ export const en: Messages = {
     openOriginal: "Open original document",
     abstentionTitle: "No verified source found",
     abstentionText:
-      "Maat only gives a verdict it can cite. Add who said it, where and when, or share a link to where you saw it, and try again.",
-    errorGeneric: "Maat could not process that just now. Please try again.",
-    errorNetwork: "Maat could not be reached. Check your connection and try again.",
-    checking: "Maat is verifying",
+      "Ma’at only gives a verdict it can cite. Add who said it, where and when, or share a link to where you saw it, and try again.",
+    errorGeneric: "Ma’at could not process that just now. Please try again.",
+    errorNetwork: "Ma’at could not be reached. Check your connection and try again.",
+    checking: "Ma’at is verifying",
     back: "Back to welcome",
     maximise: "Maximise panel",
     restore: "Restore panel size",

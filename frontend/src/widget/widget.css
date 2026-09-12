@@ -1,5 +1,5 @@
 /*
- * Maat widget stylesheet. Fully self-contained:
+ * Ma’at widget stylesheet. Fully self-contained:
  *  - Tailwind utilities are prefixed `maat:` and generated only from files in
  *    this folder, so class names cannot collide with the host page.
  *  - Tailwind's preflight is NOT imported. A scoped reset under `.maat-root`
