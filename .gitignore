@@ -11,6 +11,7 @@ frontend/dist/
 frontend/.env
 frontend/.env.local
 frontend/.vercel/
+frontend/.certs/
 
 # Editors / OS
 .vscode/

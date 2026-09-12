@@ -45,6 +45,40 @@ widget in the bottom-right corner (add `?open` to the URL to start with it
 open). In development the Vite dev server proxies `/api/*` to Django, so no
 CORS configuration is needed.
 
+To open the dev server under the production hostname, point it at yourself in
+`/etc/hosts` (`127.0.0.1 maat.vercel.app`). Browsers force https for every
+`vercel.app` address (it is on the HSTS preload list) and refuse self-signed
+certificates there, so make a locally trusted one once with mkcert:
+
+```bash
+sudo apt install -y mkcert libnss3-tools
+mkcert -install
+cd frontend && mkdir -p .certs
+mkcert -cert-file .certs/dev.pem -key-file .certs/dev-key.pem maat.vercel.app localhost 127.0.0.1
+npm run dev   # now serves https://maat.vercel.app:5173
+```
+
+`vite.config.ts` uses `.certs/dev.pem` automatically when present. The same
+certificate lets Django run over https too, which the browser also forces for
+that hostname. Start the backend with the dev script instead of `runserver`:
+
+```bash
+backend/scripts/dev_server.sh maat.vercel.app:8765   # https via gunicorn when the certificate exists
+VITE_DEV_API_PROXY=https://maat.vercel.app:8765 npm run dev   # in frontend/
+```
+
+Sign in then opens at `https://maat.vercel.app:8765/accounts/login/`. For a
+hostname that is not on the HSTS list, plain http works everywhere, or
+`VITE_DEV_HTTPS=1 npm run dev` gives a self-signed certificate you can accept
+once.
+
+Useful commands:
+
+```bash
+cd backend && .venv/bin/python manage.py test          # backend tests (needs CREATEDB on the role)
+cd frontend && npm run build                          # type-check + production build
+```
+
 ## The landing page
 
 `frontend/src/landing/` is the public site: a full-screen teal hero with the
