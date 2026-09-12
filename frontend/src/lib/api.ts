@@ -26,6 +26,18 @@ export function apiUrl(path: string): string {
   return `${API_BASE_URL}${normalized}`
 }
 
+/**
+ * Absolute URL of a page Django renders itself (sign in, sign out, admin).
+ * Always points at Django's own origin, so its forms and static files work
+ * without going through the dev proxy.
+ */
+export function backendPageUrl(path: string): string {
+  const normalized = path.startsWith('/') ? path : `/${path}`
+  return `${import.meta.env.VITE_BACKEND_ORIGIN}${normalized}`
+}
+
+export const SIGN_IN_URL = backendPageUrl('/accounts/login/')
+
 export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
   const headers = new Headers(init.headers)
   headers.set('Accept', 'application/json')

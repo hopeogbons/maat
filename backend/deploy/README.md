@@ -27,6 +27,7 @@ sudo -u maat nano /srv/maat/backend/.env
 #   CORS_ALLOWED_ORIGINS=https://<your-app>.vercel.app
 #   CORS_ALLOWED_ORIGIN_REGEXES=^https://<your-app>-.*\.vercel\.app$
 #   CSRF_TRUSTED_ORIGINS=https://<your-app>.vercel.app
+#   FRONTEND_URL=https://<your-app>.vercel.app
 
 # 6. Let the maat user restart its own service without a password
 echo "maat ALL=(root) NOPASSWD: /bin/systemctl restart maat-api, /bin/systemctl status maat-api" | sudo tee /etc/sudoers.d/maat-api

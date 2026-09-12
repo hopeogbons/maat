@@ -9,6 +9,7 @@ export const sw: Messages = {
   },
   common: {
     verifyRumour: "Hakiki uvumi",
+    signIn: "Ingia",
     readVerifications: "Soma uhakiki",
     language: "Lugha",
     chooseLanguage: "Chagua lugha yako",

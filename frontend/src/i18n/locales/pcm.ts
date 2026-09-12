@@ -9,6 +9,7 @@ export const pcm: Messages = {
   },
   common: {
     verifyRumour: "Verify rumour",
+    signIn: "Sign in",
     readVerifications: "Read wetin we don verify",
     language: "Language",
     chooseLanguage: "Choose your language",

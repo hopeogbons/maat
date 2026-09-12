@@ -9,6 +9,7 @@ export const yo: Messages = {
   },
   common: {
     verifyRumour: "Ṣàyẹ̀wò àhesọ",
+    signIn: "Wọlé",
     readVerifications: "Ka àwọn àyẹ̀wò",
     language: "Èdè",
     chooseLanguage: "Yan èdè rẹ",

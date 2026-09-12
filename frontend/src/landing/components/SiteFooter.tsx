@@ -1,6 +1,7 @@
 import { Mail, MessageCircle, Phone, Send } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { useLanguage, type Messages } from '@/i18n'
+import { SIGN_IN_URL } from '@/lib/api'
 import { SITE } from '../site'
 import { openWidget } from '../widgetBridge'
 import { Brand } from './Brand'
@@ -135,6 +136,7 @@ export function SiteFooter() {
             <li><a href="/terms" className="transition hover:text-white">{t.footer.terms}</a></li>
             <li><a href="/corrections" className="transition hover:text-white">{t.footer.corrections}</a></li>
             <li><a href="/accessibility" className="transition hover:text-white">{t.footer.accessibility}</a></li>
+            <li><a href={SIGN_IN_URL} className="font-semibold text-gold transition hover:text-white">{t.common.signIn}</a></li>
           </ul>
         </div>
       </div>

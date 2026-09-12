@@ -65,6 +65,26 @@ footer with helpline, WhatsApp, email, social links and a digest sign-up.
   `window.dispatchEvent(new CustomEvent('maat:open'))`; see
   `src/landing/widgetBridge.ts`.
 
+## Sign in
+
+The **Sign in** button in the header (and the footer) goes to Django's own
+login page, served by the backend at `/accounts/login/` and restyled to match
+the site: teal background with the drifting icons, gold feather mark, white
+card, amber (never red) error state.
+
+- `backend/accounts/` holds the views, the templates and `static/accounts/auth.css`.
+- After signing in you land on `/accounts/`, a small account page with a link
+  to the admin (for staff) and a **Sign out** button. Sign-out is a POST, as
+  Django requires, and shows a signed-out page.
+- Every one of these pages puts the Maat logo top-left and links it, and the
+  "Back to the site" links, to `FRONTEND_URL`. Set that env var on the VPS to
+  the Vercel address so signing out lands people back on the landing page.
+- The frontend builds the link from `VITE_API_BASE_URL` in production and
+  from `VITE_DEV_API_PROXY` in development (see `vite.config.ts`), so the page
+  always opens on Django's own origin and its form posts and styles work
+  without the dev proxy.
+- Create the first user on the backend with `manage.py createsuperuser`.
+
 ## Languages
 
 Every string on the landing page and in the widget is translated. The picker

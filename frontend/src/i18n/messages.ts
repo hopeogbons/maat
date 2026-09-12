@@ -15,6 +15,7 @@ export interface Messages {
   meta: { title: string; description: string }
   common: {
     verifyRumour: string
+    signIn: string
     readVerifications: string
     language: string
     chooseLanguage: string

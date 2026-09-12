@@ -9,6 +9,7 @@ export const ha: Messages = {
   },
   common: {
     verifyRumour: "Duba jita-jita",
+    signIn: "Shiga",
     readVerifications: "Karanta tabbatarwa",
     language: "Harshe",
     chooseLanguage: "Zaɓi harshenka",

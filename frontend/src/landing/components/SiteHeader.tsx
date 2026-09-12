@@ -1,5 +1,6 @@
-import { MessageCircle } from 'lucide-react'
+import { LogIn, MessageCircle } from 'lucide-react'
 import { useLanguage } from '@/i18n'
+import { SIGN_IN_URL } from '@/lib/api'
 import { SITE } from '../site'
 import { openWidget } from '../widgetBridge'
 import { Brand } from './Brand'
@@ -19,6 +20,13 @@ export function SiteHeader() {
       </nav>
       <div className="flex items-center gap-2">
         <LanguageMenu />
+        <a
+          href={SIGN_IN_URL}
+          className="inline-flex h-10 items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3 text-sm font-semibold text-white backdrop-blur transition hover:border-white/40 hover:bg-white/15 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold sm:px-4"
+        >
+          <LogIn className="size-4" />
+          <span className="sr-only sm:not-sr-only">{t.common.signIn}</span>
+        </a>
         <button
           type="button"
           onClick={openWidget}

@@ -6,6 +6,7 @@ next to manage.py in local development). See .env.example for the full list.
 """
 
 import os
+import sys
 from pathlib import Path
 
 import dj_database_url
@@ -61,6 +62,7 @@ INSTALLED_APPS = [
     "corsheaders",
     # Local
     "api",
+    "accounts",
 ]
 
 MIDDLEWARE = [
@@ -89,6 +91,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "accounts.context_processors.site",
             ],
         },
     },
@@ -143,9 +146,19 @@ USE_TZ = True
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
+# The hashed manifest needs `collectstatic`, which tests never run (and tests
+# force DEBUG off), so the test runner uses plain static storage instead.
+RUNNING_TESTS = len(sys.argv) > 1 and sys.argv[1] == "test"
+
 STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
-    "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
+    "staticfiles": {
+        "BACKEND": (
+            "django.contrib.staticfiles.storage.StaticFilesStorage"
+            if RUNNING_TESTS
+            else "whitenoise.storage.CompressedManifestStaticFilesStorage"
+        )
+    },
 }
 
 # ---------------------------------------------------------------------------
@@ -160,6 +173,18 @@ CORS_ALLOW_CREDENTIALS = True
 
 # Needed for any unsafe request (POST/PUT/DELETE) that uses session/CSRF auth.
 CSRF_TRUSTED_ORIGINS = env_list("CSRF_TRUSTED_ORIGINS")
+
+# ---------------------------------------------------------------------------
+# Sign-in pages and the public site
+# ---------------------------------------------------------------------------
+
+# Where the React landing page lives; the sign-in pages link back to it.
+FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:5173").rstrip("/")
+
+LOGIN_URL = "/accounts/login/"
+LOGIN_REDIRECT_URL = "/accounts/"
+# None: show the branded signed-out page (which links to FRONTEND_URL).
+LOGOUT_REDIRECT_URL = None
 
 # ---------------------------------------------------------------------------
 # Running behind nginx on the VPS

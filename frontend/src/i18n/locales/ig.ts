@@ -9,6 +9,7 @@ export const ig: Messages = {
   },
   common: {
     verifyRumour: "Nyochaa asịrị",
+    signIn: "Banye",
     readVerifications: "Gụọ nyocha ndị e mere",
     language: "Asụsụ",
     chooseLanguage: "Họrọ asụsụ gị",

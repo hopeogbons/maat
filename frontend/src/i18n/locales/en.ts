@@ -8,6 +8,7 @@ export const en: Messages = {
   },
   common: {
     verifyRumour: "Verify a rumour",
+    signIn: "Sign in",
     readVerifications: "Read verifications",
     language: "Language",
     chooseLanguage: "Choose your language",
