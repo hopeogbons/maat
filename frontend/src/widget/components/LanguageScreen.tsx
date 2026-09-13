@@ -14,7 +14,8 @@ export function LanguageScreen({ onBack, onClose }: LanguageScreenProps) {
   const { code, language, t, setLanguage } = useLanguage()
   const [expanded, setExpanded] = useState<CountryCode | null>(language.country ?? 'NG')
   const { global, countries } = groupLanguages()
-  const headerButton = 'maat:text-primary-foreground/80 maat:hover:bg-white/10 maat:hover:text-primary-foreground'
+  const headerButton =
+    'maat:min-h-9 maat:min-w-9 maat:text-primary-foreground/80 maat:hover:bg-white/10 maat:hover:text-primary-foreground'
 
   const choose = (next: AvailableLanguageCode) => {
     setLanguage(next)

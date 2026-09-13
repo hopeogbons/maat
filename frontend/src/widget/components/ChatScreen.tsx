@@ -29,7 +29,8 @@ export function ChatScreen({
   onClose,
 }: ChatScreenProps) {
   const { t } = useLanguage()
-  const headerButton = 'maat:text-primary-foreground/80 maat:hover:bg-white/10 maat:hover:text-primary-foreground'
+  const headerButton =
+    'maat:min-h-9 maat:min-w-9 maat:text-primary-foreground/80 maat:hover:bg-white/10 maat:hover:text-primary-foreground'
 
   return (
     <div className="maat:flex maat:h-full maat:flex-col">

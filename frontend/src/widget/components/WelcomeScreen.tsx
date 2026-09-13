@@ -22,7 +22,8 @@ const LEGEND: { verdict: Verdict; dot: string }[] = [
 
 export function WelcomeScreen({ expanded, onToggleExpand, onLanguage, onStart, onClose }: WelcomeScreenProps) {
   const { t, language } = useLanguage()
-  const headerButton = 'maat:text-primary-foreground/80 maat:hover:bg-white/10 maat:hover:text-primary-foreground'
+  const headerButton =
+    'maat:min-h-9 maat:min-w-9 maat:text-primary-foreground/80 maat:hover:bg-white/10 maat:hover:text-primary-foreground'
   return (
     <div className="maat:flex maat:h-full maat:flex-col">
       <div className="maat:relative maat:isolate maat:overflow-hidden maat:bg-[linear-gradient(160deg,var(--teal-deep),var(--primary))] maat:px-6 maat:pt-14 maat:pb-8 maat:text-primary-foreground">
