@@ -1,0 +1,266 @@
+/*
+ * Ma’at skin for the Django admin. Only the chrome is re-coloured: the deep
+ * teal header, gold accents and warm neutral ground of the site.
+ *
+ * Django's own error and delete colours are left alone on purpose. They are
+ * safety signals in a staff tool, not brand surface.
+ */
+:root {
+  --maat-teal-deep: #003239;
+  --maat-teal: #00494f;
+  --maat-teal-soft: #ddf0f0;
+  --maat-gold: #daad46;
+  --maat-gold-dark: #332305;
+  --maat-sand: #f9f6f1;
+  --maat-ink: #111719;
+  --maat-ink-muted: #5d6566;
+  --maat-line: #e7ecec;
+
+  --primary: var(--maat-teal);
+  --secondary: var(--maat-teal-deep);
+  --accent: var(--maat-gold);
+  --primary-fg: #ffffff;
+
+  --body-fg: var(--maat-ink);
+  --body-bg: #ffffff;
+  --body-quiet-color: var(--maat-ink-muted);
+  --body-medium-color: #3d4547;
+  --body-loud-color: var(--maat-teal-deep);
+
+  --header-color: rgba(255, 255, 255, 0.72);
+  --header-branding-color: var(--maat-gold);
+  --header-bg: var(--maat-teal-deep);
+  --header-link-color: #ffffff;
+
+  --breadcrumbs-fg: rgba(255, 255, 255, 0.7);
+  --breadcrumbs-link-fg: #ffffff;
+  --breadcrumbs-bg: var(--maat-teal);
+
+  --link-fg: var(--maat-teal);
+  --link-hover-color: var(--maat-gold-dark);
+  --link-selected-fg: var(--maat-teal-deep);
+
+  --hairline-color: var(--maat-line);
+  --border-color: #d7dedd;
+
+  --darkened-bg: var(--maat-sand);
+  --selected-bg: var(--maat-teal-soft);
+  --selected-row: #fbf3df;
+
+  --button-fg: #ffffff;
+  --button-bg: var(--maat-teal);
+  --button-hover-bg: var(--maat-teal-deep);
+  --default-button-bg: var(--maat-teal-deep);
+  --default-button-hover-bg: var(--maat-teal);
+  --close-button-bg: var(--maat-ink-muted);
+  --close-button-hover-bg: var(--maat-ink);
+
+  --object-tools-bg: var(--maat-gold-dark);
+  --object-tools-hover-bg: var(--maat-teal-deep);
+
+  --font-family-primary:
+    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --primary: #0d6a72;
+    --secondary: var(--maat-teal-deep);
+    --accent: var(--maat-gold);
+
+    --body-fg: #e9eded;
+    --body-bg: #0e1517;
+    --body-quiet-color: #a8b1b1;
+    --body-medium-color: #cdd4d4;
+    --body-loud-color: #ffffff;
+
+    --header-bg: #001f24;
+    --breadcrumbs-bg: var(--maat-teal-deep);
+    --breadcrumbs-link-fg: #e9eded;
+
+    --link-fg: var(--maat-gold);
+    --link-hover-color: #ecc978;
+    --link-selected-fg: var(--maat-teal-soft);
+
+    --hairline-color: #1b2426;
+    --border-color: #2a3436;
+
+    --darkened-bg: #121b1d;
+    --selected-bg: #162124;
+    --selected-row: #123037;
+
+    --button-bg: #0d6a72;
+    --button-hover-bg: #12838c;
+    --default-button-bg: var(--maat-gold);
+    --default-button-hover-bg: #ecc978;
+    --button-fg: #ffffff;
+  }
+  :root .default,
+  :root input[type="submit"].default {
+    color: var(--maat-gold-dark);
+  }
+}
+
+html[data-theme="dark"] {
+  --primary: #0d6a72;
+  --secondary: var(--maat-teal-deep);
+  --accent: var(--maat-gold);
+
+  --body-fg: #e9eded;
+  --body-bg: #0e1517;
+  --body-quiet-color: #a8b1b1;
+  --body-medium-color: #cdd4d4;
+  --body-loud-color: #ffffff;
+
+  --header-bg: #001f24;
+  --breadcrumbs-bg: var(--maat-teal-deep);
+  --breadcrumbs-link-fg: #e9eded;
+
+  --link-fg: var(--maat-gold);
+  --link-hover-color: #ecc978;
+  --link-selected-fg: var(--maat-teal-soft);
+
+  --hairline-color: #1b2426;
+  --border-color: #2a3436;
+
+  --darkened-bg: #121b1d;
+  --selected-bg: #162124;
+  --selected-row: #123037;
+
+  --button-bg: #0d6a72;
+  --button-hover-bg: #12838c;
+  --default-button-bg: var(--maat-gold);
+  --default-button-hover-bg: #ecc978;
+}
+
+html[data-theme="dark"] .default,
+html[data-theme="dark"] input[type="submit"].default {
+  color: var(--maat-gold-dark);
+}
+
+/* An explicit "Light" choice must restate the whole palette, or the dark
+   media block above leaves half the page on Django's stock colours. */
+html[data-theme="light"] {
+  --primary: var(--maat-teal);
+  --secondary: var(--maat-teal-deep);
+  --accent: var(--maat-gold);
+  --primary-fg: #ffffff;
+
+  --body-fg: var(--maat-ink);
+  --body-bg: #ffffff;
+  --body-quiet-color: var(--maat-ink-muted);
+  --body-medium-color: #3d4547;
+  --body-loud-color: var(--maat-teal-deep);
+
+  --header-color: rgba(255, 255, 255, 0.72);
+  --header-branding-color: var(--maat-gold);
+  --header-bg: var(--maat-teal-deep);
+  --header-link-color: #ffffff;
+
+  --breadcrumbs-fg: rgba(255, 255, 255, 0.7);
+  --breadcrumbs-link-fg: #ffffff;
+  --breadcrumbs-bg: var(--maat-teal);
+
+  --link-fg: var(--maat-teal);
+  --link-hover-color: var(--maat-gold-dark);
+  --link-selected-fg: var(--maat-teal-deep);
+
+  --hairline-color: var(--maat-line);
+  --border-color: #d7dedd;
+
+  --darkened-bg: var(--maat-sand);
+  --selected-bg: var(--maat-teal-soft);
+  --selected-row: #fbf3df;
+
+  --button-fg: #ffffff;
+  --button-bg: var(--maat-teal);
+  --button-hover-bg: var(--maat-teal-deep);
+  --default-button-bg: var(--maat-teal-deep);
+  --default-button-hover-bg: var(--maat-teal);
+  --close-button-bg: var(--maat-ink-muted);
+  --close-button-hover-bg: var(--maat-ink);
+
+  --object-tools-bg: var(--maat-gold-dark);
+  --object-tools-hover-bg: var(--maat-teal-deep);
+}
+
+html[data-theme="light"] .default,
+html[data-theme="light"] input[type="submit"].default {
+  color: var(--button-fg);
+}
+
+/* -------------------------------------------------------------- Branding */
+#site-name {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+#site-name a:link,
+#site-name a:visited {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--maat-gold);
+}
+
+.maat-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: var(--maat-gold);
+  color: var(--maat-teal-deep);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+}
+
+#site-name a.maat-back:link,
+#site-name a.maat-back:visited {
+  gap: 0.4rem;
+  padding: 0.3rem 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+#site-name a.maat-back:hover {
+  border-color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+#branding h1,
+#branding h1 a:link,
+#branding h1 a:visited {
+  color: var(--maat-gold);
+}
+
+/* The login card sits on whichever ground the theme is using. */
+body.login {
+  background: var(--darkened-bg);
+}
+
+/* ------------------------------------------------------- Touch targets */
+@media (pointer: coarse) {
+  #user-tools a,
+  #user-tools button,
+  #site-name a,
+  #nav-sidebar a,
+  .object-tools a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
+  }
+
+  #user-tools {
+    line-height: 1.9;
+  }
+}

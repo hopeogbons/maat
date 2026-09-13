@@ -1,0 +1,5 @@
+{% extends "accounts/logged_out.html" %}
+{% comment %}
+Django's admin and the default LogoutView both render this path. Pointing it at
+the branded signed-out page means no one ever lands on the stock Django screen.
+{% endcomment %}

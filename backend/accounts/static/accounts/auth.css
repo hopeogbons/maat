@@ -407,3 +407,12 @@ body {
 .promise__icon {
   color: var(--gold);
 }
+
+/* ------------------------------------------------------- Touch targets */
+@media (pointer: coarse) {
+  .top__link,
+  .brand {
+    min-height: 44px;
+    align-items: center;
+  }
+}
