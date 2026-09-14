@@ -9,3 +9,35 @@ psycopg-binary==3.3.5
 python-dotenv==1.2.3
 sqlparse==0.6.0
 whitenoise==6.12.0
+
+# Offline ISO and CLDR reference data for the core catalogues.
+Babel==2.18.0
+phonenumbers==9.0.39
+pycountry==26.2.16
+pgvector==0.5.0
+
+# The one model provider. See ai/provider.py.
+openai==3.13.0
+
+# Document parsing for the upload door. Formats a publishing body actually
+# issues; data formats are served by the API door instead.
+pypdf==6.14.2
+python-docx==1.2.0
+odfpy==1.4.1
+striprtf==0.0.29
+# The sentence splitter and the section-aware node parsers. Same library the
+# customer support corpus is chunked with, so chunk quality matches rather
+# than being re-derived and quietly worse.
+llama-index-core==0.14.23
+
+# Polling the feeds a body publishes. `feedparser` reads RSS and Atom and the
+# several dialects of each; `requests` is here for conditional GETs, which is
+# what makes hourly polling cost almost nothing.
+feedparser==6.0.12
+requests==2.33.0
+
+# Reading an official body's public pages where it offers neither feed nor API.
+# `trafilatura` tells the article from the navigation and reads its title and
+# date from the page's own metadata; `lxml` comes with it and parses listings
+# and sitemaps.
+trafilatura==2.2.0
