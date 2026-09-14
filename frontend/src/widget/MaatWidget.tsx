@@ -3,11 +3,12 @@ import { useLanguage } from '@/i18n'
 import { ChatScreen } from './components/ChatScreen'
 import { LanguageScreen } from './components/LanguageScreen'
 import { Launcher } from './components/Launcher'
+import { Teaser } from './components/Teaser'
 import { Panel } from './components/Panel'
 import { WelcomeScreen } from './components/WelcomeScreen'
 import { useChat } from './hooks/useChat'
 import { prefersReducedMotion } from './lib/motion'
-import { createMockClient } from './mockClient'
+import { createApiClient } from './apiClient'
 import type { MaatClient } from './types'
 import './widget.css'
 
@@ -15,7 +16,7 @@ import './widget.css'
 export const OPEN_EVENT = 'maat:open'
 
 export interface MaatWidgetProps {
-  /** Backend adapter. Defaults to a demo client that rotates through verdicts. */
+  /** Backend adapter. Defaults to the real API client; pass the mock for demos. */
   client?: MaatClient
   /** Render with the panel already open. */
   defaultOpen?: boolean
@@ -27,7 +28,7 @@ type View = 'welcome' | 'chat' | 'language'
 const CLOSE_FALLBACK_MS = 320
 
 export function MaatWidget({ client, defaultOpen = false }: MaatWidgetProps) {
-  const resolvedClient = useMemo(() => client ?? createMockClient(), [client])
+  const resolvedClient = useMemo(() => client ?? createApiClient(), [client])
   const chat = useChat(resolvedClient)
   const { t } = useLanguage()
 
@@ -73,6 +74,7 @@ export function MaatWidget({ client, defaultOpen = false }: MaatWidgetProps) {
 
   return (
     <div className="maat-root">
+      <Teaser hidden={isMounted} onOpen={open} />
       <Launcher
         ref={launcherRef}
         open={isOpen}

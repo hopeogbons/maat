@@ -1,4 +1,5 @@
 export { MaatWidget, OPEN_EVENT } from './MaatWidget'
 export type { MaatWidgetProps } from './MaatWidget'
+export { createApiClient } from './apiClient'
 export { createMockClient } from './mockClient'
-export type { MaatClient, Message, Source, Verdict, VerifyOptions, VerifyResult } from './types'
+export type { MaatClient, Message, Source, Verdict, SendOptions, Reply, VerdictReply, TextReply } from './types'
