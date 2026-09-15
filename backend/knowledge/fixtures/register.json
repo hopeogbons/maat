@@ -1,0 +1,1509 @@
+[
+ {
+  "id": "world-bank-ng",
+  "name": "World Bank",
+  "short": "WB",
+  "logoUrl": "/sources/worldbank.png",
+  "door": "api",
+  "address": "https://api.worldbank.org/v2/country/NGA/indicator/",
+  "collection": "Indicators for Nigeria: economy, population, health. Asked on demand when a claim needs a figure; not polled.",
+  "country": "NG",
+  "cadenceMinutes": 1440,
+  "isActive": true,
+  "lastPolledAt": "",
+  "documents": 0,
+  "health": "never",
+  "scope": "by-country",
+  "verification": "tested",
+  "subject": "Statistics",
+  "brand": "#002244",
+  "schema": {
+   "lookup": true
+  }
+ },
+ {
+  "id": "who-gho-ng",
+  "name": "WHO Global Health Observatory",
+  "short": "GHO",
+  "logoUrl": "/sources/who.png",
+  "door": "api",
+  "address": "https://ghoapi.azureedge.net/api/?$filter=SpatialDim eq 'NGA'",
+  "collection": "Health statistics for Nigeria: mortality, immunisation, disease burden. Asked on demand when a claim needs a figure; not polled.",
+  "country": "NG",
+  "cadenceMinutes": 1440,
+  "isActive": true,
+  "lastPolledAt": "",
+  "documents": 0,
+  "health": "never",
+  "scope": "by-country",
+  "verification": "tested",
+  "subject": "Health",
+  "brand": "#0093D5",
+  "schema": {
+   "lookup": true
+  }
+ },
+ {
+  "id": "hdx-ng",
+  "name": "Humanitarian Data Exchange",
+  "short": "HDX",
+  "logoUrl": "/sources/hdx.png",
+  "door": "api",
+  "address": "https://data.humdata.org/api/3/action/package_search?fq=groups:nga",
+  "collection": "Datasets filed under Nigeria by WFP, WHO, UNHCR, IOM and NGOs",
+  "country": "NG",
+  "cadenceMinutes": 1440,
+  "isActive": true,
+  "lastPolledAt": "",
+  "documents": 0,
+  "health": "never",
+  "scope": "by-country",
+  "verification": "tested",
+  "subject": "Humanitarian",
+  "brand": "#007CE0"
+ },
+ {
+  "id": "unhcr-ng",
+  "name": "UNHCR",
+  "short": "UNH",
+  "logoUrl": "/sources/unhcr.png",
+  "door": "api",
+  "address": "https://api.unhcr.org/population/v1/population/?coa=NGA",
+  "collection": "Refugees and displaced people hosted in Nigeria, and those who left it. Asked on demand when a claim needs a figure; not polled.",
+  "country": "NG",
+  "cadenceMinutes": 1440,
+  "isActive": true,
+  "lastPolledAt": "",
+  "documents": 0,
+  "health": "never",
+  "scope": "by-country",
+  "verification": "tested",
+  "subject": "Displacement",
+  "brand": "#0072BC",
+  "schema": {
+   "lookup": true
+  }
+ },
+ {
+  "id": "unicef-ng",
+  "name": "UNICEF Data Warehouse",
+  "short": "UNI",
+  "logoUrl": "/sources/unicef.png",
+  "door": "api",
+  "address": "https://sdmx.data.unicef.org/ws/public/sdmxapi/rest/data/UNICEF,GLOBAL_DATAFLOW,1.0/NGA./",
+  "collection": "Child health, education, nutrition and water for Nigeria",
+  "country": "NG",
+  "cadenceMinutes": 1440,
+  "isActive": false,
+  "lastPolledAt": "",
+  "documents": 0,
+  "health": "never",
+  "scope": "by-country",
+  "verification": "tested",
+  "subject": "Children",
+  "brand": "#1CABE2"
+ },
+ {
+  "id": "owid-ng",
+  "name": "Our World in Data",
+  "short": "OWID",
+  "logoUrl": "/sources/owid.png",
+  "door": "api",
+  "address": "https://ourworldindata.org/grapher/?csvType=filtered&country=NGA",
+  "collection": "Curated indicators for Nigeria, each citing its own source",
+  "country": "NG",
+  "cadenceMinutes": 10080,
+  "isActive": false,
+  "lastPolledAt": "",
+  "documents": 0,
+  "health": "never",
+  "scope": "by-country",
+  "verification": "tested",
+  "subject": "Statistics",
+  "brand": "#B13507"
+ },
+ {
+  "id": "world-bank-ke",
+  "name": "World Bank",
+  "short": "WB",
+  "logoUrl": "/sources/worldbank.png",
+  "door": "api",
+  "address": "https://api.worldbank.org/v2/country/KEN/indicator/",
+  "collection": "Indicators for Kenya: economy, population, health. Asked on demand when a claim needs a figure; not polled.",
+  "country": "KE",
+  "cadenceMinutes": 1440,
+  "isActive": true,
+  "lastPolledAt": "",
+  "documents": 0,
+  "health": "never",
+  "scope": "by-country",
+  "verification": "tested",
+  "subject": "Statistics",
+  "brand": "#002244",
+  "schema": {
+   "lookup": true
+  }
+ },
+ {
+  "id": "who-gho-ke",
+  "name": "WHO Global Health Observatory",
+  "short": "GHO",
+  "logoUrl": "/sources/who.png",
+  "door": "api",
+  "address": "https://ghoapi.azureedge.net/api/?$filter=SpatialDim eq 'KEN'",
+  "collection": "Health statistics for Kenya: mortality, immunisation, disease burden. Asked on demand when a claim needs a figure; not polled.",
+  "country": "KE",
+  "cadenceMinutes": 1440,
+  "isActive": true,
+  "lastPolledAt": "",
+  "documents": 0,
+  "health": "never",
+  "scope": "by-country",
+  "verification": "tested",
+  "subject": "Health",
+  "brand": "#0093D5",
+  "schema": {
+   "lookup": true
+  }
+ },
+ {
+  "id": "hdx-ke",
+  "name": "Humanitarian Data Exchange",
+  "short": "HDX",
+  "logoUrl": "/sources/hdx.png",
+  "door": "api",
+  "address": "https://data.humdata.org/api/3/action/package_search?fq=groups:ken",
+  "collection": "Datasets filed under Kenya by WFP, WHO, UNHCR, IOM and NGOs",
+  "country": "KE",
+  "cadenceMinutes": 1440,
+  "isActive": true,
+  "lastPolledAt": "",
+  "documents": 0,
+  "health": "never",
+  "scope": "by-country",
+  "verification": "tested",
+  "subject": "Humanitarian",
+  "brand": "#007CE0"
+ },
+ {
+  "id": "unhcr-ke",
+  "name": "UNHCR",
+  "short": "UNH",
+  "logoUrl": "/sources/unhcr.png",
+  "door": "api",
+  "address": "https://api.unhcr.org/population/v1/population/?coa=KEN",
+  "collection": "Refugees and displaced people hosted in Kenya, and those who left it. Asked on demand when a claim needs a figure; not polled.",
+  "country": "KE",
+  "cadenceMinutes": 1440,
+  "isActive": true,
+  "lastPolledAt": "",
+  "documents": 0,
+  "health": "never",
+  "scope": "by-country",
+  "verification": "tested",
+  "subject": "Displacement",
+  "brand": "#0072BC",
+  "schema": {
+   "lookup": true
+  }
+ },
+ {
+  "id": "unicef-ke",
+  "name": "UNICEF Data Warehouse",
+  "short": "UNI",
+  "logoUrl": "/sources/unicef.png",
+  "door": "api",
+  "address": "https://sdmx.data.unicef.org/ws/public/sdmxapi/rest/data/UNICEF,GLOBAL_DATAFLOW,1.0/KEN./",
+  "collection": "Child health, education, nutrition and water for Kenya",
+  "country": "KE",
+  "cadenceMinutes": 1440,
+  "isActive": false,
+  "lastPolledAt": "",
+  "documents": 0,
+  "health": "never",
+  "scope": "by-country",
+  "verification": "tested",
+  "subject": "Children",
+  "brand": "#1CABE2"
+ },
+ {
+  "id": "owid-ke",
+  "name": "Our World in Data",
+  "short": "OWID",
+  "logoUrl": "/sources/owid.png",
+  "door": "api",
+  "address": "https://ourworldindata.org/grapher/?csvType=filtered&country=KEN",
+  "collection": "Curated indicators for Kenya, each citing its own source",
+  "country": "KE",
+  "cadenceMinutes": 10080,
+  "isActive": false,
+  "lastPolledAt": "",
+  "documents": 0,
+  "health": "never",
+  "scope": "by-country",
+  "verification": "tested",
+  "subject": "Statistics",
+  "brand": "#B13507"
+ },
+ {
+  "id": "who-afro-news",
+  "name": "WHO Regional Office for Africa",
+  "short": "WHO",
+  "logoUrl": "/sources/who.png",
+  "door": "feed",
+  "address": "https://afro.who.int/rss/featured-news.xml",
+  "collection": "Press releases",
+  "country": "",
+  "cadenceMinutes": 180,
+  "isActive": true,
+  "lastPolledAt": "",
+  "documents": 0,
+  "health": "never",
+  "scope": "general",
+  "verification": "tested",
+  "subject": "Health",
+  "brand": "#0093D5"
+ },
+ {
+  "id": "un-news",
+  "name": "UN News",
+  "short": "UN",
+  "logoUrl": "/sources/un.png",
+  "door": "feed",
+  "address": "https://news.un.org/feed/subscribe/en/news/all/rss.xml",
+  "collection": "All stories: humanitarian, political, health",
+  "country": "",
+  "cadenceMinutes": 60,
+  "isActive": true,
+  "lastPolledAt": "",
+  "documents": 0,
+  "health": "never",
+  "scope": "general",
+  "verification": "documented",
+  "subject": "Humanitarian",
+  "brand": "#009EDB"
+ },
+ {
+  "id": "world-bank",
+  "name": "World Bank",
+  "short": "WB",
+  "logoUrl": "/sources/worldbank.png",
+  "door": "api",
+  "address": "https://api.worldbank.org/v2/",
+  "collection": "Indicators API: economy, population, health. No authentication. Asked on demand when a claim needs a figure; not polled.",
+  "country": "",
+  "cadenceMinutes": 1440,
+  "isActive": true,
+  "lastPolledAt": "",
+  "documents": 0,
+  "health": "never",
+  "scope": "by-country",
+  "verification": "documented",
+  "subject": "Statistics",
+  "brand": "#002244",
+  "schema": {
+   "lookup": true
+  }
+ },
+ {
+  "id": "who-gho",
+  "name": "WHO Global Health Observatory",
+  "short": "GHO",
+  "logoUrl": "/sources/who.png",
+  "door": "api",
+  "address": "https://ghoapi.azureedge.net/api/",
+  "collection": "Health statistics by country: mortality, immunisation, disease burden. Asked on demand when a claim needs a figure; not polled.",
+  "country": "",
+  "cadenceMinutes": 1440,
+  "isActive": true,
+  "lastPolledAt": "",
+  "documents": 0,
+  "health": "never",
+  "scope": "by-country",
+  "verification": "documented",
+  "subject": "Health",
+  "brand": "#0093D5",
+  "schema": {
+   "lookup": true
+  }
+ },
+ {
+  "id": "hdx",
+  "name": "Humanitarian Data Exchange",
+  "short": "HDX",
+  "logoUrl": "/sources/hdx.png",
+  "door": "api",
+  "address": "https://data.humdata.org/api/3/action/",
+  "collection": "Datasets from WFP, WHO, UNHCR, IOM and NGOs",
+  "country": "",
+  "cadenceMinutes": 1440,
+  "isActive": false,
+  "lastPolledAt": "",
+  "documents": 0,
+  "health": "never",
+  "scope": "by-country",
+  "verification": "documented",
+  "subject": "Humanitarian",
+  "brand": "#007CE0"
+ },
+ {
+  "id": "unhcr",
+  "name": "UNHCR",
+  "short": "UNH",
+  "logoUrl": "/sources/unhcr.png",
+  "door": "api",
+  "address": "https://api.unhcr.org/population/v1/",
+  "collection": "Refugees, internally displaced people and asylum, by country of asylum or origin. Asked on demand when a claim needs a figure; not polled.",
+  "country": "",
+  "cadenceMinutes": 1440,
+  "isActive": true,
+  "lastPolledAt": "",
+  "documents": 0,
+  "health": "never",
+  "scope": "by-country",
+  "verification": "documented",
+  "subject": "Displacement",
+  "brand": "#0072BC",
+  "schema": {
+   "lookup": true
+  }
+ },
+ {
+  "id": "unicef",
+  "name": "UNICEF Data Warehouse",
+  "short": "UNI",
+  "logoUrl": "/sources/unicef.png",
+  "door": "api",
+  "address": "https://sdmx.data.unicef.org/ws/public/sdmxapi/rest/",
+  "collection": "Child health, education, nutrition and water. SDMX, readable as CSV",
+  "country": "",
+  "cadenceMinutes": 1440,
+  "isActive": false,
+  "lastPolledAt": "",
+  "documents": 0,
+  "health": "never",
+  "scope": "by-country",
+  "verification": "documented",
+  "subject": "Children",
+  "brand": "#1CABE2"
+ },
+ {
+  "id": "owid",
+  "name": "Our World in Data",
+  "short": "OWID",
+  "logoUrl": "/sources/owid.png",
+  "door": "api",
+  "address": "https://ourworldindata.org/grapher/",
+  "collection": "Curated cross-country indicators with their sources cited, as CSV per chart",
+  "country": "",
+  "cadenceMinutes": 10080,
+  "isActive": false,
+  "lastPolledAt": "",
+  "documents": 0,
+  "health": "never",
+  "scope": "by-country",
+  "verification": "documented",
+  "subject": "Statistics",
+  "brand": "#B13507"
+ },
+ {
+  "id": "nema-ng",
+  "name": "National Emergency Management Agency",
+  "short": "NEMA",
+  "logoUrl": "/sources/nema-ng.png",
+  "door": "api",
+  "address": "https://nema.gov.ng/wp-json/wp/v2/posts",
+  "collection": "Disaster alerts, flood warnings, relief operations and situation updates",
+  "country": "NG",
+  "cadenceMinutes": 360,
+  "isActive": true,
+  "lastPolledAt": "",
+  "documents": 0,
+  "health": "never",
+  "scope": "national",
+  "verification": "tested",
+  "subject": "Emergencies",
+  "brand": "#1B5E20",
+  "schema": {
+   "items": "",
+   "query": {
+    "per_page": "10",
+    "_fields": "id,date,link,title,excerpt,content"
+   },
+   "fields": {
+    "title": "title.rendered",
+    "body": [
+     "content.rendered",
+     "excerpt.rendered"
+    ],
+    "date": "date",
+    "link": "link"
+   }
+  }
+ },
+ {
+  "id": "fmoh-ng",
+  "name": "Federal Ministry of Health and Social Welfare",
+  "short": "FMoH",
+  "logoUrl": "/sources/fmoh-ng.png",
+  "door": "api",
+  "address": "https://health.gov.ng/wp-json/wp/v2/posts",
+  "collection": "Ministerial statements, outbreak responses and health policy",
+  "country": "NG",
+  "cadenceMinutes": 360,
+  "isActive": true,
+  "lastPolledAt": "",
+  "documents": 0,
+  "health": "never",
+  "scope": "national",
+  "verification": "tested",
+  "subject": "Health",
+  "brand": "#0B6E4F",
+  "schema": {
+   "items": "",
+   "query": {
+    "per_page": "10",
+    "_fields": "id,date,link,title,excerpt,content"
+   },
+   "fields": {
+    "title": "title.rendered",
+    "body": [
+     "content.rendered",
+     "excerpt.rendered"
+    ],
+    "date": "date",
+    "link": "link"
+   }
+  }
+ },
+ {
+  "id": "nafdac-ng",
+  "name": "National Agency for Food and Drug Administration and Control",
+  "short": "NAFDAC",
+  "logoUrl": "/sources/nafdac-ng.png",
+  "door": "api",
+  "address": "https://nafdac.gov.ng/wp-json/wp/v2/posts",
+  "collection": "Product recalls, fake and substandard medicine alerts, public notices",
+  "country": "NG",
+  "cadenceMinutes": 360,
+  "isActive": true,
+  "lastPolledAt": "",
+  "documents": 0,
+  "health": "never",
+  "scope": "national",
+  "verification": "tested",
+  "subject": "Health",
+  "brand": "#0A6E3B",
+  "schema": {
+   "items": "",
+   "query": {
+    "per_page": "10",
+    "_fields": "id,date,link,title,excerpt,content"
+   },
+   "fields": {
+    "title": "title.rendered",
+    "body": [
+     "content.rendered",
+     "excerpt.rendered"
+    ],
+    "date": "date",
+    "link": "link"
+   }
+  }
+ },
+ {
+  "id": "nphcda-ng",
+  "name": "National Primary Health Care Development Agency",
+  "short": "NPHCDA",
+  "logoUrl": "/sources/nphcda-ng.png",
+  "door": "api",
+  "address": "https://nphcda.gov.ng/wp-json/wp/v2/posts",
+  "collection": "Immunisation campaigns, vaccine notices and primary care",
+  "country": "NG",
+  "cadenceMinutes": 360,
+  "isActive": true,
+  "lastPolledAt": "",
+  "documents": 0,
+  "health": "never",
+  "scope": "national",
+  "verification": "tested",
+  "subject": "Health",
+  "brand": "#1565C0",
+  "schema": {
+   "items": "",
+   "query": {
+    "per_page": "10",
+    "_fields": "id,date,link,title,excerpt,content"
+   },
+   "fields": {
+    "title": "title.rendered",
+    "body": [
+     "content.rendered",
+     "excerpt.rendered"
+    ],
+    "date": "date",
+    "link": "link"
+   }
+  }
+ },
+ {
+  "id": "nscdc-ng",
+  "name": "Nigeria Security and Civil Defence Corps",
+  "short": "NSCDC",
+  "logoUrl": "/sources/nscdc-ng.png",
+  "door": "api",
+  "address": "https://nscdc.gov.ng/wp-json/wp/v2/posts",
+  "collection": "Security advisories, arrests and infrastructure protection",
+  "country": "NG",
+  "cadenceMinutes": 360,
+  "isActive": true,
+  "lastPolledAt": "",
+  "documents": 0,
+  "health": "never",
+  "scope": "national",
+  "verification": "tested",
+  "subject": "Security",
+  "brand": "#2E4A1E",
+  "schema": {
+   "items": "",
+   "query": {
+    "per_page": "10",
+    "_fields": "id,date,link,title,excerpt,content"
+   },
+   "fields": {
+    "title": "title.rendered",
+    "body": [
+     "content.rendered",
+     "excerpt.rendered"
+    ],
+    "date": "date",
+    "link": "link"
+   }
+  }
+ },
+ {
+  "id": "fmino-ng",
+  "name": "Federal Ministry of Information and National Orientation",
+  "short": "FMINO",
+  "logoUrl": "/sources/fmino-ng.png",
+  "door": "api",
+  "address": "https://fmino.gov.ng/wp-json/wp/v2/posts",
+  "collection": "Official statements and clarifications from the federal government",
+  "country": "NG",
+  "cadenceMinutes": 360,
+  "isActive": true,
+  "lastPolledAt": "",
+  "documents": 0,
+  "health": "never",
+  "scope": "national",
+  "verification": "tested",
+  "subject": "Government",
+  "brand": "#0B3D91",
+  "schema": {
+   "items": "",
+   "query": {
+    "per_page": "10",
+    "_fields": "id,date,link,title,excerpt,content"
+   },
+   "fields": {
+    "title": "title.rendered",
+    "body": [
+     "content.rendered",
+     "excerpt.rendered"
+    ],
+    "date": "date",
+    "link": "link"
+   }
+  }
+ },
+ {
+  "id": "statehouse-ng",
+  "name": "State House, Nigeria",
+  "short": "Aso Rock",
+  "logoUrl": "/sources/statehouse-ng.png",
+  "door": "api",
+  "address": "https://statehouse.gov.ng/wp-json/wp/v2/posts",
+  "collection": "Statements and releases from the Presidency",
+  "country": "NG",
+  "cadenceMinutes": 360,
+  "isActive": true,
+  "lastPolledAt": "",
+  "documents": 0,
+  "health": "never",
+  "scope": "national",
+  "verification": "tested",
+  "subject": "Government",
+  "brand": "#14532D",
+  "schema": {
+   "items": "",
+   "query": {
+    "per_page": "10",
+    "_fields": "id,date,link,title,excerpt,content"
+   },
+   "fields": {
+    "title": "title.rendered",
+    "body": [
+     "content.rendered",
+     "excerpt.rendered"
+    ],
+    "date": "date",
+    "link": "link"
+   }
+  }
+ },
+ {
+  "id": "nan-ng",
+  "name": "News Agency of Nigeria",
+  "short": "NAN",
+  "logoUrl": "/sources/nan-ng.png",
+  "door": "api",
+  "address": "https://nannews.ng/wp-json/wp/v2/posts",
+  "collection": "Reports from the state news agency",
+  "country": "NG",
+  "cadenceMinutes": 360,
+  "isActive": true,
+  "lastPolledAt": "",
+  "documents": 0,
+  "health": "never",
+  "scope": "national",
+  "verification": "tested",
+  "subject": "News",
+  "brand": "#B71C1C",
+  "schema": {
+   "items": "",
+   "query": {
+    "per_page": "10",
+    "_fields": "id,date,link,title,excerpt,content"
+   },
+   "fields": {
+    "title": "title.rendered",
+    "body": [
+     "content.rendered",
+     "excerpt.rendered"
+    ],
+    "date": "date",
+    "link": "link"
+   }
+  }
+ },
+ {
+  "id": "frcn-ng",
+  "name": "Federal Radio Corporation of Nigeria",
+  "short": "FRCN",
+  "logoUrl": "/sources/frcn-ng.png",
+  "door": "feed",
+  "address": "https://radionigeria.gov.ng/feed/",
+  "collection": "News from the public broadcaster",
+  "country": "NG",
+  "cadenceMinutes": 360,
+  "isActive": true,
+  "lastPolledAt": "",
+  "documents": 0,
+  "health": "never",
+  "scope": "national",
+  "verification": "tested",
+  "subject": "News",
+  "brand": "#8E24AA"
+ },
+ {
+  "id": "waec-ng",
+  "name": "West African Examinations Council, Nigeria",
+  "short": "WAEC",
+  "logoUrl": "/sources/waec-ng.png",
+  "door": "feed",
+  "address": "https://www.waecnigeria.org/rss.xml",
+  "collection": "Examination timetables, results releases and notices",
+  "country": "NG",
+  "cadenceMinutes": 360,
+  "isActive": true,
+  "lastPolledAt": "",
+  "documents": 0,
+  "health": "never",
+  "scope": "national",
+  "verification": "tested",
+  "subject": "Education",
+  "brand": "#00695C"
+ },
+ {
+  "id": "ncc-ng",
+  "name": "Nigerian Communications Commission",
+  "short": "NCC",
+  "logoUrl": "/sources/ncc-ng.png",
+  "door": "feed",
+  "address": "https://www.ncc.gov.ng/rss.xml",
+  "collection": "SIM registration, NIN linkage and network notices",
+  "country": "NG",
+  "cadenceMinutes": 360,
+  "isActive": true,
+  "lastPolledAt": "",
+  "documents": 0,
+  "health": "never",
+  "scope": "national",
+  "verification": "tested",
+  "subject": "Telecoms",
+  "brand": "#1B5E20"
+ },
+ {
+  "id": "nhia-ng",
+  "name": "National Health Insurance Authority",
+  "short": "NHIA",
+  "logoUrl": "/sources/nhia-ng.png",
+  "door": "api",
+  "address": "https://www.nhia.gov.ng/wp-json/wp/v2/posts",
+  "collection": "Health insurance notices and clarifications",
+  "country": "NG",
+  "cadenceMinutes": 360,
+  "isActive": true,
+  "lastPolledAt": "",
+  "documents": 0,
+  "health": "never",
+  "scope": "national",
+  "verification": "tested",
+  "subject": "Health",
+  "brand": "#0277BD",
+  "schema": {
+   "items": "",
+   "query": {
+    "per_page": "10",
+    "_fields": "id,date,link,title,excerpt,content"
+   },
+   "fields": {
+    "title": "title.rendered",
+    "body": [
+     "content.rendered",
+     "excerpt.rendered"
+    ],
+    "date": "date",
+    "link": "link"
+   }
+  }
+ },
+ {
+  "id": "nis-ng",
+  "name": "Nigeria Immigration Service",
+  "short": "NIS",
+  "logoUrl": "",
+  "door": "api",
+  "address": "https://immigration.gov.ng/wp-json/wp/v2/posts",
+  "collection": "Passport, visa and border notices",
+  "country": "NG",
+  "cadenceMinutes": 360,
+  "isActive": true,
+  "lastPolledAt": "",
+  "documents": 0,
+  "health": "never",
+  "scope": "national",
+  "verification": "tested",
+  "subject": "Government",
+  "brand": "#1B5E20",
+  "schema": {
+   "items": "",
+   "query": {
+    "per_page": "10",
+    "_fields": "id,date,link,title,excerpt,content"
+   },
+   "fields": {
+    "title": "title.rendered",
+    "body": [
+     "content.rendered",
+     "excerpt.rendered"
+    ],
+    "date": "date",
+    "link": "link"
+   }
+  }
+ },
+ {
+  "id": "fmf-ng",
+  "name": "Federal Ministry of Finance",
+  "short": "FMF",
+  "logoUrl": "/sources/fmf-ng.png",
+  "door": "api",
+  "address": "https://www.finance.gov.ng/wp-json/wp/v2/posts",
+  "collection": "Fiscal statements, budgets and clarifications",
+  "country": "NG",
+  "cadenceMinutes": 360,
+  "isActive": true,
+  "lastPolledAt": "",
+  "documents": 0,
+  "health": "never",
+  "scope": "national",
+  "verification": "tested",
+  "subject": "Economy",
+  "brand": "#0B3D91",
+  "schema": {
+   "items": "",
+   "query": {
+    "per_page": "10",
+    "_fields": "id,date,link,title,excerpt,content"
+   },
+   "fields": {
+    "title": "title.rendered",
+    "body": [
+     "content.rendered",
+     "excerpt.rendered"
+    ],
+    "date": "date",
+    "link": "link"
+   }
+  }
+ },
+ {
+  "id": "pencom-ng",
+  "name": "National Pension Commission",
+  "short": "PenCom",
+  "logoUrl": "/sources/pencom-ng.png",
+  "door": "api",
+  "address": "https://www.pencom.gov.ng/wp-json/wp/v2/posts",
+  "collection": "Pension notices and regulations",
+  "country": "NG",
+  "cadenceMinutes": 360,
+  "isActive": true,
+  "lastPolledAt": "",
+  "documents": 0,
+  "health": "never",
+  "scope": "national",
+  "verification": "tested",
+  "subject": "Economy",
+  "brand": "#00695C",
+  "schema": {
+   "items": "",
+   "query": {
+    "per_page": "10",
+    "_fields": "id,date,link,title,excerpt,content"
+   },
+   "fields": {
+    "title": "title.rendered",
+    "body": [
+     "content.rendered",
+     "excerpt.rendered"
+    ],
+    "date": "date",
+    "link": "link"
+   }
+  }
+ },
+ {
+  "id": "fmafs-ng",
+  "name": "Federal Ministry of Agriculture and Food Security",
+  "short": "FMAFS",
+  "logoUrl": "/sources/fmafs-ng.png",
+  "door": "api",
+  "address": "https://agriculture.gov.ng/wp-json/wp/v2/posts",
+  "collection": "Food security, farm inputs and agricultural policy",
+  "country": "NG",
+  "cadenceMinutes": 360,
+  "isActive": true,
+  "lastPolledAt": "",
+  "documents": 0,
+  "health": "never",
+  "scope": "national",
+  "verification": "tested",
+  "subject": "Agriculture",
+  "brand": "#2E7D32",
+  "schema": {
+   "items": "",
+   "query": {
+    "per_page": "10",
+    "_fields": "id,date,link,title,excerpt,content"
+   },
+   "fields": {
+    "title": "title.rendered",
+    "body": [
+     "content.rendered",
+     "excerpt.rendered"
+    ],
+    "date": "date",
+    "link": "link"
+   }
+  }
+ },
+ {
+  "id": "sec-ng",
+  "name": "Securities and Exchange Commission Nigeria",
+  "short": "SEC",
+  "logoUrl": "/sources/sec-ng.png",
+  "door": "feed",
+  "address": "https://www.sec.gov.ng/feeds/news.rss",
+  "collection": "Investor alerts and warnings about unregistered schemes",
+  "country": "NG",
+  "cadenceMinutes": 360,
+  "isActive": true,
+  "lastPolledAt": "",
+  "documents": 0,
+  "health": "never",
+  "scope": "national",
+  "verification": "tested",
+  "subject": "Economy",
+  "brand": "#0D47A1"
+ },
+ {
+  "id": "nerc-ng",
+  "name": "Nigerian Electricity Regulatory Commission",
+  "short": "NERC",
+  "logoUrl": "/sources/nerc-ng.png",
+  "door": "api",
+  "address": "https://nerc.gov.ng/wp-json/wp/v2/posts",
+  "collection": "Tariff orders and electricity notices",
+  "country": "NG",
+  "cadenceMinutes": 360,
+  "isActive": true,
+  "lastPolledAt": "",
+  "documents": 0,
+  "health": "never",
+  "scope": "national",
+  "verification": "tested",
+  "subject": "Energy",
+  "brand": "#F57C00",
+  "schema": {
+   "items": "",
+   "query": {
+    "per_page": "10",
+    "_fields": "id,date,link,title,excerpt,content"
+   },
+   "fields": {
+    "title": "title.rendered",
+    "body": [
+     "content.rendered",
+     "excerpt.rendered"
+    ],
+    "date": "date",
+    "link": "link"
+   }
+  }
+ },
+ {
+  "id": "kbc-ke",
+  "name": "Kenya Broadcasting Corporation",
+  "short": "KBC",
+  "logoUrl": "",
+  "door": "api",
+  "address": "https://www.kbc.co.ke/wp-json/wp/v2/posts",
+  "collection": "News from the public broadcaster",
+  "country": "KE",
+  "cadenceMinutes": 360,
+  "isActive": true,
+  "lastPolledAt": "",
+  "documents": 0,
+  "health": "never",
+  "scope": "national",
+  "verification": "tested",
+  "subject": "News",
+  "brand": "#0D47A1",
+  "schema": {
+   "items": "",
+   "query": {
+    "per_page": "10",
+    "_fields": "id,date,link,title,excerpt,content"
+   },
+   "fields": {
+    "title": "title.rendered",
+    "body": [
+     "content.rendered",
+     "excerpt.rendered"
+    ],
+    "date": "date",
+    "link": "link"
+   }
+  }
+ },
+ {
+  "id": "ndma-ke",
+  "name": "National Drought Management Authority",
+  "short": "NDMA",
+  "logoUrl": "/sources/ndma-ke.png",
+  "door": "api",
+  "address": "https://ndma.go.ke/wp-json/wp/v2/posts",
+  "collection": "Drought early-warning bulletins and relief",
+  "country": "KE",
+  "cadenceMinutes": 360,
+  "isActive": true,
+  "lastPolledAt": "",
+  "documents": 0,
+  "health": "never",
+  "scope": "national",
+  "verification": "tested",
+  "subject": "Emergencies",
+  "brand": "#795548",
+  "schema": {
+   "items": "",
+   "query": {
+    "per_page": "10",
+    "_fields": "id,date,link,title,excerpt,content"
+   },
+   "fields": {
+    "title": "title.rendered",
+    "body": [
+     "content.rendered",
+     "excerpt.rendered"
+    ],
+    "date": "date",
+    "link": "link"
+   }
+  }
+ },
+ {
+  "id": "cbk-ke",
+  "name": "Central Bank of Kenya",
+  "short": "CBK",
+  "logoUrl": "/sources/cbk-ke.png",
+  "door": "api",
+  "address": "https://www.centralbank.go.ke/wp-json/wp/v2/posts",
+  "collection": "Monetary policy, currency notices and bank licensing",
+  "country": "KE",
+  "cadenceMinutes": 360,
+  "isActive": true,
+  "lastPolledAt": "",
+  "documents": 0,
+  "health": "never",
+  "scope": "national",
+  "verification": "tested",
+  "subject": "Economy",
+  "brand": "#0B3D91",
+  "schema": {
+   "items": "",
+   "query": {
+    "per_page": "10",
+    "_fields": "id,date,link,title,excerpt,content"
+   },
+   "fields": {
+    "title": "title.rendered",
+    "body": [
+     "content.rendered",
+     "excerpt.rendered"
+    ],
+    "date": "date",
+    "link": "link"
+   }
+  }
+ },
+ {
+  "id": "presidency-ke",
+  "name": "The Presidency, Kenya",
+  "short": "SH Kenya",
+  "logoUrl": "/sources/presidency-ke.png",
+  "door": "api",
+  "address": "https://www.president.go.ke/wp-json/wp/v2/posts",
+  "collection": "Statements and releases from State House",
+  "country": "KE",
+  "cadenceMinutes": 360,
+  "isActive": true,
+  "lastPolledAt": "",
+  "documents": 0,
+  "health": "never",
+  "scope": "national",
+  "verification": "tested",
+  "subject": "Government",
+  "brand": "#B71C1C",
+  "schema": {
+   "items": "",
+   "query": {
+    "per_page": "10",
+    "_fields": "id,date,link,title,excerpt,content"
+   },
+   "fields": {
+    "title": "title.rendered",
+    "body": [
+     "content.rendered",
+     "excerpt.rendered"
+    ],
+    "date": "date",
+    "link": "link"
+   }
+  }
+ },
+ {
+  "id": "redcross-ke",
+  "name": "Kenya Red Cross Society",
+  "short": "KRCS",
+  "logoUrl": "",
+  "door": "api",
+  "address": "https://redcross.or.ke/wp-json/wp/v2/posts",
+  "collection": "Emergency response, appeals and situation updates",
+  "country": "KE",
+  "cadenceMinutes": 360,
+  "isActive": true,
+  "lastPolledAt": "",
+  "documents": 0,
+  "health": "never",
+  "scope": "national",
+  "verification": "tested",
+  "subject": "Emergencies",
+  "brand": "#C62828",
+  "schema": {
+   "items": "",
+   "query": {
+    "per_page": "10",
+    "_fields": "id,date,link,title,excerpt,content"
+   },
+   "fields": {
+    "title": "title.rendered",
+    "body": [
+     "content.rendered",
+     "excerpt.rendered"
+    ],
+    "date": "date",
+    "link": "link"
+   }
+  }
+ },
+ {
+  "id": "moe-ke",
+  "name": "Ministry of Education, Kenya",
+  "short": "MoE",
+  "logoUrl": "/sources/moe-ke.png",
+  "door": "feed",
+  "address": "https://www.education.go.ke/rss.xml",
+  "collection": "School calendars, examinations and education notices",
+  "country": "KE",
+  "cadenceMinutes": 360,
+  "isActive": true,
+  "lastPolledAt": "",
+  "documents": 0,
+  "health": "never",
+  "scope": "national",
+  "verification": "tested",
+  "subject": "Education",
+  "brand": "#00695C"
+ },
+ {
+  "id": "sha-ke",
+  "name": "Social Health Authority",
+  "short": "SHA",
+  "logoUrl": "/sources/sha-ke.png",
+  "door": "api",
+  "address": "https://www.sha.go.ke/wp-json/wp/v2/posts",
+  "collection": "Registration, contributions, benefits and clarifications",
+  "country": "KE",
+  "cadenceMinutes": 360,
+  "isActive": true,
+  "lastPolledAt": "",
+  "documents": 0,
+  "health": "never",
+  "scope": "national",
+  "verification": "tested",
+  "subject": "Health",
+  "brand": "#1565C0",
+  "schema": {
+   "items": "",
+   "query": {
+    "per_page": "10",
+    "_fields": "id,date,link,title,excerpt,content"
+   },
+   "fields": {
+    "title": "title.rendered",
+    "body": [
+     "content.rendered",
+     "excerpt.rendered"
+    ],
+    "date": "date",
+    "link": "link"
+   }
+  }
+ },
+ {
+  "id": "kebs-ke",
+  "name": "Kenya Bureau of Standards",
+  "short": "KEBS",
+  "logoUrl": "/sources/kebs-ke.png",
+  "door": "api",
+  "address": "https://www.kebs.org/wp-json/wp/v2/posts",
+  "collection": "Product standards, recalls and counterfeit alerts",
+  "country": "KE",
+  "cadenceMinutes": 360,
+  "isActive": true,
+  "lastPolledAt": "",
+  "documents": 0,
+  "health": "never",
+  "scope": "national",
+  "verification": "tested",
+  "subject": "Consumer",
+  "brand": "#1B5E20",
+  "schema": {
+   "items": "",
+   "query": {
+    "per_page": "10",
+    "_fields": "id,date,link,title,excerpt,content"
+   },
+   "fields": {
+    "title": "title.rendered",
+    "body": [
+     "content.rendered",
+     "excerpt.rendered"
+    ],
+    "date": "date",
+    "link": "link"
+   }
+  }
+ },
+ {
+  "id": "ca-ke",
+  "name": "Communications Authority of Kenya",
+  "short": "CA",
+  "logoUrl": "/sources/ca-ke.png",
+  "door": "feed",
+  "address": "https://www.ca.go.ke/rss.xml",
+  "collection": "SIM registration, network and broadcasting notices",
+  "country": "KE",
+  "cadenceMinutes": 360,
+  "isActive": true,
+  "lastPolledAt": "",
+  "documents": 0,
+  "health": "never",
+  "scope": "national",
+  "verification": "tested",
+  "subject": "Telecoms",
+  "brand": "#0D47A1"
+ },
+ {
+  "id": "kilimo-ke",
+  "name": "Ministry of Agriculture and Livestock Development",
+  "short": "Kilimo",
+  "logoUrl": "/sources/kilimo-ke.png",
+  "door": "api",
+  "address": "https://kilimo.go.ke/wp-json/wp/v2/posts",
+  "collection": "Food security, fertiliser subsidies and livestock notices",
+  "country": "KE",
+  "cadenceMinutes": 360,
+  "isActive": true,
+  "lastPolledAt": "",
+  "documents": 0,
+  "health": "never",
+  "scope": "national",
+  "verification": "tested",
+  "subject": "Agriculture",
+  "brand": "#2E7D32",
+  "schema": {
+   "items": "",
+   "query": {
+    "per_page": "10",
+    "_fields": "id,date,link,title,excerpt,content"
+   },
+   "fields": {
+    "title": "title.rendered",
+    "body": [
+     "content.rendered",
+     "excerpt.rendered"
+    ],
+    "date": "date",
+    "link": "link"
+   }
+  }
+ },
+ {
+  "id": "dci-ke",
+  "name": "Directorate of Criminal Investigations",
+  "short": "DCI",
+  "logoUrl": "/sources/dci-ke.png",
+  "door": "feed",
+  "address": "https://www.dci.go.ke/rss.xml",
+  "collection": "Investigations, arrests and public warnings",
+  "country": "KE",
+  "cadenceMinutes": 360,
+  "isActive": true,
+  "lastPolledAt": "",
+  "documents": 0,
+  "health": "never",
+  "scope": "national",
+  "verification": "tested",
+  "subject": "Security",
+  "brand": "#37474F"
+ },
+ {
+  "id": "treasury-ke",
+  "name": "The National Treasury, Kenya",
+  "short": "Treasury",
+  "logoUrl": "/sources/treasury-ke.png",
+  "door": "feed",
+  "address": "https://www.treasury.go.ke/rss.xml",
+  "collection": "Budget statements, public debt and fiscal notices",
+  "country": "KE",
+  "cadenceMinutes": 360,
+  "isActive": true,
+  "lastPolledAt": "",
+  "documents": 0,
+  "health": "never",
+  "scope": "national",
+  "verification": "tested",
+  "subject": "Economy",
+  "brand": "#0B3D91"
+ },
+ {
+  "id": "kaa-ke",
+  "name": "Kenya Airports Authority",
+  "short": "KAA",
+  "logoUrl": "/sources/kaa-ke.png",
+  "door": "api",
+  "address": "https://www.kaa.go.ke/wp-json/wp/v2/posts",
+  "collection": "Airport operations and travel advisories",
+  "country": "KE",
+  "cadenceMinutes": 360,
+  "isActive": true,
+  "lastPolledAt": "",
+  "documents": 0,
+  "health": "never",
+  "scope": "national",
+  "verification": "tested",
+  "subject": "Transport",
+  "brand": "#01579B",
+  "schema": {
+   "items": "",
+   "query": {
+    "per_page": "10",
+    "_fields": "id,date,link,title,excerpt,content"
+   },
+   "fields": {
+    "title": "title.rendered",
+    "body": [
+     "content.rendered",
+     "excerpt.rendered"
+    ],
+    "date": "date",
+    "link": "link"
+   }
+  }
+ },
+ {
+  "id": "kemri-ke",
+  "name": "Kenya Medical Research Institute",
+  "short": "KEMRI",
+  "logoUrl": "/sources/kemri-ke.png",
+  "door": "api",
+  "address": "https://www.kemri.go.ke/wp-json/wp/v2/posts",
+  "collection": "Research findings and public health statements",
+  "country": "KE",
+  "cadenceMinutes": 360,
+  "isActive": true,
+  "lastPolledAt": "",
+  "documents": 0,
+  "health": "never",
+  "scope": "national",
+  "verification": "tested",
+  "subject": "Health",
+  "brand": "#00695C",
+  "schema": {
+   "items": "",
+   "query": {
+    "per_page": "10",
+    "_fields": "id,date,link,title,excerpt,content"
+   },
+   "fields": {
+    "title": "title.rendered",
+    "body": [
+     "content.rendered",
+     "excerpt.rendered"
+    ],
+    "date": "date",
+    "link": "link"
+   }
+  }
+ },
+ {
+  "id": "nta-ng",
+  "name": "Nigerian Television Authority",
+  "short": "NTA",
+  "logoUrl": "/sources/nta-ng.png",
+  "door": "pages",
+  "address": "https://www.nta.ng/news",
+  "collection": "News reports from the public broadcaster",
+  "country": "NG",
+  "cadenceMinutes": 360,
+  "isActive": true,
+  "lastPolledAt": "",
+  "documents": 0,
+  "health": "never",
+  "scope": "national",
+  "verification": "tested",
+  "subject": "News",
+  "brand": "#0B3D91",
+  "schema": {
+   "listing": [
+    "https://www.nta.ng/news"
+   ],
+   "include": [
+    "/news/[^/]+/[^/]+"
+   ]
+  }
+ },
+ {
+  "id": "ncaa-ng",
+  "name": "Nigerian Civil Aviation Authority",
+  "short": "NCAA",
+  "logoUrl": "/sources/ncaa-ng.png",
+  "door": "pages",
+  "address": "https://ncaa.gov.ng/media/press-releases/",
+  "collection": "Aviation safety directives and press releases",
+  "country": "NG",
+  "cadenceMinutes": 360,
+  "isActive": true,
+  "lastPolledAt": "",
+  "documents": 0,
+  "health": "never",
+  "scope": "national",
+  "verification": "tested",
+  "subject": "Transport",
+  "brand": "#1B5E20",
+  "schema": {
+   "listing": [
+    "https://ncaa.gov.ng/media/press-releases/"
+   ],
+   "include": [
+    "/media/press-releases/.+"
+   ]
+  }
+ },
+ {
+  "id": "kmd-ke",
+  "name": "Kenya Meteorological Department",
+  "short": "KMD",
+  "logoUrl": "/sources/kmd-ke.png",
+  "door": "pages",
+  "address": "https://meteo.go.ke/news/",
+  "collection": "Weather warnings, seasonal outlooks and climate statements",
+  "country": "KE",
+  "cadenceMinutes": 360,
+  "isActive": true,
+  "lastPolledAt": "",
+  "documents": 0,
+  "health": "never",
+  "scope": "national",
+  "verification": "tested",
+  "subject": "Weather",
+  "brand": "#01579B",
+  "schema": {
+   "listing": [
+    "https://meteo.go.ke/news/"
+   ],
+   "include": [
+    "/news/.+"
+   ]
+  }
+ },
+ {
+  "id": "kra-ke",
+  "name": "Kenya Revenue Authority",
+  "short": "KRA",
+  "logoUrl": "/sources/kra-ke.png",
+  "door": "pages",
+  "address": "https://www.kra.go.ke/news-center/press-release",
+  "collection": "Tax notices, enforcement and clarifications",
+  "country": "KE",
+  "cadenceMinutes": 360,
+  "isActive": true,
+  "lastPolledAt": "",
+  "documents": 0,
+  "health": "never",
+  "scope": "national",
+  "verification": "tested",
+  "subject": "Economy",
+  "brand": "#B71C1C",
+  "schema": {
+   "listing": [
+    "https://www.kra.go.ke/news-center/press-release"
+   ],
+   "include": [
+    "/news-center/press-release/\\d+-"
+   ]
+  }
+ }
+]

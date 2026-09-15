@@ -1,9 +1,21 @@
+# Secrets: every .env anywhere in the tree, never the .env.example templates.
+.env
+.env.*
+!.env.example
+!**/.env.example
+
 # Python
 backend/.venv/
 __pycache__/
 *.pyc
 backend/staticfiles/
 backend/.env
+backend/media/
+# Uploaded and archived documents. Written by every upload, including the ones
+# a test run makes: the test database is thrown away, the files it saved are
+# not. Git collapses the whole tree into one "??" line, so without this they
+# are one `git add -A` away from the history.
+backend/documents/
 
 # Node
 frontend/node_modules/
@@ -17,3 +29,4 @@ frontend/.certs/
 .vscode/
 .idea/
 .DS_Store
+

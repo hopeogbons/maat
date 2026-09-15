@@ -36,8 +36,8 @@ echo "maat ALL=(root) NOPASSWD: /bin/systemctl restart maat-api, /bin/systemctl 
 sudo -u maat bash -c 'cd /srv/maat/backend && python3 -m venv .venv && .venv/bin/pip install -r requirements.txt && .venv/bin/python manage.py migrate && .venv/bin/python manage.py collectstatic --noinput'
 
 # 8. systemd + nginx
-sudo cp /srv/maat/backend/deploy/maat-api.service /etc/systemd/system/
-sudo systemctl daemon-reload && sudo systemctl enable --now maat-api
+sudo cp /srv/maat/backend/deploy/maat-api.service /srv/maat/backend/deploy/maat-poller.service /etc/systemd/system/
+sudo systemctl daemon-reload && sudo systemctl enable --now maat-api maat-poller
 sudo cp /srv/maat/backend/deploy/nginx-maat-api.conf /etc/nginx/sites-available/maat-api
 sudo sed -i 's/api.yourdomain.com/api.YOUR-REAL-DOMAIN/' /etc/nginx/sites-available/maat-api
 sudo ln -s /etc/nginx/sites-available/maat-api /etc/nginx/sites-enabled/maat-api
@@ -53,3 +53,17 @@ Every later release:
 ```bash
 ssh maat@your-vps 'bash /srv/maat/backend/deploy/deploy.sh'
 ```
+
+## Adding a source
+
+Ask the site what it offers before anything is written:
+
+```
+python manage.py discover_source https://nema.gov.ng
+```
+
+It reports the door Ma'at would use (API, feed, or pages) and the configuration
+to store, having verified each by reading it. Add the row to
+`knowledge/fixtures/register.json`, run `seed_sources`, then `poll_feeds --force`
+and confirm documents arrived. The rules each door runs under are in
+`docs/sources.md`.
