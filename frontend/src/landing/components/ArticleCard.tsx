@@ -33,7 +33,7 @@ export function ArticleCard({ article, onTagClick }: { article: Article; onTagCl
               <button
                 type="button"
                 onClick={() => onTagClick(tag)}
-                className="rounded-full bg-teal-soft px-2.5 py-1 text-xs font-medium text-teal transition hover:bg-teal hover:text-white"
+                className="inline-flex min-h-8 items-center rounded-full bg-teal-soft px-3 py-1 text-xs font-medium text-teal transition hover:bg-teal hover:text-white"
               >
                 {tag}
               </button>

@@ -1,7 +1,7 @@
 import { Mail, MessageCircle, Phone, Send } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
+import { openSignIn } from '@/auth'
 import { useLanguage, type Messages } from '@/i18n'
-import { SIGN_IN_URL } from '@/lib/api'
 import { SITE } from '../site'
 import { openWidget } from '../widgetBridge'
 import { Brand } from './Brand'
@@ -61,7 +61,7 @@ export function SiteFooter() {
           {COLUMNS.map((column) => (
             <nav key={column.heading} aria-label={t.footer[column.heading]} className="lg:col-span-2">
               <h3 className="text-sm font-bold tracking-widest text-gold uppercase">{t.footer[column.heading]}</h3>
-              <ul className="mt-4 space-y-2.5">
+              <ul className="mt-2 space-y-0.5">
                 {column.items.map((item) => (
                   <li key={item.key}>
                     <a
@@ -74,7 +74,7 @@ export function SiteFooter() {
                             }
                           : undefined
                       }
-                      className="transition hover:text-white"
+                      className="inline-flex min-h-9 items-center transition hover:text-white"
                     >
                       {t.footer.links[item.key]}
                     </a>
@@ -132,11 +132,11 @@ export function SiteFooter() {
         <div className="mt-14 flex flex-col gap-4 border-t border-white/10 pt-6 text-sm sm:flex-row sm:items-center sm:justify-between">
           <p>{t.footer.copyright(new Date().getFullYear())}</p>
           <ul className="flex flex-wrap gap-x-6 gap-y-2">
-            <li><a href="/privacy" className="transition hover:text-white">{t.footer.privacy}</a></li>
-            <li><a href="/terms" className="transition hover:text-white">{t.footer.terms}</a></li>
-            <li><a href="/corrections" className="transition hover:text-white">{t.footer.corrections}</a></li>
-            <li><a href="/accessibility" className="transition hover:text-white">{t.footer.accessibility}</a></li>
-            <li><a href={SIGN_IN_URL} className="font-semibold text-gold transition hover:text-white">{t.common.signIn}</a></li>
+            <li><a href="/privacy" className="inline-flex min-h-9 items-center transition hover:text-white">{t.footer.privacy}</a></li>
+            <li><a href="/terms" className="inline-flex min-h-9 items-center transition hover:text-white">{t.footer.terms}</a></li>
+            <li><a href="/corrections" className="inline-flex min-h-9 items-center transition hover:text-white">{t.footer.corrections}</a></li>
+            <li><a href="/accessibility" className="inline-flex min-h-9 items-center transition hover:text-white">{t.footer.accessibility}</a></li>
+            <li><button type="button" onClick={() => openSignIn()} className="inline-flex min-h-9 items-center font-semibold text-gold transition hover:text-white">{t.common.signIn}</button></li>
           </ul>
         </div>
       </div>

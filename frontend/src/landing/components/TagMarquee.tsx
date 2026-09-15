@@ -19,7 +19,7 @@ export function TagMarquee() {
               <li key={`${tag}-${i}`} aria-hidden={i >= tags.length}>
                 <a
                   href="#verifications"
-                  className="inline-flex items-center gap-1 rounded-full border border-line bg-white px-3 py-1 text-xs font-medium whitespace-nowrap text-ink-muted transition hover:border-gold hover:text-teal-deep"
+                  className="inline-flex items-center gap-1 rounded-full border border-line bg-white px-3 py-2 text-xs font-medium whitespace-nowrap text-ink-muted transition hover:border-gold hover:text-teal-deep"
                 >
                   <Hash className="size-3 text-gold" />
                   {tag}

@@ -23,6 +23,20 @@ export interface Messages {
     back: string
     close: string
   }
+  auth: {
+    title: string
+    lead: string
+    username: string
+    password: string
+    submit: string
+    working: string
+    failed: string
+    throttled: string
+    required: string
+    needed: string
+    signOut: string
+    openSignIn: string
+  }
   countries: Record<CountryCode, string>
   nav: { howItWorks: string; verifications: string; contact: string }
   hero: {

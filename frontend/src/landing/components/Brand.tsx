@@ -1,5 +1,7 @@
 import { cn } from 'cn'
 import { Feather } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { useSession } from '@/auth'
 
 interface BrandProps {
   /** `light` for dark backgrounds, `dark` for light backgrounds. */
@@ -11,8 +13,15 @@ interface BrandProps {
 /** The Ma’at wordmark: a feather on gold, after the goddess who weighs truth. */
 export function Brand({ tone = 'light', size = 'sm', className }: BrandProps) {
   const large = size === 'lg'
-  return (
-    <a href="#top" className={cn('inline-flex items-center gap-2.5', className)} aria-label="Ma’at, back to top">
+  const session = useSession()
+  // Signed in, the mark is the way back to your own work. Signed out, it is
+  // the way back to the top of the page.
+  const signedIn = session.status === 'signedIn'
+  const shell = cn('inline-flex items-center gap-2.5', className)
+  const label = signedIn ? 'Ma’at, go to the dashboard' : 'Ma’at, back to top'
+
+  const inside = (
+    <>
       <span
         aria-hidden="true"
         className={cn(
@@ -31,6 +40,19 @@ export function Brand({ tone = 'light', size = 'sm', className }: BrandProps) {
       >
         Ma’at
       </span>
+    </>
+  )
+
+  if (signedIn) {
+    return (
+      <Link to="/dashboard" className={shell} aria-label={label}>
+        {inside}
+      </Link>
+    )
+  }
+  return (
+    <a href="#top" className={shell} aria-label={label}>
+      {inside}
     </a>
   )
 }

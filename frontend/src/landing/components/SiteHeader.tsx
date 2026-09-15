@@ -1,6 +1,6 @@
-import { LogIn, MessageCircle } from 'lucide-react'
+import { MessageCircle, Power } from 'lucide-react'
+import { openSignIn } from '@/auth'
 import { useLanguage } from '@/i18n'
-import { SIGN_IN_URL } from '@/lib/api'
 import { SITE } from '../site'
 import { openWidget } from '../widgetBridge'
 import { Brand } from './Brand'
@@ -20,13 +20,6 @@ export function SiteHeader() {
       </nav>
       <div className="flex items-center gap-2">
         <LanguageMenu />
-        <a
-          href={SIGN_IN_URL}
-          className="inline-flex h-10 items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3 text-sm font-semibold text-white backdrop-blur transition hover:border-white/40 hover:bg-white/15 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold sm:px-4"
-        >
-          <LogIn className="size-4" />
-          <span className="sr-only sm:not-sr-only">{t.common.signIn}</span>
-        </a>
         <button
           type="button"
           onClick={openWidget}
@@ -34,6 +27,15 @@ export function SiteHeader() {
         >
           <MessageCircle className="size-4" />
           <span className="sr-only sm:not-sr-only">{t.common.verifyRumour}</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => openSignIn()}
+          title={t.auth.openSignIn}
+          aria-label={t.auth.openSignIn}
+          className="inline-flex size-10 shrink-0 items-center justify-center rounded-full border border-white/20 text-white/55 transition hover:border-gold/60 hover:text-gold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
+        >
+          <Power className="size-[18px]" strokeWidth={2.25} />
         </button>
       </div>
     </header>
