@@ -156,6 +156,7 @@ export const ha: Messages = {
     voiceUpload: "Ɗora saƙon murya",
     voiceNote: "Saƙon murya",
     citedSource: "Madogara",
+    closestRecord: "Rikodin mafi kusa",
     openOriginal: "Buɗe ainihin takardar",
     abstentionTitle: "Ba a sami tabbataccen madogara ba",
     abstentionText:

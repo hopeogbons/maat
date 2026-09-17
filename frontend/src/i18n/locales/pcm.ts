@@ -156,6 +156,7 @@ export const pcm: Messages = {
     voiceUpload: "Upload voice note",
     voiceNote: "Voice note",
     citedSource: "Source",
+    closestRecord: "Di closest record",
     openOriginal: "Open original document",
     abstentionTitle: "No verified source",
     abstentionText:

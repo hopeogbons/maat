@@ -429,7 +429,9 @@ def _weigh(conversation: Conversation, draft: ClaimDraft, read, history: History
     article = _article_of(rumour)
     text = answer.text
     if article:
-        text = f"{text}\n\nWe have published on this before, and the article has the full record."
+        # Published means enough different people raised it; there is no public
+        # page to send anybody to yet, so the sentence must not promise one.
+        text = f"{text}\n\nEnough people have raised this for it to stand as a published verdict; the one above is it."
 
     # Offer rather than attach. A file arriving unasked is presumptuous on a
     # metered connection, and the offer is one line the visitor can ignore.
@@ -449,11 +451,44 @@ def _weigh(conversation: Conversation, draft: ClaimDraft, read, history: History
     )
 
 
+def _closest_records(claim: Claim | None) -> list[dict]:
+    """The passages already judged for this claim's rumour, in the card's shape.
+
+    Used when a verdict is given without weighing again: the visitor declined
+    to look further, or looking further found nothing. What was found the
+    first time is still the honest thing to show.
+    """
+    if claim is None:
+        return []
+    rumour = Rumour.objects.filter(mentions__claim=claim).first()
+    if rumour is None:
+        return []
+    rows = rumour.evidence.select_related("chunk__document__source").order_by("-retrieval_score", "-score")[:3]
+    payload = []
+    for row in rows:
+        document = row.chunk.document
+        payload.append(
+            {
+                "title": document.title,
+                "issuer": document.source.name if document.source_id else "",
+                "date": document.published_at.isoformat() if document.published_at else "",
+                "url": document.url or "",
+                "quote": row.quote,
+                "highlight": [row.highlight_start, row.highlight_end] if row.highlight_start is not None else None,
+                "judgement": row.judgement,
+            }
+        )
+    return payload
+
+
 def _after_consent(conversation: Conversation, read, history: History) -> Reply:
     state = conversation.state or {}
     lookup = LiveLookup.objects.filter(conversation=conversation, consented__isnull=True).order_by("-asked_at").first()
     draft = _draft_from_state(conversation)
     claim_id = state.get("claim_id")
+
+    claim = Claim.objects.filter(pk=claim_id).first() if claim_id else None
+    closest = _closest_records(claim)
 
     if read.consent == "no":
         if lookup:
@@ -462,7 +497,7 @@ def _after_consent(conversation: Conversation, read, history: History) -> Reply:
             lookup.save(update_fields=["consented", "consented_at"])
         conversation.state = {}
         conversation.save(update_fields=["state"])
-        return Reply(kind="verdict", text=DECLINED, verdict=INSUFFICIENT, confidence=0)
+        return Reply(kind="verdict", text=DECLINED, verdict=INSUFFICIENT, confidence=0, sources=closest)
 
     # Yes. Leg three: ask the configured APIs for this country, store what they
     # say as documents, then weigh the claim again against the enlarged shelf.
@@ -471,7 +506,6 @@ def _after_consent(conversation: Conversation, read, history: History) -> Reply:
         lookup.consented_at = timezone.now()
         lookup.save(update_fields=["consented", "consented_at"])
 
-    claim = Claim.objects.filter(pk=claim_id).first() if claim_id else None
     if draft is None or claim is None:
         conversation.state = {}
         conversation.save(update_fields=["state"])
@@ -483,10 +517,12 @@ def _after_consent(conversation: Conversation, read, history: History) -> Reply:
         lookup.sources.set({d.source for d in written})
 
     if not written:
+        # Nothing new to weigh. The verdict stands, and the closest records
+        # already judged travel with it, so the visitor sees what was found.
         conversation.state = {}
         conversation.save(update_fields=["state"])
         text = NOTHING_FOUND_ONLINE if country else NO_COUNTRY_FOR_LOOKUP
-        return Reply(kind="verdict", text=text, verdict=INSUFFICIENT, confidence=0)
+        return Reply(kind="verdict", text=text, verdict=INSUFFICIENT, confidence=0, sources=closest)
 
     # The shelf is bigger now. Weigh again, this time with pending_consent
     # cleared so a second shortfall answers plainly instead of asking twice.

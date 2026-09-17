@@ -404,3 +404,28 @@ class StaleStateTests(TestCase):
         self.conversation.refresh_from_db()
         self.assertFalse(self.conversation.state.get("pending_consent"))
         self.assertNotIn("fields", self.conversation.state)
+
+
+class ClosestRecordsTests(TestCase):
+    """What was judged the first time travels with a verdict given without weighing again."""
+
+    def test_the_judged_passages_come_back_in_the_cards_shape(self):
+        from knowledge.models import Chunk, Document, Source
+        from verification.engine import _closest_records
+        from verification.models import Evidence
+
+        conversation = Conversation.objects.create(session_key="closest")
+        claim = Claim.objects.create(conversation=conversation, paraphrase="WAEC pays fees", what="WAEC pays fees")
+        rumour = Rumour.objects.create(statement="WAEC pays fees", slug="waec-fees")
+        Mention.objects.create(rumour=rumour, claim=claim, verdict="insufficient", confidence=0)
+        source = Source.objects.create(name="News Agency of Nigeria", slug="nan")
+        document = Document.objects.create(source=source, title="NGO pays tuition fees", identifier="ngo.txt", fingerprint="x", url="https://nannews.ng/ngo", is_current=True)
+        chunk = Chunk.objects.create(document=document, chunk_index=0, text="An NGO paid tuition fees for 10 wards.", is_current=True)
+        Evidence.objects.create(rumour=rumour, chunk=chunk, judgement="settles_nothing", score=95, quote="An NGO paid tuition fees for 10 wards.")
+
+        records = _closest_records(claim)
+        self.assertEqual(len(records), 1)
+        self.assertEqual(records[0]["issuer"], "News Agency of Nigeria")
+        self.assertEqual(records[0]["url"], "https://nannews.ng/ngo")
+        self.assertEqual(records[0]["judgement"], "settles_nothing")
+        self.assertEqual(_closest_records(None), [])

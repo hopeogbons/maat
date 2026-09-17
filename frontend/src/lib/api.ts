@@ -345,6 +345,22 @@ export interface DashboardStats {
   published: number
   activity: { date: string; verified: number; unverified: number; insufficient: number }[]
   topSources: TopSource[]
+  latest: LatestRumour[]
+  /** How rumours reach Ma'at. Only the widget exists, and it is counted. */
+  channels: { messages: number }
+}
+
+export interface LatestRumour {
+  id: string
+  statement: string
+  verdict: 'verified' | 'unverified' | 'insufficient'
+  confidence: number
+  mentions: number
+  reporters: number
+  status: 'collecting' | 'published' | 'withheld'
+  country: string
+  lastSeen: string
+  source: string
 }
 
 export function getDashboard(days: number): Promise<DashboardStats> {

@@ -156,6 +156,7 @@ export const sw: Messages = {
     voiceUpload: "Pakia ujumbe wa sauti",
     voiceNote: "Ujumbe wa sauti",
     citedSource: "Chanzo",
+    closestRecord: "Rekodi iliyo karibu zaidi",
     openOriginal: "Fungua hati asili",
     abstentionTitle: "Hakuna chanzo kilichothibitishwa",
     abstentionText:

@@ -156,6 +156,7 @@ export const yo: Messages = {
     voiceUpload: "Gbé ìránṣẹ́ ohùn sókè",
     voiceNote: "Ìránṣẹ́ ohùn",
     citedSource: "Orísun",
+    closestRecord: "Àkọsílẹ̀ tó súnmọ́ jùlọ",
     openOriginal: "Ṣí ìwé àkọ́kọ́",
     abstentionTitle: "Kò sí orísun tí a fi ìdí rẹ̀ múlẹ̀",
     abstentionText:

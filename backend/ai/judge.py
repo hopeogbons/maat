@@ -204,5 +204,10 @@ def decide(judgements: list[Judgement] | None, gate: int = 85) -> Decision:
     best = max(relevant, key=lambda j: j.confidence)
     weak_but_decisive = [j for j in relevant if j.judgement in (SUPPORTS, CONTRADICTS)]
     reason = "below_gate" if weak_but_decisive else "settles_nothing"
-    shown = weak_but_decisive or [j for j in relevant if j.judgement == SETTLES_NOTHING]
-    return Decision(INSUFFICIENT, best.confidence, reason, cite(shown[:3]))
+    if weak_but_decisive:
+        return Decision(INSUFFICIENT, best.confidence, reason, cite(weak_but_decisive[:3]))
+    # "Settles nothing" confidence says how sure the judge is that a passage
+    # settles nothing, which is no way to rank what to show. The closest
+    # records are the ones retrieval ranked highest, so those come first.
+    related = sorted((j for j in relevant if j.judgement == SETTLES_NOTHING), key=lambda j: -j.passage.retrieval_score)
+    return Decision(INSUFFICIENT, best.confidence, reason, [j.as_citation() for j in related[:3]])

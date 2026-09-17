@@ -20,10 +20,11 @@ from rest_framework.views import APIView
 
 from appsettings.models import switched_on
 from knowledge.models import Document, Source
-from verification.models import Article, Rumour, Verdict
+from verification.models import Rumour, Turn, Verdict
 
 RANGES = {7, 30, 90}
 TOP_SOURCES = 5
+LATEST_RUMOURS = 10
 VERDICT_ORDER = (Verdict.VERIFIED, Verdict.UNVERIFIED, Verdict.INSUFFICIENT)
 
 
@@ -57,9 +58,14 @@ class DashboardView(APIView):
                 "documents": shown.filter(fetched_at__gte=start).count(),
                 "documentsBefore": shown.filter(fetched_at__gte=before, fetched_at__lt=start).count(),
                 "verdicts": [by_verdict.get(v, 0) for v in VERDICT_ORDER],
-                "published": Article.active.filter(published_at__gte=start).count(),
+                # Publication is the rumour's status: enough different people raised
+                # it and it went public. Counted on the rumours themselves.
+                "published": Rumour.active.filter(status=Rumour.Status.PUBLISHED, last_seen_at__gte=start).count(),
                 "activity": _activity(rumours, start, days),
                 "topSources": _top_sources(shown),
+                "latest": _latest(),
+                # How rumours reach Ma'at. Only the widget exists; it is counted, not estimated.
+                "channels": {"messages": Turn.objects.filter(speaker=Turn.Speaker.VISITOR, created_at__gte=start).count()},
             }
         )
 
@@ -101,3 +107,26 @@ def _top_sources(shown) -> list[dict]:
         }
         for s in sources
     ]
+
+
+def _latest() -> list[dict]:
+    """The rumours most recently raised, with the body the verdict rests on."""
+    rows = Rumour.active.select_related("country").order_by("-last_seen_at")[:LATEST_RUMOURS]
+    out = []
+    for rumour in rows:
+        top = rumour.evidence.select_related("chunk__document__source").order_by("-score").first()
+        out.append(
+            {
+                "id": str(rumour.id),
+                "statement": rumour.statement,
+                "verdict": rumour.verdict,
+                "confidence": rumour.confidence,
+                "mentions": rumour.mention_count,
+                "reporters": rumour.reporter_count,
+                "status": rumour.status,
+                "country": rumour.country.iso2 if rumour.country_id else "",
+                "lastSeen": rumour.last_seen_at.isoformat(),
+                "source": top.chunk.document.source.name if top else "",
+            }
+        )
+    return out

@@ -155,6 +155,7 @@ export const en: Messages = {
     voiceUpload: "Upload a voice note",
     voiceNote: "Voice note",
     citedSource: "Cited source",
+    closestRecord: "Closest record",
     openOriginal: "Open original document",
     abstentionTitle: "No verified source found",
     abstentionText:

@@ -62,7 +62,7 @@ function SourceBlock({ source }: { source: Source }) {
   return (
     <div className="maat:rounded-lg maat:bg-muted maat:p-2.5">
       <p className="maat:text-[11px] maat:font-medium maat:tracking-wide maat:text-muted-foreground maat:uppercase">
-        {t.widget.citedSource}
+        {source.judgement === 'settles_nothing' ? t.widget.closestRecord : t.widget.citedSource}
       </p>
       <p className="maat:mt-0.5 maat:font-medium maat:text-foreground">{source.title}</p>
       <p className="maat:text-xs maat:text-muted-foreground">

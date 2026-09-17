@@ -156,6 +156,7 @@ export const ig: Messages = {
     voiceUpload: "Bulite ozi olu",
     voiceNote: "Ozi olu",
     citedSource: "Ebe o si",
+    closestRecord: "Ndekọ kacha nso",
     openOriginal: "Mepee akwụkwọ mbụ",
     abstentionTitle: "Ahụghị ebe o si e nyochara",
     abstentionText:

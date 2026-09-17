@@ -115,6 +115,7 @@ export interface Messages {
     voiceUpload: string
     voiceNote: string
     citedSource: string
+    closestRecord: string
     openOriginal: string
     abstentionTitle: string
     abstentionText: string

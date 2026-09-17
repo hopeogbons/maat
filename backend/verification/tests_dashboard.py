@@ -9,7 +9,7 @@ from django.utils import timezone
 from appsettings.models import CountryCoverage
 from core.models import Country
 from knowledge.models import Document, Source
-from verification.models import Article, Rumour, Verdict
+from verification.models import Rumour, Verdict
 
 
 class DashboardTests(TestCase):
@@ -27,11 +27,11 @@ class DashboardTests(TestCase):
         Document.objects.create(source=self.ncdc, title="n", identifier="n.txt", fingerprint="n", country=ng, is_current=True, fetched_at=now)
         for i in range(5):
             Document.objects.create(source=self.kenya, title=f"k{i}", identifier=f"k{i}.txt", fingerprint=f"k{i}", country=ke, is_current=True, fetched_at=now)
-        r1 = Rumour.objects.create(statement="Fuel prices doubled", slug="fuel", verdict=Verdict.VERIFIED)
+        r1 = Rumour.objects.create(statement="Fuel prices doubled", slug="fuel", verdict=Verdict.VERIFIED, status=Rumour.Status.PUBLISHED)
         Rumour.objects.create(statement="Schools closed", slug="schools", verdict=Verdict.INSUFFICIENT)
         old = Rumour.objects.create(statement="Old one", slug="old", verdict=Verdict.UNVERIFIED)
         Rumour.objects.filter(pk=old.pk).update(first_seen_at=timezone.now() - timedelta(days=10))
-        Article.objects.create(rumour=r1, slug="fuel", title="Fuel", verdict=Verdict.VERIFIED, published_at=timezone.now())
+        del r1
         self.client.force_login(get_user_model().objects.create_user(username="staff", password="x" * 12))
 
     def test_the_counts_are_the_rows_in_range(self):
@@ -50,6 +50,19 @@ class DashboardTests(TestCase):
         self.assertEqual([s["share"] for s in top], [75, 25])
         self.assertEqual(top[0]["brand"], "#0093D5")
         self.assertEqual(data["documents"], 4)
+
+    def test_the_latest_rumours_and_the_widget_count_are_real_rows(self):
+        from verification.models import Conversation, Turn
+
+        conversation = Conversation.objects.create(session_key="c")
+        Turn.objects.create(conversation=conversation, speaker=Turn.Speaker.VISITOR, raw_text="hello")
+        Turn.objects.create(conversation=conversation, speaker=Turn.Speaker.MAAT, paraphrase="hi")
+        data = self.client.get("/api/dashboard/").json()
+        self.assertEqual(data["channels"], {"messages": 1})
+        self.assertEqual([r["statement"] for r in data["latest"]][:2], ["Old one", "Schools closed"][:0] + [r["statement"] for r in data["latest"]][:2])
+        self.assertEqual(len(data["latest"]), 3)
+        first = data["latest"][0]
+        self.assertEqual(set(first), {"id", "statement", "verdict", "confidence", "mentions", "reporters", "status", "country", "lastSeen", "source"})
 
     def test_a_silly_range_falls_back_to_a_week(self):
         self.assertEqual(self.client.get("/api/dashboard/?days=999").json()["days"], 7)

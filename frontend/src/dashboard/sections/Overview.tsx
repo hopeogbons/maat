@@ -22,6 +22,8 @@ const EMPTY: DashboardStats = {
   published: 0,
   activity: [],
   topSources: [],
+  latest: [],
+  channels: { messages: 0 },
 }
 
 /**
@@ -104,7 +106,7 @@ export function Overview({
         <TopSources sources={stats.topSources} countryName={countryName} />
       </div>
 
-      <ChannelPanel />
+      <ChannelPanel messages={stats.channels.messages} days={days} />
     </div>
   )
 }

@@ -23,16 +23,17 @@ import { SERIES } from '../theme'
 interface Card {
   name: string
   handle: string
-  change: number
   Icon: ComponentType<SVGProps<SVGSVGElement>>
   tone: string
+  /** Live channels carry a count; the rest are named as coming, with no invented figure. */
+  live: boolean
 }
 
 const CARDS: Card[] = [
-  { name: 'WhatsApp', handle: '0800 000 6228', change: 6, Icon: MessageCircle, tone: SERIES[0] },
-  { name: 'Voice note', handle: 'In-app', change: 9, Icon: Mic, tone: SERIES[1] },
-  { name: 'X', handle: '@maatverify', change: 2, Icon: XIcon, tone: SERIES[2] },
-  { name: 'Facebook', handle: 'maatverify', change: -3, Icon: FacebookIcon, tone: SERIES[3] },
+  { name: 'Widget', handle: 'Text and voice notes', Icon: MessageSquareText, tone: SERIES[0], live: true },
+  { name: 'WhatsApp', handle: 'Coming', Icon: MessageCircle, tone: SERIES[1], live: false },
+  { name: 'X', handle: 'Coming', Icon: XIcon, tone: SERIES[2], live: false },
+  { name: 'Facebook', handle: 'Coming', Icon: FacebookIcon, tone: SERIES[3], live: false },
 ]
 
 /**
@@ -68,7 +69,7 @@ const STREWN = [
  * forms and the source cards: a cool tint, a warm pool under the middle, and
  * the ways a rumour arrives drifting faintly behind.
  */
-export function ChannelPanel() {
+export function ChannelPanel({ messages, days }: { messages: number; days: number }) {
   return (
     <section className="panel-glow relative isolate grid min-w-0 gap-8 overflow-hidden rounded-[1.5rem] border border-teal/20 bg-teal-soft/45 px-5 pt-12 pb-8 sm:px-9 sm:pb-9 lg:grid-cols-[12rem_1fr] lg:gap-6">
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10">
@@ -86,15 +87,19 @@ export function ChannelPanel() {
       <div className="self-center">
         <h2 className="font-serif text-[1.65rem] font-bold tracking-tight text-teal-deep">Channels</h2>
         <p className="mt-3 max-w-[11rem] text-[13px] leading-relaxed text-ink-muted">
-          Rumours reaching Ma’at over a <strong className="font-bold text-ink">1 week</strong> period.
+          Messages reaching Ma’at over the last{' '}
+          <strong className="font-bold text-ink">{days === 7 ? 'week' : `${days} days`}</strong>.
         </p>
       </div>
 
       <div className="grid grid-cols-2 gap-x-4 gap-y-9 sm:gap-x-5 xl:grid-cols-5">
-        {CARDS.map(({ name, handle, change, Icon, tone }) => (
+        {CARDS.map(({ name, handle, Icon, tone, live }) => (
           <article
             key={name}
-            className="relative rounded-[1.25rem] bg-white px-2 pt-8 pb-5 text-center shadow-[0_12px_30px_-24px_rgba(17,23,25,0.55)] sm:px-3 sm:pb-6"
+            className={cn(
+              'relative rounded-[1.25rem] bg-white px-2 pt-8 pb-5 text-center shadow-[0_12px_30px_-24px_rgba(17,23,25,0.55)] sm:px-3 sm:pb-6',
+              !live && 'opacity-70',
+            )}
           >
             <span
               aria-hidden="true"
@@ -105,11 +110,14 @@ export function ChannelPanel() {
             </span>
             <p className="text-[14px] font-bold text-ink">{name}</p>
             <p className="mt-0.5 truncate text-[12px] text-ink-soft">{handle}</p>
-            <p className="mt-4 text-[1.75rem] leading-none font-medium tracking-tight text-ink">
-              {change > 0 ? '+' : '−'}
-              {Math.abs(change)}
-              <span className="ml-1 align-super text-[12px] font-bold">%</span>
-            </p>
+            {live ? (
+              <p className="mt-4 text-[1.75rem] leading-none font-medium tracking-tight text-ink tabular-nums">
+                {messages.toLocaleString('en-GB')}
+                <span className="ml-1.5 align-baseline text-[12px] font-bold text-ink-muted">{messages === 1 ? 'message' : 'messages'}</span>
+              </p>
+            ) : (
+              <p className="mt-4 text-[13px] leading-none font-medium tracking-tight text-ink-muted">Not yet connected</p>
+            )}
           </article>
         ))}
 
