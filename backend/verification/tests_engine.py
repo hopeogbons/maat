@@ -372,3 +372,35 @@ class ShortlistTests(TestCase):
 
         passages = ["a", "b", "c", "d", "e"]
         self.assertEqual(_shortlist(passages, [2.0, 7.0, 1.0, 6.0, 0.5]), ["b", "d", "a", "c"])
+
+
+class StaleStateTests(TestCase):
+    """What a visitor said an hour ago is not the answer to what they say now."""
+
+    def setUp(self):
+        self.conversation = Conversation.objects.create(session_key="stale")
+
+    def _pending_claim(self):
+        handle_message(self.conversation, "I heard fuel prices go up by 40% on Monday")
+        handle_message(self.conversation, "just tell me what you have")
+        self.conversation.refresh_from_db()
+        self.assertTrue(self.conversation.state.get("pending_consent"))
+
+    def test_a_greeting_while_a_question_is_pending_is_greeted_not_re_answered(self):
+        self._pending_claim()
+        reply = handle_message(self.conversation, "Hey, how are you doing?")
+        self.assertEqual(reply.kind, "text")
+        self.assertNotIn("fuel", reply.text.lower())
+        self.conversation.refresh_from_db()
+        # The question is still there for whenever they answer it.
+        self.assertTrue(self.conversation.state.get("pending_consent"))
+
+    def test_a_conversation_left_for_an_hour_starts_clean(self):
+        self._pending_claim()
+        Turn.objects.filter(conversation=self.conversation).update(created_at=timezone.now() - timedelta(hours=1))
+        reply = handle_message(self.conversation, "Good afternoon")
+        self.assertEqual(reply.kind, "text")
+        self.assertNotIn("fuel", reply.text.lower())
+        self.conversation.refresh_from_db()
+        self.assertFalse(self.conversation.state.get("pending_consent"))
+        self.assertNotIn("fields", self.conversation.state)

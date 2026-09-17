@@ -67,6 +67,12 @@ SAME_RUMOUR_DISTANCE = 0.10
 #: would be absurd, while two claims either side of a long quiet March would
 #: never be questioned at all.
 RECURRENCE_WINDOW_DAYS = 30
+
+#: A conversation left this long is over. The next message starts clean: no
+#: half-drafted claim waiting to be finished, no question still pending. A
+#: visitor who comes back after an hour and says hello should be greeted, not
+#: handed the answer to something they asked before lunch.
+COLD_AFTER_MINUTES = 30
 #: Reranked passages below this are not worth the judge's time.
 RERANK_FLOOR = 3.0
 #: Retrieval's best few always reach the judge, whatever the reranker says of
@@ -111,6 +117,20 @@ class Reply:
 
     def as_dict(self) -> dict:
         return asdict(self)
+
+
+def _forget_if_cold(conversation: Conversation) -> None:
+    """Drop the working state of a conversation nobody has touched for a while.
+
+    The turns stay on record; only the interview in progress is abandoned.
+    Judged on the last turn, not on last_active_at, which every save refreshes.
+    """
+    last = conversation.turns.order_by("-created_at").values_list("created_at", flat=True).first()
+    if last is None or not conversation.state:
+        return
+    if timezone.now() - last > timezone.timedelta(minutes=COLD_AFTER_MINUTES):
+        conversation.state = {}
+        conversation.save(update_fields=["state", "last_active_at"])
 
 
 def _history(conversation: Conversation) -> History:
@@ -477,6 +497,7 @@ def _after_consent(conversation: Conversation, read, history: History) -> Reply:
 
 def handle_message(conversation: Conversation, text: str) -> Reply:
     """Answer one visitor message. Always returns something to say."""
+    _forget_if_cold(conversation)
     history = _history(conversation)
     read = interpret(text, history)
     _record_turn(conversation, Turn.Speaker.VISITOR, raw=text, read=read)
@@ -517,7 +538,10 @@ def handle_message(conversation: Conversation, text: str) -> Reply:
         reply = _after_consent(conversation, read, history)
     elif read.is_manipulation and not read.has_claim:
         reply = Reply(kind="text", text=MANIPULATION)
-    elif read.is_social and not read.has_claim and not _draft_from_state(conversation):
+    elif read.is_social and not read.has_claim:
+        # A greeting is answered as a greeting, whatever is half-finished. The
+        # draft and any pending question stay where they are for the next
+        # message that is actually about them.
         reply = Reply(kind="text", text=social_reply(read.safe_text, history))
     else:
         previous = _draft_from_state(conversation)

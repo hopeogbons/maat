@@ -1,8 +1,6 @@
 import { apiFetch } from '@/lib/api'
 import type { MaatClient, Reply, SendOptions } from './types'
 
-const STORAGE_KEY = 'maat:conversation'
-
 interface ChatResponse {
   conversation: string
   reply: {
@@ -13,23 +11,6 @@ interface ChatResponse {
     sources?: Reply extends { sources: infer S } ? S : never
     degraded?: boolean
     attachments?: Record<string, unknown>[]
-  }
-}
-
-function remember(id: string | null) {
-  try {
-    if (id) window.sessionStorage.setItem(STORAGE_KEY, id)
-    else window.sessionStorage.removeItem(STORAGE_KEY)
-  } catch {
-    // Storage may be unavailable; the conversation still continues in memory.
-  }
-}
-
-function recall(): string | null {
-  try {
-    return window.sessionStorage.getItem(STORAGE_KEY)
-  } catch {
-    return null
   }
 }
 
@@ -46,9 +27,16 @@ function attachmentsOf(reply: { attachments?: Record<string, unknown>[] }) {
   }))
 }
 
-/** The real client: one conversation per browser tab, kept across reloads. */
+/**
+ * The real client. One conversation for as long as the widget is on the page:
+ * the messages on screen and the conversation the server continues are the
+ * same thing, so a reload starts both afresh. Remembering the id across
+ * reloads gave the server a memory the screen did not have, and a visitor
+ * saying hello got the answer to what they asked before. Who the visitor is
+ * survives regardless, through the visitor cookie.
+ */
 export function createApiClient(): MaatClient {
-  let conversation = recall()
+  let conversation: string | null = null
 
   async function send(text: string, options?: SendOptions): Promise<Reply> {
     const data = await apiFetch<ChatResponse>('/api/chat/', {
@@ -57,7 +45,6 @@ export function createApiClient(): MaatClient {
       signal: options?.signal,
     })
     conversation = data.conversation
-    remember(conversation)
     const { reply } = data
     if (reply.kind === 'verdict' && reply.verdict) {
       return {
