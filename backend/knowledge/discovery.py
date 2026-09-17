@@ -20,7 +20,7 @@ import feedparser
 import requests
 from lxml import etree, html as lxml_html
 
-from knowledge.pages import USER_AGENT, Host, Rules, article_links, extract, sitemap_links
+from knowledge.pages import USER_AGENT, Host, Renderer, Rules, article_links, extract, sitemap_links
 
 TIMEOUT = 25
 
@@ -66,7 +66,22 @@ class Finding:
         return json.dumps(asdict(self), indent=1, ensure_ascii=False)
 
 
+#: Set for the length of one probe when the site is to be read through a browser.
+_RENDERER: Renderer | None = None
+
+
 def _get(url: str, accept: str = "*/*") -> requests.Response | None:
+    if _RENDERER is not None and "html" in accept:
+        try:
+            final, html = _RENDERER.html(url)
+        except Exception:  # noqa: BLE001 - a page the browser cannot open is a page we cannot read
+            return None
+        response = requests.Response()
+        response.status_code = 200
+        response._content = html.encode("utf-8")  # noqa: SLF001
+        response.url = final
+        response.headers["Content-Type"] = "text/html; charset=utf-8"
+        return response
     try:
         response = requests.get(url, headers={"User-Agent": USER_AGENT, "Accept": accept}, timeout=TIMEOUT, allow_redirects=True)
     except requests.RequestException:
@@ -116,8 +131,24 @@ def _verify_sitemap(url: str, rules: Rules, host: str) -> bool:
     return bool(rows or children)
 
 
-def discover(url: str) -> Finding:
-    """Everything the site offers, verified, and the door to use."""
+def discover(url: str, *, render: bool = False) -> Finding:
+    """Everything the site offers, verified, and the door to use.
+
+    With `render`, pages are read through a headless browser, for sites that
+    draw their news with JavaScript. A pages door found that way is stored
+    with `render` set, so the poll reads it the same way.
+    """
+    global _RENDERER
+    _RENDERER = Renderer() if render else None
+    try:
+        return _discover(url, render)
+    finally:
+        if _RENDERER is not None:
+            _RENDERER.close()
+        _RENDERER = None
+
+
+def _discover(url: str, render: bool) -> Finding:
     finding = Finding(url=url)
     home = _get(url, "text/html,application/xhtml+xml")
     if home is None:
@@ -189,6 +220,9 @@ def discover(url: str) -> Finding:
     elif finding.trial_article and finding.robots_allows:
         finding.door = "pages"
         finding.schema = {"listing": [finding.listing or home.url], "sitemaps": finding.sitemaps[:1], **finding.schema}
+        if render:
+            finding.schema["render"] = True
+            finding.notes.append("Read through a browser: the site draws its pages with JavaScript.")
     elif finding.robots_allows is False:
         finding.notes.append("robots.txt does not allow reading this site's pages.")
     else:

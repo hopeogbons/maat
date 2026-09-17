@@ -24,6 +24,11 @@ echo "==> Installing dependencies"
 "$VENV/bin/pip" install --quiet --upgrade pip
 "$VENV/bin/pip" install --quiet -r requirements.txt
 
+# The headless browser for sources marked `render`. Pinned to the playwright
+# release in requirements, so it is re-fetched only when that changes.
+echo "==> Installing the browser for rendered sources"
+"$VENV/bin/python" -m playwright install chromium
+
 echo "==> Running checks"
 "$VENV/bin/python" manage.py check --deploy --fail-level ERROR
 
@@ -33,8 +38,11 @@ echo "==> Migrating database"
 echo "==> Collecting static files"
 "$VENV/bin/python" manage.py collectstatic --noinput --clear
 
-echo "==> Restarting service"
-sudo systemctl restart maat-api
-sudo systemctl --no-pager --lines=5 status maat-api
+echo "==> Loading the source register"
+"$VENV/bin/python" manage.py seed_sources
+
+echo "==> Restarting services"
+sudo systemctl restart maat-api maat-poller
+sudo systemctl --no-pager --lines=5 status maat-api maat-poller
 
 echo "==> Done"

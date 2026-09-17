@@ -23,6 +23,13 @@ poll takes at most a small batch, so a backlog drains over days rather than
 hammering a site in one night.
 
 **Nothing from behind a login or a paywall.** Public pages, plainly.
+
+**A browser only where the page needs one.** Some official sites draw their
+news with JavaScript and send an empty shell to anything that is not a
+browser. For those, and only those, a source can be marked `render`, and its
+pages are fetched through a headless browser that still announces itself as
+Ma'at, still keeps the pacing, and never loads images, media or fonts. What
+comes back is read by the same extractor under the same rules.
 """
 
 from __future__ import annotations
@@ -83,6 +90,10 @@ class Rules:
     include: list[re.Pattern]
     exclude: list[re.Pattern]
     max_new: int = MAX_NEW_PER_POLL
+    #: Fetch pages through a real browser, for the sites that draw their news
+    #: with JavaScript and send an empty shell to anything else. Same robots
+    #: rules, same pacing, same extractor; only the fetch differs.
+    render: bool = False
 
     @classmethod
     def of(cls, source: Source) -> "Rules":
@@ -94,6 +105,7 @@ class Rules:
             include=[re.compile(p, re.IGNORECASE) for p in (schema.get("include") or [])],
             exclude=[re.compile(p, re.IGNORECASE) for p in (*DEFAULT_EXCLUDE, *(schema.get("exclude") or []))],
             max_new=int(schema.get("max_new") or MAX_NEW_PER_POLL),
+            render=bool(schema.get("render")),
         )
 
     def is_article_link(self, url: str, host: str) -> bool:
@@ -166,6 +178,99 @@ class Host:
         if wait > 0:
             time.sleep(wait)
         self.last_request = time.monotonic()
+
+
+#: How long a rendered page may take to arrive, and then to go quiet, before we read what it has.
+RENDER_TIMEOUT_MS = 25_000
+SETTLE_TIMEOUT_MS = 8_000
+
+
+class Renderer:
+    """One browser for the length of a poll, identified as Ma'at, reading only the page.
+
+    Images, media and fonts are never requested: they cost the site bandwidth
+    and tell the extractor nothing. The browser is opened on first use and
+    closed when the poll ends, so a source that turns out not to need it pays
+    nothing.
+
+    Playwright runs an event loop in whatever thread starts it, and Django
+    refuses to touch the database from a thread with a loop running. So the
+    browser lives in a worker thread of its own, and every call crosses over
+    to it; the poller's thread stays loop-free and keeps writing documents.
+    """
+
+    def __init__(self) -> None:
+        from concurrent.futures import ThreadPoolExecutor
+
+        self._worker = ThreadPoolExecutor(max_workers=1, thread_name_prefix="maat-browser")
+        self._playwright = None
+        self._browser = None
+
+    def html(self, url: str) -> tuple[str, str]:
+        """(final url, rendered html) for one page."""
+        return self._worker.submit(self._html, url).result()
+
+    def _html(self, url: str) -> tuple[str, str]:
+        if self._browser is None:
+            from playwright.sync_api import sync_playwright
+
+            self._playwright = sync_playwright().start()
+            self._browser = self._playwright.chromium.launch(headless=True)
+        context = self._browser.new_context(user_agent=USER_AGENT, java_script_enabled=True)
+        try:
+            context.route("**/*", lambda route: route.abort() if route.request.resource_type in ("image", "media", "font") else route.continue_())
+            page = context.new_page()
+            # The document first; then a bounded wait for the scripts that draw
+            # the news. Pages with live embeds (a Facebook timeline, a YouTube
+            # player) never go quiet, so quiet is hoped for, not required.
+            page.goto(url, wait_until="domcontentloaded", timeout=RENDER_TIMEOUT_MS)
+            try:
+                page.wait_for_load_state("networkidle", timeout=SETTLE_TIMEOUT_MS)
+            except Exception:  # noqa: BLE001 - PlaywrightTimeoutError, and nothing else worth stopping for
+                pass
+            return page.url, page.content()
+        finally:
+            context.close()
+
+    def close(self) -> None:
+        try:
+            self._worker.submit(self._close).result()
+        finally:
+            self._worker.shutdown(wait=True)
+
+    def _close(self) -> None:
+        try:
+            if self._browser is not None:
+                self._browser.close()
+            if self._playwright is not None:
+                self._playwright.stop()
+        finally:
+            self._browser = self._playwright = None
+
+
+class Rendered:
+    """What a rendered page looks like to the code that reads responses."""
+
+    def __init__(self, url: str, html: str) -> None:
+        self.url = url
+        self.content = html.encode("utf-8")
+        self.headers = {"Content-Type": "text/html; charset=utf-8"}
+
+
+def render_html(host: Host, renderer: Renderer, url: str) -> Rendered:
+    """Fetch one page through the browser, paced like any other request."""
+    host.pace()
+    final, html = renderer.html(url)
+    if len(html.encode("utf-8")) > MAX_PAGE_BYTES:
+        raise ValueError(f"{url} rendered larger than {MAX_PAGE_BYTES // (1024 * 1024)}MB")
+    return Rendered(final, html)
+
+
+def fetch_page(host: Host, url: str, rules: Rules, renderer: Renderer | None):
+    """The page at `url`, rendered when the rules say so and it is not a file."""
+    if rules.render and renderer is not None and not url.lower().endswith(".pdf"):
+        return render_html(host, renderer, url)
+    return _get(host, url)
 
 
 def _get(host: Host, url: str) -> requests.Response:
@@ -287,8 +392,39 @@ def extract(page: bytes | str, url: str) -> Article | None:
         return None
     get = (lambda k: getattr(found, k, None)) if not isinstance(found, dict) else found.get
     text = re.sub(r"\n{3,}", "\n\n", (get("text") or "").strip())
-    title = (get("title") or "").strip()
+    title = _bare_title((get("title") or "").strip())
+    headline = _headline(page, text)
+    if headline and (not title or title.lower() not in text[:400].lower()):
+        # The <title> is the site's; the <h1> that opens the article is the story's.
+        title = headline
     return Article(url=url, title=title[:500], text=text, published=normalise_date(get("date")))
+
+
+def _headline(page: bytes | str, text: str) -> str:
+    """The first <h1> on the page, if the article text opens with it."""
+    try:
+        tree = lxml_html.fromstring(page)
+    except (etree.ParserError, ValueError):
+        return ""
+    for node in tree.xpath("//h1"):
+        candidate = " ".join(node.text_content().split())
+        if 8 <= len(candidate) <= 300 and candidate.lower() in text[:400].lower():
+            return candidate
+    return ""
+
+
+def _bare_title(title: str) -> str:
+    """The headline without the site's name a page title carries after a separator.
+
+    "NIMC trains corps members | NIMC - National Identity Management Commission"
+    is one headline and one masthead. The masthead is the citation's job.
+    """
+    for separator in (" | ", " – ", " — "):
+        if separator in title:
+            head, _, tail = title.rpartition(separator)
+            if head and len(tail) <= 80:
+                return head.strip()
+    return title
 
 
 # --------------------------------------------------------------------------
@@ -311,39 +447,45 @@ def poll_pages(source: Source) -> IngestionRun:
     if host.closed:
         return _failed(source, run, f"robots.txt for {host.root} could not be read; nothing was fetched.")
     hostname = urlsplit(host.root).netloc.lower().removeprefix("www.")
+    renderer = Renderer() if rules.render else None
 
-    candidates: list[str] = []
-    problems: list[str] = []
-    for sitemap in rules.sitemaps:
-        candidates.extend(_walk_sitemap(host, sitemap, rules, hostname, problems))
-    for listing in rules.listing:
-        if not host.allows(listing):
-            problems.append(f"robots.txt disallows {listing}")
-            continue
-        try:
-            candidates.extend(article_links(_get(host, listing).content, listing, rules))
-        except Exception as exc:  # noqa: BLE001
-            problems.append(f"{listing}: {exc.__class__.__name__}: {exc}")
-
-    if not candidates and problems:
-        return _failed(source, run, "; ".join(problems)[:2000])
-
-    fresh = _unseen(source, list(dict.fromkeys(candidates)))[:rules.max_new]
-    added = chunks = 0
-    for url in fresh:
-        if not host.allows(url):
-            continue
-        try:
-            response = _get(host, url)
-            document = _keep(source, url, response)
-            if document is None:
+    try:
+        candidates: list[str] = []
+        problems: list[str] = []
+        for sitemap in rules.sitemaps:
+            candidates.extend(_walk_sitemap(host, sitemap, rules, hostname, problems))
+        for listing in rules.listing:
+            if not host.allows(listing):
+                problems.append(f"robots.txt disallows {listing}")
                 continue
-            added += 1
-            chunks += document.chunks.count()
-        except DocumentUnreadable as exc:
-            log.info("page unreadable (%s): %s", source.slug, exc)
-        except Exception as exc:  # noqa: BLE001 - one bad page must not lose the batch
-            log.warning("page failed (%s) %s: %s", source.slug, url, exc)
+            try:
+                page = fetch_page(host, listing, rules, renderer)
+                candidates.extend(article_links(page.content, page.url, rules))
+            except Exception as exc:  # noqa: BLE001
+                problems.append(f"{listing}: {exc.__class__.__name__}: {exc}")
+
+        if not candidates and problems:
+            return _failed(source, run, "; ".join(problems)[:2000])
+
+        fresh = _unseen(source, newest_first(list(dict.fromkeys(candidates))))[:rules.max_new]
+        added = chunks = 0
+        for url in fresh:
+            if not host.allows(url):
+                continue
+            try:
+                response = fetch_page(host, url, rules, renderer)
+                document = _keep(source, url, response)
+                if document is None:
+                    continue
+                added += 1
+                chunks += document.chunks.count()
+            except DocumentUnreadable as exc:
+                log.info("page unreadable (%s): %s", source.slug, exc)
+            except Exception as exc:  # noqa: BLE001 - one bad page must not lose the batch
+                log.warning("page failed (%s) %s: %s", source.slug, url, exc)
+    finally:
+        if renderer is not None:
+            renderer.close()
 
     # A poll that worked but tripped over one listing says so on the source,
     # without counting as a failure: the batch still came in.
@@ -368,6 +510,20 @@ def _walk_sitemap(host: Host, url: str, rules: Rules, hostname: str, problems: l
     return found
 
 
+def newest_first(urls: list[str]) -> list[str]:
+    """Stories in the order a batch should take them: newest first.
+
+    A listing gives no dates, but most sites number their stories, and a
+    higher number is a later story. When most of the links carry a number in
+    their path, sort by it, highest first; otherwise trust the page's order.
+    """
+    numbered = [(int(m.group(1)), i, u) for i, u in enumerate(urls) if (m := re.search(r"/(\d{2,})(?:[/-]|$)", urlsplit(u).path))]
+    if len(numbered) < max(1, len(urls) * 0.8):
+        return urls
+    ordered = [u for _, _, u in sorted(numbered, key=lambda t: (-t[0], t[1]))]
+    return ordered + [u for u in urls if u not in set(ordered)]
+
+
 def _unseen(source: Source, urls: list[str]) -> list[str]:
     held = set(Document.active.filter(source=source, url__in=urls).values_list("url", flat=True))
     return [u for u in urls if u not in held]
@@ -388,6 +544,7 @@ def _keep(source: Source, url: str, response: requests.Response) -> Document | N
     article = extract(response.content, url)
     if article is None or not article.complete:
         return None
+    article.title = story_title(article.title, article.text, url, source.name)
     body = f"{article.title}\n\n{article.text}"
     country = source.country or country_of(body)
     document = ingest_document(
@@ -397,6 +554,22 @@ def _keep(source: Source, url: str, response: requests.Response) -> Document | N
     Document.objects.filter(pk=document.pk).update(title=article.title[:500], url=url[:1000])
     document.refresh_from_db(fields=["title", "url"])
     return document
+
+
+def story_title(title: str, text: str, url: str, source_name: str) -> str:
+    """The story's title, never merely the body's name.
+
+    When the page title is the publisher's own name, the story's first line
+    is used if it reads as a headline, else the words of its address.
+    """
+    if title and title.strip().lower() not in {source_name.strip().lower(), ""} and source_name.lower() not in title.lower():
+        return title
+    first = next((line.strip() for line in text.splitlines() if line.strip()), "")
+    if 8 <= len(first) <= 160 and not first.endswith((".", ":", ";")):
+        return first
+    slug = urlsplit(url).path.rstrip("/").rsplit("/", 1)[-1]
+    words = re.sub(r"[-_]+", " ", re.sub(r"\.\w+$", "", slug)).strip()
+    return (words[:1].upper() + words[1:]) if len(words) >= 8 else (title or source_name)
 
 
 def _filename(title: str, suffix: str) -> str:

@@ -76,6 +76,13 @@ good intentions.
    is filed under a country that is not on the Settings list, and nothing is
    polled, searched, asked or shown for a country switched off.
 
+7. **A browser only where the page needs one.** Some official sites draw
+   their news with JavaScript and send an empty shell to anything else. Such
+   a source is marked `render` and its pages are fetched through headless
+   Chromium, which still announces itself as Ma'at, keeps the same pacing,
+   and never loads images, media or fonts. The same extractor reads the
+   result under the same rules. `discover_source --render` finds these.
+
 What the door does not do: follow links off the site, read comments, fetch
 images or media, submit forms, hold cookies, or read anything a page asks a
 visitor to sign in for.
@@ -128,6 +135,9 @@ are listed with the reason, so the same ground is not walked twice.
 | Securities and Exchange Commission Nigeria | Feed (summaries) | Investor alerts, unregistered-scheme warnings |
 | Nigerian Television Authority (NTA) | Pages: `nta.ng/news`, stories under a category | News from the public broadcaster |
 | Nigerian Civil Aviation Authority (NCAA) | Pages: `ncaa.gov.ng/media/press-releases/` | Aviation directives and press releases |
+| Nigeria Centre for Disease Control and Prevention (NCDC) | Pages: `ncdc.gov.ng/news/recent`, numbered stories newest first | Outbreak alerts, advisories, situation reports |
+| National Identity Management Commission (NIMC) | Pages, through a browser: `nimc.gov.ng/press-releases/` | NIN enrolment and identity notices |
+| Nigeria Customs Service | Pages, through a browser: `customs.gov.ng/news` | Import, export, seizure and recruitment notices |
 
 Also for Nigeria, from the global platforms: HDX (API, by country), and the
 World Bank, WHO GHO and UNHCR asked on demand.
@@ -157,18 +167,18 @@ World Bank, WHO GHO and UNHCR asked on demand.
 
 | Body | Why not |
 |---|---|
-| Nigeria Centre for Disease Control (NCDC) | News is rendered in the browser by script; the pages carry no article text to read. Revisit if the site changes or a feed appears. |
-| Central Bank of Nigeria | No API or feed; press releases are not reachable as pages. |
+| Central Bank of Nigeria | No API or feed; press releases are not reachable as pages, in a browser or not. |
 | Independent National Electoral Commission (INEC) | Press pages carry 150 characters of text; the release itself is an embedded image or file. |
 | National Bureau of Statistics | Brochure site; no news listing found. |
 | Federal Road Safety Corps | No API, feed or readable news pages. |
 | Joint Admissions and Matriculation Board (JAMB) | News section is a shell page; items are loaded by script. |
-| NECO, NYSC, NIMC, Nigeria Customs, NMDPRA, NIHSA, NDLEA, NSIB, NNPC | No API or feed, and no news listing that yields readable articles. |
+| NECO, NYSC, NMDPRA, NIHSA, NDLEA, NSIB, NNPC | No API or feed, and no news listing that yields readable articles, with or without a browser (NDLEA, NNPC and NMDPRA render only their brochure pages). |
 | Nigerian Meteorological Agency (NiMet), Pharmacy and Poisons Board (Kenya) | The site answers every request with a redirect that needs a browser to resolve (a bot challenge). We do not pretend to be a browser. |
 | Nigeria Police Force | Rate-limits every request (HTTP 429). |
 | FIRS, Federal Ministry of Education (Nigeria), FCCPC, Kenya National Highways Authority | Down or timing out at the time of probing. |
 | Ministry of Health (Kenya), KNBS, Kenya News Agency, IEBC, National Police Service, KNEC, Interior, Foreign Affairs, EPRA, NTSA, KWS, NCIC | Their https certificates do not validate. Ma'at does not read over a connection it cannot verify. Revisit when they fix it. |
-| Kenya Power, MyGov | Newsroom rendered by script; no readable pages. |
+| Kenya Power | Its newsroom links to an articles listing that does not answer, as a page or in a browser. |
+| MyGov | Renders in a browser, but none of its links reads as a complete article. |
 | Our World in Data, UNICEF Data Warehouse | Registered from the earlier spec with base addresses that return HTML or XML, and no adapter yet. Left on the register switched off until an adapter exists. |
 
 ### Housekeeping worth knowing

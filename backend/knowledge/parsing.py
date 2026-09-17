@@ -49,9 +49,30 @@ SUPPORTED_EXTENSIONS = (".pdf", ".docx", ".odt", ".rtf", ".txt")
 ZERO_WIDTH = re.compile("[\u200b\u200c\u200d\u200e\u200f\u2060\u2061\u2062\u2063\u2064\ufeff\u00ad]")
 
 
+#: The tell-tale of text that was UTF-8 once and got read as Windows-1252 on
+#: the way into a publisher's own system: "â€™" for an apostrophe, "â€¢" for
+#: a bullet, "Ã©" for é. Some official sites publish it that way. A run is a
+#: UTF-8 lead byte followed by its continuation bytes, each seen through the
+#: Windows-1252 table; only such runs are touched, so genuine accented text
+#: beside them is left exactly as it is.
+_CONTINUATION = "\u0080-\u00bf\u20ac\u201a\u0192\u201e\u2026\u2020\u2021\u02c6\u2030\u0160\u2039\u0152\u017d\u2018\u2019\u201c\u201d\u2022\u2013\u2014\u02dc\u2122\u0161\u203a\u0153\u017e\u0178"
+MOJIBAKE = re.compile(f"[\u00c2-\u00df][{_CONTINUATION}]|[\u00e0-\u00ef][{_CONTINUATION}]{{2}}|[\u00f0-\u00f4][{_CONTINUATION}]{{3}}")
+
+
+def _repair_run(match: re.Match) -> str:
+    run = match.group(0)
+    try:
+        return run.encode("cp1252").decode("utf-8")
+    except (UnicodeEncodeError, UnicodeDecodeError):
+        return run
+
+
 def clean_text(text: str) -> str:
-    """Prose with the invisible characters removed and stray non-breaking spaces made plain."""
-    return ZERO_WIDTH.sub("", text or "").replace("\u00a0", " ")
+    """Prose with the invisible characters removed, stray non-breaking spaces made
+    plain, and double-encoded runs put back the way their author typed them."""
+    text = ZERO_WIDTH.sub("", text or "")
+    text = MOJIBAKE.sub(_repair_run, text)
+    return text.replace("\u00a0", " ")
 
 _splitter = SentenceSplitter(chunk_size=CHUNK_TOKENS, chunk_overlap=CHUNK_OVERLAP)
 

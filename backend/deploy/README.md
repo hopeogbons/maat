@@ -29,11 +29,16 @@ sudo -u maat nano /srv/maat/backend/.env
 #   CSRF_TRUSTED_ORIGINS=https://<your-app>.vercel.app
 #   FRONTEND_URL=https://<your-app>.vercel.app
 
-# 6. Let the maat user restart its own service without a password
-echo "maat ALL=(root) NOPASSWD: /bin/systemctl restart maat-api, /bin/systemctl status maat-api" | sudo tee /etc/sudoers.d/maat-api
+# 6. Let the maat user restart its own services without a password
+echo "maat ALL=(root) NOPASSWD: /bin/systemctl restart maat-api maat-poller, /bin/systemctl status maat-api maat-poller" | sudo tee /etc/sudoers.d/maat-api
 
-# 7. First install (creates venv, migrates, collects static, starts nothing yet)
-sudo -u maat bash -c 'cd /srv/maat/backend && python3 -m venv .venv && .venv/bin/pip install -r requirements.txt && .venv/bin/python manage.py migrate && .venv/bin/python manage.py collectstatic --noinput'
+# 7. First install (creates venv, migrates, loads the source register, collects static, starts nothing yet)
+sudo -u maat bash -c 'cd /srv/maat/backend && python3 -m venv .venv && .venv/bin/pip install -r requirements.txt && .venv/bin/python manage.py migrate && .venv/bin/python manage.py seed_sources && .venv/bin/python manage.py collectstatic --noinput'
+
+# 7b. The headless browser for sources read through a browser: system libraries
+#     once as root, then the browser itself as the maat user
+sudo /srv/maat/backend/.venv/bin/python -m playwright install-deps chromium
+sudo -u maat /srv/maat/backend/.venv/bin/python -m playwright install chromium
 
 # 8. systemd + nginx
 sudo cp /srv/maat/backend/deploy/maat-api.service /srv/maat/backend/deploy/maat-poller.service /etc/systemd/system/
@@ -53,6 +58,13 @@ Every later release:
 ```bash
 ssh maat@your-vps 'bash /srv/maat/backend/deploy/deploy.sh'
 ```
+
+## Sites that need a browser
+
+A source whose schema carries `"render": true` is read through headless
+Chromium. Step 7b installs it; `deploy.sh` keeps it current on every release.
+The poller opens the browser only while polling such a source and closes it
+after. Probe a JavaScript site with `discover_source --render <address>`.
 
 ## Adding a source
 

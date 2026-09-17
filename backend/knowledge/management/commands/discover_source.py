@@ -27,6 +27,7 @@ class Command(BaseCommand):
         parser.add_argument("--file", help="A file with one address per line; # starts a comment.")
         parser.add_argument("--json", help="Write every finding to this file as JSON.")
         parser.add_argument("--workers", type=int, default=6, help="Sites probed at once. Each site is still asked one thing at a time.")
+        parser.add_argument("--render", action="store_true", help="Read pages through a headless browser, for sites that draw their news with JavaScript.")
 
     def handle(self, *args, **options):
         urls = list(options["urls"])
@@ -37,8 +38,11 @@ class Command(BaseCommand):
                     urls.append(line)
         logging.getLogger("trafilatura").setLevel(logging.ERROR)
         findings = []
-        with ThreadPoolExecutor(max_workers=max(1, options["workers"])) as pool:
-            probed = pool.map(discover, urls)
+        render = options["render"]
+        # A browser is one process each; probing sites one at a time keeps that honest.
+        workers = 1 if render else max(1, options["workers"])
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            probed = pool.map(lambda u: discover(u, render=render), urls)
         for finding in probed:
             url = finding.url
             findings.append(finding)

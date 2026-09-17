@@ -97,6 +97,20 @@ class ExtractTests(TestCase):
         self.assertNotIn("All rights reserved", article.text)
         self.assertTrue(article.complete)
 
+    def test_the_site_name_is_cut_from_the_page_title(self):
+        from knowledge.pages import _bare_title
+
+        self.assertEqual(_bare_title("NIMC trains corps members | NIMC - National Identity Management Commission"), "NIMC trains corps members")
+        self.assertEqual(_bare_title("Floods displace thousands – Nigerian Television Authority"), "Floods displace thousands")
+        self.assertEqual(_bare_title("Floods displace thousands"), "Floods displace thousands")
+
+    def test_the_story_headline_beats_a_site_wide_page_title(self):
+        page = _article("Cholera alert issued for Bauchi", "2026-09-10").replace(
+            b"<title>Cholera alert issued for Bauchi</title>", b"<title>Nigeria Centre for Disease Control and Prevention</title>"
+        ).replace(b'<meta property="og:title" content="Cholera alert issued for Bauchi">', b"")
+        article = extract(page, "https://www.example.gov.ng/news/538/cholera-alert/")
+        self.assertEqual(article.title, "Cholera alert issued for Bauchi")
+
     def test_a_stub_is_not_an_article(self):
         article = extract(_article("Gallery", "2026-09-12", paragraphs=0), "https://www.example.gov.ng/gallery/")
         self.assertFalse(article is not None and article.complete)
@@ -197,3 +211,133 @@ class PollTests(TestCase):
             runs = poll_due(force=True)
         self.assertEqual([r.source.slug for r in runs], ["nema"])
         api_fetch.assert_not_called()
+
+
+class RenderTests(TestCase):
+    """A `render` source is read through the browser; a plain one never opens it."""
+
+    def setUp(self):
+        self.source = Source.objects.create(
+            name="Nigeria Centre for Disease Control", slug="ncdc", door=Source.Door.PAGES,
+            address="https://www.example.gov.ng/news/", schema={"include": [r"/news/"], "render": True},
+        )
+        self.rendered: list[str] = []
+        pages = {
+            "https://www.example.gov.ng/news/": LISTING.decode(),
+            "https://www.example.gov.ng/news/flooding-in-kano-displaces-thousands/": _article("Flooding in Kano displaces thousands", "2026-09-12").decode(),
+            "https://www.example.gov.ng/news/cholera-alert-issued-for-bauchi/": _article("Cholera alert issued for Bauchi", "2026-09-10").decode(),
+        }
+        test = self
+
+        class FakeRenderer:
+            closed = False
+
+            def html(self, url):
+                test.rendered.append(url)
+                return url, pages[url]
+
+            def close(self):
+                FakeRenderer.closed = True
+
+        self.FakeRenderer = FakeRenderer
+
+    def test_pages_come_through_the_browser_and_it_is_closed_after(self):
+        with patch("knowledge.pages.Renderer", self.FakeRenderer), patch("knowledge.pages.Host.read", return_value=_open_host()), patch(
+            "knowledge.pages._get", side_effect=AssertionError("plain fetch used on a render source")
+        ):
+            run = poll_pages(self.source)
+        self.assertEqual(run.status, IngestionRun.Status.SUCCEEDED)
+        self.assertEqual(run.documents_added, 2)
+        self.assertEqual(self.rendered[0], "https://www.example.gov.ng/news/")
+        self.assertEqual(len(self.rendered), 3)
+        self.assertTrue(self.FakeRenderer.closed)
+
+    def test_a_plain_source_never_opens_a_browser(self):
+        self.source.schema = {"include": [r"/news/"]}
+        self.source.save()
+        with patch("knowledge.pages.Renderer", side_effect=AssertionError("browser opened for a plain source")), patch(
+            "knowledge.pages.Host.read", return_value=_open_host()
+        ), patch("knowledge.pages._get", return_value=_response("https://www.example.gov.ng/news/", LISTING)):
+            run = poll_pages(self.source)
+        self.assertEqual(run.status, IngestionRun.Status.SUCCEEDED)
+
+    def test_a_pdf_on_a_render_source_is_fetched_as_a_file(self):
+        from knowledge.pages import Rules, fetch_page
+
+        rules = Rules.of(self.source)
+        host = _open_host()
+        with patch("knowledge.pages._get", return_value="plain") as plain:
+            self.assertEqual(fetch_page(host, "https://www.example.gov.ng/documents/sitrep-12.pdf", rules, self.FakeRenderer()), "plain")
+            plain.assert_called_once()
+        self.assertEqual(self.rendered, [])
+
+
+class RendererThreadTests(TestCase):
+    """The browser runs off the poller's thread, so Django keeps its database access."""
+
+    def test_the_browser_is_driven_from_a_worker_thread(self):
+        import sys
+        import threading
+        from types import ModuleType
+
+        from knowledge.pages import Renderer
+
+        seen: list[int] = []
+
+        class FakePage:
+            url = "https://www.example.gov.ng/news/"
+
+            def goto(self, *a, **k):
+                seen.append(threading.get_ident())
+
+            def content(self):
+                return "<html><body>rendered</body></html>"
+
+        class FakeContext:
+            def route(self, *a, **k): ...
+            def new_page(self): return FakePage()
+            def close(self): ...
+
+        class FakeBrowser:
+            def new_context(self, **k): return FakeContext()
+            def close(self): seen.append(-threading.get_ident())
+
+        class FakeChromium:
+            def launch(self, **k): return FakeBrowser()
+
+        class FakePlaywright:
+            chromium = FakeChromium()
+            def stop(self): ...
+
+        fake_module = ModuleType("playwright.sync_api")
+        fake_module.sync_playwright = lambda: type("PW", (), {"start": lambda self: FakePlaywright()})()
+        fake_parent = ModuleType("playwright")
+        fake_parent.sync_api = fake_module
+        with patch.dict(sys.modules, {"playwright": fake_parent, "playwright.sync_api": fake_module}):
+            renderer = Renderer()
+            final, html = renderer.html("https://www.example.gov.ng/news/")
+            renderer.close()
+        self.assertEqual((final, html), ("https://www.example.gov.ng/news/", "<html><body>rendered</body></html>"))
+        self.assertEqual(len(seen), 2)
+        self.assertNotEqual(abs(seen[0]), threading.get_ident())
+        self.assertEqual(abs(seen[1]), abs(seen[0]))  # closed from the same thread that opened it
+
+
+class OrderAndTitleTests(TestCase):
+    def test_numbered_stories_are_taken_newest_first(self):
+        from knowledge.pages import newest_first
+
+        urls = ["https://x/news/505/a", "https://x/news/538/b", "https://x/news/507/c"]
+        self.assertEqual(newest_first(urls), ["https://x/news/538/b", "https://x/news/507/c", "https://x/news/505/a"])
+        plain = ["https://x/news/first-story/", "https://x/news/second-story/"]
+        self.assertEqual(newest_first(plain), plain)
+
+    def test_a_page_title_that_is_only_the_publisher_gives_way_to_the_story(self):
+        from knowledge.pages import story_title
+
+        name = "Nigeria Centre for Disease Control and Prevention"
+        self.assertEqual(story_title(name, "Lassa fever public health advisory\n\nThe NCDC advises...", "https://ncdc.gov.ng/news/507/lassa-fever-public-health-advisory", name),
+                         "Lassa fever public health advisory")
+        self.assertEqual(story_title(name, "The NCDC advises the public that cases have risen sharply across the states.", "https://ncdc.gov.ng/news/507/lassa-fever-public-health-advisory", name),
+                         "Lassa fever public health advisory")
+        self.assertEqual(story_title("Cholera alert issued for Bauchi", "anything", "https://x/news/1/y", name), "Cholera alert issued for Bauchi")

@@ -41,3 +41,9 @@ requests==2.33.0
 # date from the page's own metadata; `lxml` comes with it and parses listings
 # and sitemaps.
 trafilatura==2.2.0
+
+
+# A headless browser for the few official sites that draw their news with
+# JavaScript. Used only for sources marked `render`; after installing, run
+# `python -m playwright install --with-deps chromium` once on the server.
+playwright==1.63.0

@@ -159,3 +159,10 @@ class CleanTextTests(TestCase):
         self.assertIn("tuition fees", joined)
         self.assertNotIn("\u200b", joined)
         self.assertNotIn("\u00a0", joined)
+
+    def test_double_encoded_text_is_put_back(self):
+        from knowledge.parsing import clean_text
+
+        self.assertEqual(clean_text("â€¢ Point of entry surveillance using the passengerâ€™s form"), "• Point of entry surveillance using the passenger’s form")
+        self.assertEqual(clean_text("Plain text stays plain"), "Plain text stays plain")
+        self.assertEqual(clean_text("Café â€¢ open â€” now"), "Café • open — now")

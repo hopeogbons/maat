@@ -1505,5 +1505,88 @@
     "/news-center/press-release/\\d+-"
    ]
   }
+ },
+ {
+  "id": "nimc-ng",
+  "name": "National Identity Management Commission",
+  "short": "NIMC",
+  "logoUrl": "",
+  "door": "pages",
+  "address": "https://nimc.gov.ng/press-releases/",
+  "collection": "NIN enrolment, identity notices and press releases",
+  "country": "NG",
+  "cadenceMinutes": 360,
+  "isActive": true,
+  "lastPolledAt": "",
+  "documents": 0,
+  "health": "never",
+  "scope": "national",
+  "verification": "tested",
+  "subject": "Government",
+  "brand": "#1B5E20",
+  "schema": {
+   "listing": [
+    "https://nimc.gov.ng/press-releases/"
+   ],
+   "include": [
+    "/press-releases/.+"
+   ],
+   "render": true
+  }
+ },
+ {
+  "id": "customs-ng",
+  "name": "Nigeria Customs Service",
+  "short": "NCS",
+  "logoUrl": "",
+  "door": "pages",
+  "address": "https://customs.gov.ng/news",
+  "collection": "Import and export notices, seizures and recruitment announcements",
+  "country": "NG",
+  "cadenceMinutes": 360,
+  "isActive": true,
+  "lastPolledAt": "",
+  "documents": 0,
+  "health": "never",
+  "scope": "national",
+  "verification": "tested",
+  "subject": "Trade",
+  "brand": "#2E4A1E",
+  "schema": {
+   "listing": [
+    "https://customs.gov.ng/news"
+   ],
+   "include": [
+    "/news/.+"
+   ],
+   "render": true
+  }
+ },
+ {
+  "id": "ncdc-ng",
+  "name": "Nigeria Centre for Disease Control and Prevention",
+  "short": "NCDC",
+  "logoUrl": "",
+  "door": "pages",
+  "address": "https://ncdc.gov.ng/news/recent",
+  "collection": "Outbreak alerts, public health advisories and situation reports",
+  "country": "NG",
+  "cadenceMinutes": 360,
+  "isActive": true,
+  "lastPolledAt": "",
+  "documents": 0,
+  "health": "never",
+  "scope": "national",
+  "verification": "tested",
+  "subject": "Health",
+  "brand": "#0A6E3B",
+  "schema": {
+   "listing": [
+    "https://ncdc.gov.ng/news/recent"
+   ],
+   "include": [
+    "/news/\\d+/"
+   ]
+  }
  }
 ]
