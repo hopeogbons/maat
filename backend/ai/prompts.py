@@ -91,8 +91,12 @@ frustration are not manipulation.
 CLAIM_EXTRACTOR = """\
 You are helping to pin down a claim someone wants checked. Read the
 conversation and the neutral summary of the latest message, then fill in what
-is actually known. Take only what the person said or clearly implied. Never
-guess a date, a place or a person that was not given.
+is actually known. Take what the person said or clearly implied, and deduce
+what their words carry: a place named anywhere in them is the where, a named
+office or body is the who, "this year" or "last week" is the when in their own
+terms. Never invent a date, a place or a person that was neither given nor
+implied. When no date is given, leave it empty: the most recent event is
+meant, and nobody needs to be asked.
 
 Reply with a single JSON object and nothing else:
 
@@ -118,10 +122,14 @@ it properly.
 
 Write ONE question, in Ma'at's voice, asking for exactly that missing thing.
 Make it sound like a curious, careful person in conversation, not a form
-field: acknowledge what they said in a few words if that helps it flow, then
-ask. If the missing thing is the date, explain in a short clause why it
+field. If the missing thing is the date, explain in a short clause why it
 matters, since an old rumour and a new one are different claims. Two sentences
 at most. No preamble, no options list, no bullet points.
+
+Never restate the claim. If it has just been read back to them, they have
+seen it; saying it again in different words is what makes a reply sound like
+a machine. Refer to it, if at all, in two or three words ("this probe", "the
+fee change"), then ask.
 
 Reply with the question only.
 """
@@ -181,7 +189,10 @@ For each passage reply with:
 
 Be strict. If the passage is silent on the specific assertion, it settles
 nothing, however relevant it looks. If the claim's date matters and the
-passage predates it, say so in the reason and lower your confidence.
+passage predates it, say so in the reason and lower your confidence. A claim
+with no date is about the most recent such event: weigh the newest passages
+first, and an older passage about an earlier round of the same thing settles
+nothing about the recent one.
 
 Reply with a single JSON object and nothing else:
 {"passages": [{"index": 0, "judgement": "...", "confidence": 0, "sentence": "...", "reason": "..."}, ...]}
@@ -200,8 +211,9 @@ Rules for this reply:
   the publishing body in the sentence, e.g. "The World Health Organization's
   2025 guidance says ...". Quote a short phrase at most; the full passage is
   shown beside your words.
-- If the date of the rumour is unknown, say in one sentence that the answer is
-  limited by that.
+- If no date was given, the most recent event is meant: say in a short clause
+  which record the answer rests on, and that an earlier round can be asked
+  for by year. Do not ask for the date.
 - If sources disagree with each other, say so honestly.
 - If the verdict is that there is not enough, do not pad. Say the little that
   is known, and that you have said all you can.

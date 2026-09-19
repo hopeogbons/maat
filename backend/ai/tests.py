@@ -159,11 +159,14 @@ class InterpreterOnlineTests(SimpleTestCase):
 
 
 class InterviewTests(SimpleTestCase):
-    def test_gaps_are_asked_in_the_agreed_order(self):
-        self.assertEqual(ClaimFields(what="x").missing(), ["when", "where", "who"])
+    def test_only_the_claim_and_the_country_are_ever_asked_for(self):
+        self.assertEqual(ClaimFields().missing(), ["what", "where"])
+        self.assertEqual(ClaimFields(what="x").missing(), ["where"])
 
-    def test_not_knowing_the_date_closes_that_gap_honestly(self):
-        self.assertEqual(ClaimFields(what="x", when_unknown=True).missing(), ["where", "who"])
+    def test_the_date_and_the_who_are_never_asked(self):
+        # No date means the most recent event; "who" is in the claim if it matters.
+        self.assertEqual(ClaimFields(what="x", where="z").missing(), [])
+        self.assertEqual(ClaimFields(what="x", where="z", when_unknown=True).missing(), [])
 
     def test_why_is_never_asked_for(self):
         self.assertNotIn("why", ClaimFields(what="x", when="y", where="z", who="w").missing())
@@ -188,7 +191,7 @@ class InterviewTests(SimpleTestCase):
 
     def test_offline_question_is_the_plain_one_for_the_first_gap(self):
         draft = interview.ClaimDraft(fields=ClaimFields(what="x"))
-        self.assertEqual(interview.next_question(draft), interview.FALLBACK_QUESTIONS["when"])
+        self.assertEqual(interview.next_question(draft), interview.FALLBACK_QUESTIONS["where"])
 
     def test_no_question_when_nothing_is_missing(self):
         draft = interview.ClaimDraft(fields=ClaimFields(what="a", when="b", where="c", who="d"))
@@ -318,7 +321,7 @@ class AnswerTests(SimpleTestCase):
         self.assertTrue(reply.degraded)
         self.assertIn("not supported by the record", reply.text)
         self.assertIn("World Health Organization says", reply.text)
-        self.assertIn("date is not known", reply.text)
+        self.assertIn("most recent record", reply.text)
         self.assertNotIn("false", reply.text.lower())
 
     def test_a_conflict_is_said_plainly(self):

@@ -43,17 +43,23 @@ MAX_VARIANTS = 4
 CARD_FRAGMENTS = 3
 
 
-def scoped(country: Country | None):
+def scoped(country: Country | None, *, global_only: bool = False):
     """The passages a claim may be weighed against.
 
     Global documents, and those of countries switched on in Settings. A country
     switched off is not searched even when the claim names it: what it holds is
     not yet vouched for, and a verdict must not lean on it.
+
+    `global_only` is for a claim about a country outside coverage: the global
+    shelf alone, never the covered countries' own documents, which are not
+    about the place the visitor asked after.
     """
     rows = Chunk.active.filter(
         switched_on("document__country"), is_current=True, document__is_current=True, document__deleted_at__isnull=True
     )
-    if country is not None:
+    if global_only:
+        rows = rows.filter(document__country__isnull=True)
+    elif country is not None:
         rows = rows.filter(Q(document__country__isnull=True) | Q(document__country=country))
     return rows.select_related("document", "document__source")
 
@@ -86,12 +92,13 @@ def search(
     variants: list[str] | None = None,
     *,
     country: Country | None = None,
+    global_only: bool = False,
 ) -> list[Passage]:
     """The candidate pool for a claim, best first, or [] on an empty corpus."""
     claim = (claim or "").strip()
     if not claim:
         return []
-    rows = scoped(country)
+    rows = scoped(country, global_only=global_only)
     if not rows.exists():
         return []
 

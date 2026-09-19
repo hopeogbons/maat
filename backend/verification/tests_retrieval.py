@@ -21,8 +21,12 @@ class ScopeTests(TestCase):
             )
             Chunk.objects.create(document=document, chunk_index=0, text=f"passage {code}", is_current=True)
 
-    def _titles(self, country=None):
-        return sorted(chunk.document.title for chunk in scoped(country))
+    def _titles(self, country=None, **kwargs):
+        return sorted(chunk.document.title for chunk in scoped(country, **kwargs))
+
+    def test_a_claim_outside_coverage_sees_the_global_shelf_only(self):
+        self.assertEqual(self._titles(global_only=True), ["global"])
+        self.assertEqual(self._titles(self.ng, global_only=True), ["global"])
 
     def test_a_country_switched_off_is_not_searched_even_by_name(self):
         self.assertEqual(self._titles(), ["NG", "global"])

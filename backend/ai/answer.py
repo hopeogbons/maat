@@ -52,7 +52,7 @@ def _fallback(fields: ClaimFields, decision: Decision) -> str:
         top = decision.citations[0]
         quoted = top.quote[top.highlight_start : top.highlight_end] if top.highlight_start is not None else ""
         body = f"{top.citation} says: “{quoted or top.quote[:160]}”" if quoted or top.quote else body
-    date = " The rumour's date is not known, so this is limited to what the record says in general." if fields.when_unknown else ""
+    date = "" if fields.when else " No date was given, so this rests on the most recent record; say the year if you meant an earlier one."
     return " ".join(part for part in (lead, body) if part) + date
 
 
@@ -74,7 +74,7 @@ def compose_answer(fields: ClaimFields, decision: Decision, history: History | N
             "role": "user",
             "content": (
                 f"The claim: {fields.what}\n"
-                f"When it is said to apply: {fields.when or ('not known' if fields.when_unknown else 'not given')}\n"
+                f"When it is said to apply: {fields.when or 'not given, so the most recent event is meant'}\n"
                 f"Verdict: {VERDICT_PHRASE[decision.verdict]}\n"
                 f"Why: {decision.reason}\n"
                 f"Judgement confidence: {decision.confidence}\n"

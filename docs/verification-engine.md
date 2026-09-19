@@ -78,24 +78,47 @@ The flow:
 
 1. Greet, and invite the claim. "Heard something? Tell me what you heard."
 2. Read the claim back in a sentence or two, so the visitor can see it was
-   understood and correct it if not.
-3. Ask what is missing, at most two follow-up questions.
+   understood and correct it if not. A question asked in the same breath
+   does not say the claim again.
+3. Ask only what is needed to answer at all, at most two follow-up questions.
 4. Weigh and answer.
 
-What Ma'at is trying to fill in is the standard set: **who, what, when, where,
-why**. The date matters most, because it decides whether a document from an
-earlier year can answer at all. A claim about a policy in 2019 and the same
-claim about 2026 are different claims.
+What Ma'at records is the standard set: **who, what, when, where, why**. What
+it asks for is much less. Everything the visitor's words carry is deduced,
+never asked: a place named in passing is the where, a named office is the
+who, "last week" is the when. The date is never asked. This is a news
+verification service, so a claim with no date is about the most recent event;
+the judge weighs the newest record first, and a visitor who means an earlier
+round says the year. The country is asked only when nothing in the claim names
+one and more than one covered country is switched on, because it decides
+which documents can answer. "Who" is never asked.
 
 Two rules keep the interview from becoming an interrogation. It never asks more
 than two follow-ups, and the visitor can always say "just tell me what you have"
 and get the answer immediately with whatever is known.
 
-If the visitor does not know when the rumour started, Ma'at answers anyway, says
-plainly that the date is unknown, and says the answer is limited by that.
+If the visitor gives no date, the answer says which record it rests on and
+that an earlier one can be asked for by year.
 
 Country is asked in conversation when it matters, never inferred from the
 visitor's network address. It is what selects country-limited sources.
+
+Scope follows from the place. The global shelf is the international one: it
+holds what is not tied to a single country, from international bodies,
+regional matters and the world at large, and it is searched for every claim.
+Then, by four rules. A claim about a covered country is weighed against that
+country's documents and the global ones. A claim that spans countries or
+comes from an international body, "WHO says", "across West Africa", "Nigeria
+and Kenya", is international: every covered country and the global shelf
+answer it, nobody is asked which country it is about, and the reply says it
+reached beyond one country. A claim that names no place Ma'at knows is
+weighed against every covered country and the global ones. A claim about a
+country outside coverage is weighed against the global documents only:
+coverage is a decision, and a claim about Ghana is not answered by searching
+Nigeria and Kenya, nor by asking their sources to look further. The reply
+says so. A covered country's own states are recognised before a name is taken
+to mean a country outside, so "Niger" is Niger State before it is the
+republic next door.
 
 ### 3.3 The claim record
 

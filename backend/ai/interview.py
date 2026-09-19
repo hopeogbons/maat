@@ -22,8 +22,12 @@ from ai.schemas import ClaimFields, History
 
 logger = logging.getLogger(__name__)
 
-#: Asked before "who" because it changes which documents can answer at all.
-ASK_ORDER = ("what", "when", "where", "who")
+#: What may be asked for, in order. Only these: the claim itself, and the
+#: country when it cannot be deduced, because it decides which documents can
+#: answer at all. The date is never asked; a claim with no date is about the
+#: most recent event, and a visitor who means an earlier one says so. "Who"
+#: is never asked; it is in the claim if it matters.
+ASK_ORDER = ("what", "where")
 
 #: Offline phrasing. Serviceable, never charming: the model writes the real ones.
 FALLBACK_QUESTIONS = {
@@ -124,11 +128,13 @@ def draft_claim(
     return draft
 
 
-def next_question(draft: ClaimDraft, history: History | None = None) -> str | None:
+def next_question(draft: ClaimDraft, history: History | None = None, *, after_read_back: bool = False) -> str | None:
     """The one question that fills the most important gap, in Ma'at's voice.
 
     Returns None when there is nothing left to ask. The caller counts the
-    follow-up; this function only writes it.
+    follow-up; this function only writes it. `after_read_back` means the
+    claim has just been read back in the same reply, so the question must
+    not say it all over again.
     """
     gap = draft.next_gap
     if gap is None:
@@ -145,6 +151,12 @@ def next_question(draft: ClaimDraft, history: History | None = None) -> str | No
                 f"What is known so far: {known or 'nothing yet'}\n"
                 f"The missing thing to ask for: {gap}\n"
                 f"A plain version of the question, to improve on: {fallback}"
+                + (
+                    "\nThe claim has just been read back to them in the sentence before this one. "
+                    "Do not repeat any part of it; go straight to the question, in one sentence."
+                    if after_read_back
+                    else ""
+                )
             ),
         },
     ]

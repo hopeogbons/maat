@@ -35,7 +35,9 @@ class EngineTests(TestCase):
         reply = handle_message(self.conversation, "I heard fuel prices go up by 40% on Monday")
         self.assertEqual(reply.kind, "text")
         self.assertIn("what you've heard", reply.text.lower())
-        self.assertIn("when", reply.text.lower())
+        # The date is never asked: the newest event is meant. With no country
+        # in the claim and none switched on, the country is the one gap.
+        self.assertIn("where", reply.text.lower())
         self.assertEqual(self.conversation.state["followups_asked"], 1)
         self.assertTrue(self.conversation.state["fields"]["what"])
 
@@ -475,4 +477,199 @@ class VoiceApiTests(TestCase):
         self.assertEqual(self.client.post("/api/chat/voice/", {}).status_code, 400)
         with override_settings(VOICE_NOTE_MAX_BYTES=10):
             self.assertEqual(self.client.post("/api/chat/voice/", {"audio": self._note()}).status_code, 400)
+
+
+class ClaimCountryTests(TestCase):
+    """Only a covered country can be the country a claim is about."""
+
+    def setUp(self):
+        from appsettings.models import CountryCoverage
+        from core.models import Country
+
+        from core.models import StateProvince
+
+        ng = Country.objects.create(name="Nigeria", iso2="NG", iso3="NGA", numeric_code="566")
+        CountryCoverage.objects.create(country=ng, is_active=True)
+        StateProvince.objects.create(country=ng, code="NI", name="Niger", kind="State")
+        # Real countries Ma'at does not cover: one next door sharing a name
+        # with a Nigerian state, one that shares nothing.
+        Country.objects.create(name="Niger", iso2="NE", iso3="NER", numeric_code="562")
+        Country.objects.create(name="Ghana", iso2="GH", iso3="GHA", numeric_code="288")
+        Country.objects.create(name="South Africa", iso2="ZA", iso3="ZAF", numeric_code="710")
+
+    def test_a_covered_countrys_state_wins_over_a_country_of_the_same_name(self):
+        from ai.schemas import ClaimFields
+        from verification.engine import _scope_for
+
+        fields = ClaimFields(what="President Tinubu has ordered a probe into the death of detained miners in Niger.", where="Niger")
+        # Niger State, not the Republic of Niger: the search once fenced
+        # itself to the republic, found nothing, and abstained while the
+        # settling article sat under Nigeria.
+        scope = _scope_for(fields)
+        self.assertEqual(scope.country.iso2, "NG")
+        self.assertIsNone(scope.outside)
+
+    def test_a_country_outside_coverage_is_answered_from_the_global_shelf_alone(self):
+        from ai.schemas import ClaimFields
+        from verification.engine import _scope_for
+
+        scope = _scope_for(ClaimFields(what="Ghana has banned okada in Accra.", where="Ghana"))
+        self.assertIsNone(scope.country)
+        self.assertEqual(scope.outside.iso2, "GH")
+        self.assertTrue(scope.global_only)
+
+    def test_a_city_and_its_country_in_where_are_read_as_that_country(self):
+        from ai.schemas import ClaimFields
+        from verification.engine import _scope_for
+
+        scope = _scope_for(ClaimFields(what="Nigerian traders have been banned.", where="Johannesburg, South Africa"))
+        self.assertEqual(scope.outside.iso2, "ZA")
+        self.assertTrue(scope.global_only)
+        scope = _scope_for(ClaimFields(what="Miners died in custody.", where="Minna, Niger"))
+        self.assertEqual(scope.country.iso2, "NG")
+
+    def test_a_place_nobody_knows_leaves_the_country_unknown(self):
+        from ai.schemas import ClaimFields
+        from verification.engine import _scope_for
+
+        scope = _scope_for(ClaimFields(what="The bridge has closed.", where="Atlantis"))
+        self.assertIsNone(scope.country)
+        self.assertIsNone(scope.outside)
+
+    def test_niger_state_and_its_capital_are_nigeria(self):
+        from ai.schemas import ClaimFields
+        from verification.engine import _country_for
+
+        self.assertEqual(_country_for(ClaimFields(what="Deaths in custody in Minna", where="Niger State")).iso2, "NG")
+        self.assertEqual(_country_for(ClaimFields(what="Deaths in custody in Minna")).iso2, "NG")
+
+    def test_a_covered_country_is_found_by_name_or_code(self):
+        from ai.schemas import ClaimFields
+        from verification.engine import _country_for
+
+        self.assertEqual(_country_for(ClaimFields(what="Fuel prices", where="Nigeria")).iso2, "NG")
+        self.assertEqual(_country_for(ClaimFields(what="Fuel prices", where="NG")).iso2, "NG")
+        self.assertEqual(_country_for(ClaimFields(what="Fuel prices in Lagos", where="")).iso2, "NG")
+
+
+class DeducedCountryTests(TestCase):
+    """The country is deduced from the claim before anyone is asked for it."""
+
+    def setUp(self):
+        from appsettings.models import CountryCoverage
+        from core.models import Country
+
+        self.ng = Country.objects.create(name="Nigeria", iso2="NG", iso3="NGA", numeric_code="566")
+        self.ke = Country.objects.create(name="Kenya", iso2="KE", iso3="KEN", numeric_code="404")
+        CountryCoverage.objects.create(country=self.ng, is_active=True)
+        self.kenya = CountryCoverage.objects.create(country=self.ke, is_active=False)
+        self.conversation = Conversation.objects.create(session_key="deduce")
+
+    def test_a_city_in_the_claim_names_the_country(self):
+        from ai.interview import ClaimDraft
+        from ai.schemas import ClaimFields
+        from verification.engine import _deduce_where
+
+        draft = _deduce_where(ClaimDraft(fields=ClaimFields(what="Fuel prices in Lagos go up by 40%.")))
+        self.assertEqual(draft.fields.where, "Nigeria")
+
+    def test_the_only_country_switched_on_is_taken_rather_than_asked(self):
+        from ai.interview import ClaimDraft
+        from ai.schemas import ClaimFields
+        from verification.engine import _deduce_where
+
+        draft = _deduce_where(ClaimDraft(fields=ClaimFields(what="Fuel prices go up by 40%.")))
+        self.assertEqual(draft.fields.where, "Nigeria")
+
+    def test_with_two_countries_on_and_no_place_in_the_claim_it_is_asked(self):
+        from ai.interview import ClaimDraft
+        from ai.schemas import ClaimFields
+        from verification.engine import _deduce_where
+
+        self.kenya.is_active = True
+        self.kenya.save()
+        draft = _deduce_where(ClaimDraft(fields=ClaimFields(what="Fuel prices go up by 40%.")))
+        self.assertEqual(draft.fields.where, "")
+        reply = handle_message(self.conversation, "I heard fuel prices go up by 40% on Monday")
+        self.assertIn("where", reply.text.lower())
+
+    def test_a_claim_with_its_country_in_it_is_weighed_without_a_question(self):
+        reply = handle_message(self.conversation, "I heard fuel prices in Lagos go up by 40% on Monday")
+        # Straight to weighing. The record is empty, so the honest next step
+        # is to say so and ask before looking further.
+        self.assertEqual(Claim.objects.count(), 1)
+        self.assertTrue(self.conversation.state["pending_consent"])
+        self.assertEqual(Claim.objects.get().where, self.ng)
+
+
+class OutsideCoverageTests(TestCase):
+    """A claim about a country Ma'at does not cover leans on the global shelf only."""
+
+    def setUp(self):
+        from appsettings.models import CountryCoverage
+        from core.models import Country
+
+        ng = Country.objects.create(name="Nigeria", iso2="NG", iso3="NGA", numeric_code="566")
+        CountryCoverage.objects.create(country=ng, is_active=True)
+        Country.objects.create(name="Ghana", iso2="GH", iso3="GHA", numeric_code="288")
+        self.conversation = Conversation.objects.create(session_key="outside")
+
+    def test_the_search_is_global_only_and_no_lookup_is_offered(self):
+        with mock.patch("verification.engine.retrieval.search", return_value=[]) as search:
+            reply = handle_message(self.conversation, "I heard Ghana has banned okada in Accra")
+        self.assertTrue(search.call_args.kwargs["global_only"])
+        self.assertIsNone(search.call_args.kwargs["country"])
+        self.assertEqual(reply.kind, "verdict")
+        self.assertIn("does not yet cover Ghana", reply.text)
+        self.assertFalse(self.conversation.state.get("pending_consent"))
+
+
+class InternationalScopeTests(TestCase):
+    """A claim that spans countries, or comes from an international body, belongs to the global shelf."""
+
+    def setUp(self):
+        from appsettings.models import CountryCoverage
+        from core.models import Country
+
+        self.ng = Country.objects.create(name="Nigeria", iso2="NG", iso3="NGA", numeric_code="566")
+        self.ke = Country.objects.create(name="Kenya", iso2="KE", iso3="KEN", numeric_code="404")
+        CountryCoverage.objects.create(country=self.ng, is_active=True)
+        CountryCoverage.objects.create(country=self.ke, is_active=True)
+        Country.objects.create(name="Ghana", iso2="GH", iso3="GHA", numeric_code="288")
+        self.conversation = Conversation.objects.create(session_key="intl")
+
+    def test_a_body_a_region_or_two_countries_make_a_claim_international(self):
+        from ai.schemas import ClaimFields
+        from verification.engine import _scope_for
+
+        for what, where in (
+            ("WHO has declared the end of the mpox emergency.", ""),
+            ("Cholera is spreading across West Africa.", ""),
+            ("Nigeria and Kenya have signed a visa-free deal.", ""),
+            ("Fuel prices are rising.", "worldwide"),
+        ):
+            scope = _scope_for(ClaimFields(what=what, where=where))
+            self.assertTrue(scope.international, what)
+            self.assertIsNone(scope.country, what)
+            self.assertFalse(scope.global_only, what)
+
+    def test_a_lowercase_who_is_a_word_not_the_organisation(self):
+        from ai.schemas import ClaimFields
+        from verification.engine import _scope_for
+
+        scope = _scope_for(ClaimFields(what="Nobody knows who ordered the arrests in Lagos."))
+        self.assertFalse(scope.international)
+        self.assertEqual(scope.country.iso2, "NG")
+
+    def test_an_international_claim_is_weighed_everywhere_and_asked_nothing(self):
+        with mock.patch("verification.engine.retrieval.search", return_value=[]) as search:
+            reply = handle_message(self.conversation, "I heard WHO has declared the end of the mpox emergency")
+        # Two countries are switched on and none is named, yet no question:
+        # the place is the world. Every covered shelf and the global one.
+        self.assertEqual(reply.kind, "verdict")
+        self.assertIsNone(search.call_args.kwargs["country"])
+        self.assertFalse(search.call_args.kwargs["global_only"])
+        self.assertIn("beyond one country", reply.text)
+        self.assertFalse(self.conversation.state.get("pending_consent"))
+        self.assertEqual(Claim.objects.get().where_text, "International")
 

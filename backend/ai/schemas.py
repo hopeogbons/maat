@@ -74,19 +74,16 @@ class ClaimFields:
     def missing(self) -> list[str]:
         """The fields still worth asking about, in asking order.
 
-        `why` is never asked for: it is welcome when volunteered and useless
-        to interrogate. `when` stops being missing once the visitor has said
-        they do not know it.
+        Only the claim and the country. `when` is never asked: a claim with no
+        date is about the most recent event, and a visitor who means an
+        earlier one says the year. `who` is in the claim when it matters.
+        `why` is welcome when volunteered and useless to interrogate.
         """
         gaps = []
         if not self.what:
             gaps.append("what")
-        if not self.when and not self.when_unknown:
-            gaps.append("when")
         if not self.where:
             gaps.append("where")
-        if not self.who:
-            gaps.append("who")
         return gaps
 
     def as_dict(self) -> dict[str, str | bool]:

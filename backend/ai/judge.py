@@ -99,8 +99,8 @@ def _claim_text(fields: ClaimFields) -> str:
     parts = [fields.what]
     if fields.when:
         parts.append(f"(when: {fields.when})")
-    elif fields.when_unknown:
-        parts.append("(when: not known)")
+    else:
+        parts.append("(when: not given; the most recent event is meant)")
     if fields.where:
         parts.append(f"(where: {fields.where})")
     if fields.who:

@@ -22,7 +22,7 @@ from __future__ import annotations
 
 import logging
 import uuid
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass, field, replace
 
 from django.db import transaction
 from django.urls import reverse
@@ -45,9 +45,16 @@ from ai import (
 )
 from ai.interview import ClaimDraft
 from ai.schemas import INSUFFICIENT, ClaimFields, History, Passage
-from appsettings.models import AppSetting
+from appsettings.models import AppSetting, CountryCoverage
 from core.models import Country
-from knowledge.geography import country_of
+from knowledge.geography import (
+    country_of,
+    covered_patterns,
+    is_international,
+    named_country,
+    outside_country_in,
+    state_country,
+)
 from knowledge.lookup import lookup as live_lookup
 from knowledge.models import Chunk, Document, Source
 from verification import retrieval
@@ -96,6 +103,14 @@ NO_SOURCES_YET = (
     "so I have to stop here. What I hold does not settle this."
 )
 DECLINED = "Understood. I'll leave it at what I hold, which does not settle this one."
+OUTSIDE_COVERAGE = (
+    "Ma’at does not yet cover {country}, so this was checked against the global sources only, "
+    "the ones not tied to any one country."
+)
+INTERNATIONAL = (
+    "This reaches beyond one country, so it was checked against the global sources and the record of "
+    "every country Ma’at covers."
+)
 MANIPULATION = "I read that as an attempt to change how I work, so I'll set it aside. If there's something you've heard and want checked, tell me what it was."
 
 
@@ -163,6 +178,100 @@ def _shortlist(passages: list, scores: list[float]) -> list:
     return [passages[i] for i in sorted(kept, key=lambda i: (-scores[i], i))]
 
 
+@dataclass(frozen=True)
+class Scope:
+    """Where a claim is weighed: one covered country, all of them, or the global shelf alone.
+
+    The global shelf holds what is not tied to one country: international
+    bodies, regional matters, the world at large. It is searched for every
+    claim. `country` is the covered country the claim is about, or None for
+    all of them. `international` marks a claim that spans countries or comes
+    from an international body: every covered country and the global shelf
+    answer it, and nobody is asked which country it is about. `outside` is a
+    country the visitor named that Ma'at does not cover; then only global
+    documents may answer. Neither international nor outside claims have a
+    country whose APIs could be asked to look further.
+    """
+
+    country: Country | None = None
+    international: bool = False
+    outside: Country | None = None
+
+    @property
+    def global_only(self) -> bool:
+        return self.outside is not None
+
+    @property
+    def has_country(self) -> bool:
+        """Whether the claim's place is settled, one way or another."""
+        return self.country is not None or self.international or self.outside is not None
+
+
+def _scope_for(fields: ClaimFields) -> Scope:
+    """The scope a claim is weighed in. See Scope.
+
+    The interpreter's `where` is read first: a covered country by name, alias
+    or code; else a covered country's own state or province, so that "Niger"
+    is Niger State before it is the republic next door; else any country at
+    all, which marks the claim as outside coverage. A place none of those
+    know leaves the country unknown, and the claim itself is then read for a
+    covered country's name, demonym or major city, by the same rule that
+    files feed items.
+    """
+    where = (fields.where or "").strip()
+    text = " ".join(part for part in (fields.what, fields.where, fields.who) if part)
+    if where:
+        match = country_of(where) or state_country(where)
+        if match is None and len(where) == 2:
+            match = next((c for c, _ in covered_patterns() if c.iso2.lower() == where.lower()), None)
+        if match:
+            return Scope(country=match)
+        # One country's name first, exact or inside "Johannesburg, South
+        # Africa": a country, not the continent. Only then does a region or
+        # the world count.
+        outside = named_country(where) or outside_country_in(where)
+        if outside:
+            return Scope(outside=outside)
+        if is_international(where):
+            return Scope(international=True)
+    if is_international(text):
+        return Scope(international=True)
+    country = country_of(text)
+    if country is not None:
+        return Scope(country=country)
+    return Scope(outside=outside_country_in(text))
+
+
+def _deduce_where(draft: ClaimDraft) -> ClaimDraft:
+    """Fill in the country from the visitor's own words before asking for it.
+
+    A claim that names Lagos, or Kenyans, or a state, has named its country;
+    asking "where?" after that is a form, not a conversation. When nothing in
+    the claim names a place and only one covered country is switched on, that
+    country is taken, since it is the only one an answer could come from.
+    Only when neither applies is the question asked.
+    """
+    fields = draft.fields
+    if fields.where:
+        return draft
+    scope = _scope_for(fields)
+    if scope.international:
+        # Spans countries, or comes from a body that does. Its place is the
+        # world, and "which country?" would be the wrong question.
+        draft.fields = replace(fields, where="International")
+        return draft
+    # A country outside coverage counts as named too: the claim is about it,
+    # and the sole switched-on country must not be assumed over it.
+    country = scope.country or scope.outside
+    if country is None:
+        active = [row.country for row in CountryCoverage.active.filter(is_active=True).select_related("country")]
+        country = active[0] if len(active) == 1 else None
+    if country is None:
+        return draft
+    draft.fields = replace(fields, where=country.name)
+    return draft
+
+
 def _country_for(fields: ClaimFields) -> Country | None:
     """The country the claim is about, if it is about one Ma'at covers.
 
@@ -171,15 +280,16 @@ def _country_for(fields: ClaimFields) -> Country | None:
     same rule that files feed items. A visitor who says "inflation in Nigeria"
     has named the country whether or not the interpreter copied it into the
     right field, and the offline interpreter never does.
+
+    Only covered countries count, in both readings. This once matched `where`
+    against every country in the world, and "miners in Niger", meaning Niger
+    State, resolved to the Republic of Niger: a country with no coverage, no
+    sources and no documents. The search was then fenced to it, found nothing,
+    and Ma'at abstained while the settling article sat on the shelf. A place
+    no covered country claims leaves the country unknown, which searches all
+    of them, rather than a country that has nothing to search.
     """
-    where = (fields.where or "").strip()
-    for token in ([where] if where else []) + [part.strip() for part in where.replace(",", " ").split()]:
-        match = Country.active.filter(name__iexact=token).first() or (
-            Country.active.filter(iso2__iexact=token).first() if len(token) == 2 else None
-        )
-        if match:
-            return match
-    return country_of(" ".join(part for part in (fields.what, fields.where, fields.who) if part))
+    return _scope_for(fields).country
 
 
 def _record_turn(conversation: Conversation, speaker: str, *, raw: str = "", read=None, text: str = "") -> Turn:
@@ -360,7 +470,8 @@ def _weigh(conversation: Conversation, draft: ClaimDraft, read, history: History
     """Recall, rerank, judge, decide, and write it all down."""
     fields = draft.fields
     settings = AppSetting.current()
-    country = _country_for(fields)
+    scope = _scope_for(fields)
+    country = scope.country
 
     vectors = embed_texts([fields.what])
     claim = Claim.objects.create(
@@ -376,7 +487,9 @@ def _weigh(conversation: Conversation, draft: ClaimDraft, read, history: History
         why=fields.why,
     )
 
-    passages = retrieval.search(fields.what, read.search_variants if read else [], country=country)
+    passages = retrieval.search(
+        fields.what, read.search_variants if read else [], country=country, global_only=scope.global_only
+    )
     if passages:
         scores = rerank_scored(fields.what, [p.text for p in passages], gloss=read.paraphrase if read else "")
         if scores is not None:
@@ -417,8 +530,11 @@ def _weigh(conversation: Conversation, draft: ClaimDraft, read, history: History
             },
         )
 
-    if decision.below_gate and not decision.degraded and not state.get("looked_up"):
-        # Say so, and ask before looking anywhere else.
+    if decision.below_gate and not decision.degraded and not state.get("looked_up") and not scope.global_only and not scope.international:
+        # Say so, and ask before looking anywhere else. Not for a claim outside
+        # coverage or an international one: there is no country whose APIs
+        # could be asked, and an offer to look further would be a promise
+        # with nothing behind it.
         LiveLookup.objects.create(conversation=conversation, claim=claim)
         text = consent_ask(fields, found_something=decision.reason != "nothing_found", history=history)
         _save_state(conversation, draft, pending_consent=True, claim_id=str(claim.id))
@@ -438,6 +554,12 @@ def _weigh(conversation: Conversation, draft: ClaimDraft, read, history: History
     rumour.refresh_from_db(fields=["status", "slug", "statement", "last_seen_at"])
     article = _article_of(rumour)
     text = answer.text
+    if scope.global_only:
+        # The visitor named somewhere Ma'at does not answer for. Say so, and
+        # say what the verdict could lean on, so a thin answer is understood.
+        text = f"{text}\n\n{OUTSIDE_COVERAGE.format(country=scope.outside.name)}"
+    elif scope.international:
+        text = f"{text}\n\n{INTERNATIONAL}"
     if article:
         # Published means enough different people raised it; there is no public
         # page to send anybody to yet, so the sentence must not promise one.
@@ -600,12 +722,12 @@ def handle_message(conversation: Conversation, text: str) -> Reply:
         draft = draft_claim(read, history, previous=previous)
         if not draft.fields.what:
             reply = Reply(kind="text", text=social_reply(read.safe_text, history))
-        elif draft.ready(settings.max_followup_questions, answer_now=read.wants_answer_now):
+        elif _deduce_where(draft).ready(settings.max_followup_questions, answer_now=read.wants_answer_now):
             reply = _weigh(conversation, draft, read, history)
         else:
-            question = next_question(draft, history) or ""
             introduced = (conversation.state or {}).get("introduced", False)
             lead = "" if introduced else read_back(draft.fields, history)
+            question = next_question(draft, history, after_read_back=bool(lead)) or ""
             draft.followups_asked += 1
             _save_state(conversation, draft, introduced=True, pending_consent=False)
             reply = Reply(kind="text", text=f"{lead}\n\n{question}".strip() if lead else question)
