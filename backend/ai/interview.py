@@ -143,7 +143,7 @@ def next_question(draft: ClaimDraft, history: History | None = None, *, after_re
 
     known = {k: v for k, v in draft.fields.as_dict().items() if v and k != "when_unknown"}
     messages = [
-        {"role": "system", "content": prompts.VOICE + "\n" + prompts.FOLLOW_UP},
+        {"role": "system", "content": prompts.voice() + "\n" + prompts.FOLLOW_UP},
         *(history.as_messages(6) if history else []),
         {
             "role": "user",

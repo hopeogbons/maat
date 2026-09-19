@@ -1,7 +1,7 @@
 import { cn } from 'cn'
 import { Check, ChevronDown, Globe } from 'lucide-react'
 import { useEffect, useId, useRef, useState } from 'react'
-import { groupLanguages, useLanguage, type AvailableLanguageCode, type CountryCode, type Language } from '@/i18n'
+import { groupLanguages, loadCoverage, useLanguage, type AvailableLanguageCode, type CountryCode, type Language } from '@/i18n'
 
 /**
  * Language picker: English on its own at the top (it belongs to no country),
@@ -14,6 +14,9 @@ export function LanguageMenu() {
   const rootRef = useRef<HTMLDivElement>(null)
   const panelId = useId()
   const { global, countries } = groupLanguages()
+  useEffect(() => {
+    void loadCoverage()
+  }, [])
 
   useEffect(() => {
     if (!open) return

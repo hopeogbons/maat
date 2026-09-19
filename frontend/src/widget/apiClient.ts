@@ -74,7 +74,7 @@ export function createApiClient(): MaatClient {
   async function send(text: string, options?: SendOptions): Promise<Reply> {
     const data = await apiFetch<ChatResponse>('/api/chat/', {
       method: 'POST',
-      body: JSON.stringify({ text, conversation }),
+      body: JSON.stringify({ text, conversation, language: options?.language }),
       signal: options?.signal,
     })
     return replyOf(data)

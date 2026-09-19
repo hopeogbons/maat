@@ -4,7 +4,7 @@ export {
   DEFAULT_LANGUAGE,
   LANGUAGES,
   getLanguageMeta,
-  groupLanguages,
+  groupAllLanguages,
   isAvailable,
   type AvailableLanguageCode,
   type CountryCode,
@@ -13,4 +13,4 @@ export {
 } from './languages'
 export { MESSAGES } from './locales'
 export type { Messages, Verdict } from './messages'
-export { getLanguage, setLanguage, useLanguage } from './store'
+export { getCoverage, getLanguage, groupLanguages, isOffered, loadCoverage, setCoverage, setLanguage, useLanguage } from './store'

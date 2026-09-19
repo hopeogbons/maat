@@ -154,6 +154,7 @@ export const en: Messages = {
     send: "Send",
     voiceUpload: "Upload a voice note",
     voiceNote: "Voice note",
+    meaning: "Meaning",
     yes: "Yes",
     no: "No",
     record: "Record a voice note",

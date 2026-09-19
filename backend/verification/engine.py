@@ -43,6 +43,9 @@ from ai import (
     rerank_scored,
     social_reply,
 )
+from ai import prompts
+from ai.phrases import phrase
+from ai.translate import translate_excerpts
 from ai.interview import ClaimDraft
 from ai.schemas import INSUFFICIENT, ClaimFields, History, Passage
 from appsettings.models import AppSetting, CountryCoverage
@@ -90,30 +93,8 @@ RERANK_FLOOR = 3.0
 #: the near miss without paying to judge the whole pool.
 ALWAYS_JUDGE = 3
 
-NOTHING_FOUND_ONLINE = (
-    "I asked the trusted sources set up for this country and none of them holds a figure "
-    "that speaks to this. What I have does not settle it."
-)
-NO_COUNTRY_FOR_LOOKUP = (
-    "I can only look further once I know which country this is about, and the sources "
-    "I would ask are organised by country. Tell me where, and I will check."
-)
-NO_SOURCES_YET = (
-    "I would look further, but no trusted online sources have been set up for me yet, "
-    "so I have to stop here. What I hold does not settle this."
-)
-DECLINED = "Understood. I'll leave it at what I hold, which does not settle this one."
 #: The two answers a yes-or-no question offers for the tapping.
 YES_NO = [{"kind": "yes", "send": "Yes"}, {"kind": "no", "send": "No"}]
-OUTSIDE_COVERAGE = (
-    "Ma’at does not yet cover {country}, so this was checked against the global sources only, "
-    "the ones not tied to any one country."
-)
-INTERNATIONAL = (
-    "This reaches beyond one country, so it was checked against the global sources and the record of "
-    "every country Ma’at covers."
-)
-MANIPULATION = "I read that as an attempt to change how I work, so I'll set it aside. If there's something you've heard and want checked, tell me what it was."
 
 
 @dataclass
@@ -446,6 +427,27 @@ def _source_mark(document: Document | None) -> dict | None:
     return {"name": source.name, "short": source.short, "logoUrl": source.logo_url, "brand": source.brand}
 
 
+def _carry_along(sources: list[dict]) -> list[dict]:
+    """Add to each citation what its highlighted sentence says in the visitor's language.
+
+    The quotation stays English, as published, because the highlight must
+    match the record word for word. Beside it goes the meaning, so a visitor
+    reading in Hausa is not left with a wall of English at the one moment
+    that matters. English readers get nothing added.
+    """
+    if prompts.reply_language.get() in ("", "en") or not sources:
+        return sources
+    excerpts = []
+    for source in sources:
+        quote = source.get("quote") or ""
+        span = source.get("highlight")
+        excerpts.append(quote[span[0] : span[1]] if span else quote[:300])
+    translated = translate_excerpts(excerpts)
+    for source, meaning in zip(sources, translated):
+        source["translation"] = meaning
+    return sources
+
+
 def _sources_payload(decision) -> list[dict]:
     """Citations in the shape the widget shows: title, issuer, date, link, quote."""
     ids = [c.reference for c in decision.citations if c.reference]
@@ -468,7 +470,7 @@ def _sources_payload(decision) -> list[dict]:
                 "judgement": citation.judgement,
             }
         )
-    return payload
+    return _carry_along(payload)
 
 
 @transaction.atomic
@@ -563,19 +565,19 @@ def _weigh(conversation: Conversation, draft: ClaimDraft, read, history: History
     if scope.global_only:
         # The visitor named somewhere Ma'at does not answer for. Say so, and
         # say what the verdict could lean on, so a thin answer is understood.
-        text = f"{text}\n\n{OUTSIDE_COVERAGE.format(country=scope.outside.name)}"
+        text = f"{text}\n\n{phrase('outside_coverage', country=scope.outside.name)}"
     elif scope.international:
-        text = f"{text}\n\n{INTERNATIONAL}"
+        text = f"{text}\n\n{phrase('international')}"
     if article:
         # Published means enough different people raised it; there is no public
         # page to send anybody to yet, so the sentence must not promise one.
-        text = f"{text}\n\nEnough people have raised this for it to stand as a published verdict; the one above is it."
+        text = f"{text}\n\n{phrase('published')}"
 
     # Offer rather than attach. A file arriving unasked is presumptuous on a
     # metered connection, and the offer is one line the visitor can ignore.
     offerable = _shareable_documents(decision)
     if offerable:
-        text = f"{text}\n\n{COPY_OFFER}"
+        text = f"{text}\n\n{phrase('copy_offer')}"
         _save_state(conversation, None, pending_copy=[str(d.pk) for d in offerable])
 
     return Reply(
@@ -618,7 +620,7 @@ def _closest_records(claim: Claim | None) -> list[dict]:
                 "judgement": row.judgement,
             }
         )
-    return payload
+    return _carry_along(payload)
 
 
 def _after_consent(conversation: Conversation, read, history: History) -> Reply:
@@ -637,7 +639,7 @@ def _after_consent(conversation: Conversation, read, history: History) -> Reply:
             lookup.save(update_fields=["consented", "consented_at"])
         conversation.state = {}
         conversation.save(update_fields=["state"])
-        return Reply(kind="verdict", text=DECLINED, verdict=INSUFFICIENT, confidence=0, sources=closest)
+        return Reply(kind="verdict", text=phrase('declined'), verdict=INSUFFICIENT, confidence=0, sources=closest)
 
     # Yes. Leg three: ask the configured APIs for this country, store what they
     # say as documents, then weigh the claim again against the enlarged shelf.
@@ -649,7 +651,7 @@ def _after_consent(conversation: Conversation, read, history: History) -> Reply:
     if draft is None or claim is None:
         conversation.state = {}
         conversation.save(update_fields=["state"])
-        return Reply(kind="verdict", text=NO_SOURCES_YET, verdict=INSUFFICIENT, confidence=0)
+        return Reply(kind="verdict", text=phrase('no_sources_yet'), verdict=INSUFFICIENT, confidence=0)
 
     country = claim.where
     written = live_lookup(draft.fields.what, country) if country else []
@@ -661,7 +663,7 @@ def _after_consent(conversation: Conversation, read, history: History) -> Reply:
         # already judged travel with it, so the visitor sees what was found.
         conversation.state = {}
         conversation.save(update_fields=["state"])
-        text = NOTHING_FOUND_ONLINE if country else NO_COUNTRY_FOR_LOOKUP
+        text = phrase('nothing_found_online') if country else phrase('no_country_for_lookup')
         return Reply(kind="verdict", text=text, verdict=INSUFFICIENT, confidence=0, sources=closest)
 
     # The shelf is bigger now. Weigh again, this time with pending_consent
@@ -671,13 +673,16 @@ def _after_consent(conversation: Conversation, read, history: History) -> Reply:
     return _weigh(conversation, draft, read, history)
 
 
-COPY_OFFER = "I have the document itself. Would you like a copy?"
-COPY_DECLINED = "Of course. The citation above links to the publisher’s own page if you want it later."
-COPY_SENT = "Here it is. This is the document the answer rests on, exactly as it was published."
-
-
 def handle_message(conversation: Conversation, text: str) -> Reply:
     """Answer one visitor message. Always returns something to say."""
+    token = prompts.reply_language.set(conversation.language or "en")
+    try:
+        return _handle_message(conversation, text)
+    finally:
+        prompts.reply_language.reset(token)
+
+
+def _handle_message(conversation: Conversation, text: str) -> Reply:
     _forget_if_cold(conversation)
     history = _history(conversation)
     read = interpret(text, history)
@@ -692,13 +697,13 @@ def handle_message(conversation: Conversation, text: str) -> Reply:
         wanted = state.get("pending_copy") or []
         _save_state(conversation, None, pending_copy=[])
         if read.consent == "no":
-            reply = Reply(kind="text", text=COPY_DECLINED)
+            reply = Reply(kind="text", text=phrase('copy_declined'))
         else:
             documents = [d for d in Document.active.filter(pk__in=wanted, is_public=True) if d.original]
             reply = (
-                Reply(kind="text", text=COPY_SENT, attachments=[_attachment_payload(d) for d in documents])
+                Reply(kind="text", text=phrase('copy_sent'), attachments=[_attachment_payload(d) for d in documents])
                 if documents
-                else Reply(kind="text", text=COPY_DECLINED)
+                else Reply(kind="text", text=phrase('copy_declined'))
             )
     elif state.get("recurrence_asked") and read.consent:
         # Answering "is this something new?". Yes starts a rumour of its own;
@@ -718,7 +723,7 @@ def handle_message(conversation: Conversation, text: str) -> Reply:
     elif state.get("pending_consent") and read.consent:
         reply = _after_consent(conversation, read, history)
     elif read.is_manipulation and not read.has_claim:
-        reply = Reply(kind="text", text=MANIPULATION)
+        reply = Reply(kind="text", text=phrase('manipulation'))
     elif read.is_social and not read.has_claim:
         # A greeting is answered as a greeting, whatever is half-finished. The
         # draft and any pending question stay where they are for the next

@@ -68,7 +68,7 @@ def compose_answer(fields: ClaimFields, decision: Decision, history: History | N
         for c in decision.citations[:4]
     ) or "- none"
     messages = [
-        {"role": "system", "content": prompts.VOICE + "\n" + prompts.ANSWER},
+        {"role": "system", "content": prompts.voice() + "\n" + prompts.ANSWER},
         *(history.as_messages(4) if history else []),
         {
             "role": "user",

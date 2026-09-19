@@ -77,7 +77,7 @@ function SourceBlock({ source }: { source: Source }) {
         </div>
       </div>
       <p className="maat:mt-2 maat:text-[13px] maat:font-medium maat:leading-snug maat:text-foreground/90">{source.title}</p>
-      {source.quote && <Quote quote={source.quote} highlight={source.highlight ?? null} />}
+      {source.quote && <Quote quote={source.quote} highlight={source.highlight ?? null} translation={source.translation} />}
       {source.url && (
         <a
           href={source.url}
@@ -93,8 +93,22 @@ function SourceBlock({ source }: { source: Source }) {
   )
 }
 
-/** The passage, with the sentence the judgement rests on marked inside it. */
-function Quote({ quote, highlight }: { quote: string; highlight: [number, number] | null }) {
+/**
+ * The passage, with the sentence the judgement rests on marked inside it.
+ * The passage is shown as published, in English, because the mark must match
+ * the record word for word. Under it, for a visitor reading in another
+ * language, goes what the marked sentence says in theirs.
+ */
+function Quote({
+  quote,
+  highlight,
+  translation,
+}: {
+  quote: string
+  highlight: [number, number] | null
+  translation?: string
+}) {
+  const { t } = useLanguage()
   const [start, end] = highlight ?? [-1, -1]
   const marked = start >= 0 && end > start && end <= quote.length
   return (
@@ -107,6 +121,12 @@ function Quote({ quote, highlight }: { quote: string; highlight: [number, number
         </>
       ) : (
         quote
+      )}
+      {translation && (
+        <p className="maat:mt-2 maat:border-t maat:border-foreground/10 maat:pt-2 maat:text-foreground">
+          <span className="maat:font-medium maat:text-gold-dark">{t.widget.meaning}: </span>
+          {translation}
+        </p>
       )}
     </blockquote>
   )

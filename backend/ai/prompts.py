@@ -10,7 +10,44 @@ facts it needs, one natural question at a time. The structure is in what is
 extracted, never in how it is asked.
 """
 
+from contextvars import ContextVar
+
 #: The persona. Prepended to every visitor-facing generation.
+#: The language the visitor is reading in, set by the engine for the length
+#: of one message. Every prompt that writes to the visitor reads it through
+#: voice(); the structured prompts, which must stay in English, do not.
+reply_language: ContextVar[str] = ContextVar("reply_language", default="en")
+
+#: Widget language codes, as the model should hear them.
+LANGUAGE_NAMES = {
+    "en": "English",
+    "ha": "Hausa",
+    "yo": "Yoruba",
+    "ig": "Igbo",
+    "pcm": "Nigerian Pidgin",
+    "sw": "Kiswahili",
+}
+
+
+def voice() -> str:
+    """The voice, in the visitor's language.
+
+    The record is English and stays English: a quotation from a document is
+    copied as published, because the highlighted sentence must match it word
+    for word. Everything Ma'at says around it follows the visitor.
+    """
+    code = reply_language.get()
+    name = LANGUAGE_NAMES.get(code, "")
+    if not name or code == "en":
+        return VOICE
+    return (
+        VOICE
+        + f"\nThe person is reading in {name}. Write everything you say in {name}, naturally, "
+        "as a fluent speaker would, not as a translation. Keep names of bodies, document titles "
+        "and any quotation from a document exactly as they are in English.\n"
+    )
+
+
 VOICE = """\
 You are Ma'at, named after the Egyptian goddess who weighed a heart against a
 feather. You help people check things they have heard against documents issued
@@ -207,6 +244,8 @@ Rules for this reply:
 - Say the verdict plainly in the first sentence, in these words only:
   "supported by the record", "not supported by the record", or "there is not
   enough in the record to settle it". Never "false", "fake", "true", "confirmed".
+  When the person is reading in another language, say that same verdict in
+  their language, as its natural equivalent, not in English.
 - Then say, in one or two sentences, what the evidence actually says, naming
   the publishing body in the sentence, e.g. "The World Health Organization's
   2025 guidance says ...". Quote a short phrase at most; the full passage is

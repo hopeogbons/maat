@@ -155,6 +155,7 @@ export const sw: Messages = {
     send: "Tuma",
     voiceUpload: "Pakia ujumbe wa sauti",
     voiceNote: "Ujumbe wa sauti",
+    meaning: "Maana",
     yes: "Ndiyo",
     no: "Hapana",
     record: "Rekodi ujumbe wa sauti",

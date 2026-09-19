@@ -675,3 +675,52 @@ class InternationalScopeTests(TestCase):
         self.assertFalse(self.conversation.state.get("pending_consent"))
         self.assertEqual(Claim.objects.get().where_text, "International")
 
+
+class LanguageTests(TestCase):
+    """Ma'at follows the language the widget is showing; the record stays English."""
+
+    def test_the_language_sent_with_a_message_is_kept_on_the_conversation(self):
+        body = self.client.post("/api/chat/", {"text": "Sannu", "language": "ha"}, content_type="application/json").json()
+        self.assertEqual(Conversation.objects.get(id=body["conversation"]).language, "ha")
+        self.client.post("/api/chat/", {"text": "hello", "language": "yo", "conversation": body["conversation"]}, content_type="application/json")
+        self.assertEqual(Conversation.objects.get(id=body["conversation"]).language, "yo")
+
+    def test_the_voice_is_told_the_language_and_the_fixed_sentences_follow_it(self):
+        from ai import prompts
+        from ai.phrases import PHRASES, phrase
+
+        token = prompts.reply_language.set("ha")
+        try:
+            self.assertIn("Write everything you say in Hausa", prompts.voice())
+            self.assertEqual(phrase("declined"), PHRASES["ha"]["declined"])
+            self.assertIn("Neja", phrase("outside_coverage", country="Neja"))
+        finally:
+            prompts.reply_language.reset(token)
+        self.assertNotIn("Hausa", prompts.voice())
+        self.assertEqual(phrase("declined", "xx"), PHRASES["en"]["declined"])
+
+    def test_a_hausa_conversation_declines_in_hausa(self):
+        from ai.phrases import PHRASES
+
+        conversation = Conversation.objects.create(session_key="ha", language="ha")
+        handle_message(conversation, "I heard fuel prices go up by 40% on Monday")
+        handle_message(conversation, "just tell me what you have")
+        reply = handle_message(conversation, "No thanks")
+        self.assertEqual(reply.kind, "verdict")
+        self.assertEqual(reply.text, PHRASES["ha"]["declined"])
+
+    def test_offline_the_meaning_is_left_blank_never_invented(self):
+        from ai import prompts
+        from ai.translate import translate_excerpts
+        from verification.engine import _carry_along
+
+        self.assertEqual(translate_excerpts(["A sentence."], "ha"), [""])
+        self.assertEqual(translate_excerpts(["A sentence."], "en"), [""])
+        token = prompts.reply_language.set("ha")
+        try:
+            rows = _carry_along([{"quote": "Fees rise. Schools open on Monday.", "highlight": [11, 34]}])
+        finally:
+            prompts.reply_language.reset(token)
+        self.assertEqual(rows[0]["translation"], "")
+        self.assertNotIn("translation", _carry_along([{"quote": "x", "highlight": None}])[0])
+

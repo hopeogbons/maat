@@ -6,6 +6,8 @@ from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from appsettings.models import CountryCoverage
+
 
 @api_view(["GET"])
 @permission_classes([AllowAny])
@@ -31,3 +33,17 @@ def health(request: Request) -> Response:
     }
     http_status = status.HTTP_200_OK if database == "ok" else status.HTTP_503_SERVICE_UNAVAILABLE
     return Response(payload, status=http_status)
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def coverage(request: Request) -> Response:
+    """The countries switched on, for the widget and the landing page.
+
+    Public and tiny: it decides which languages are offered. The languages
+    are the countries', so a country switched off takes its languages off
+    the picker with it, and switching it on brings them back. English is
+    shared and is not listed here.
+    """
+    rows = CountryCoverage.active.filter(is_active=True).select_related("country").order_by("country__name")
+    return Response({"countries": [{"iso2": row.country.iso2, "name": row.country.name} for row in rows]})

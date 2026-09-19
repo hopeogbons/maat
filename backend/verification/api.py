@@ -23,6 +23,7 @@ from django.http import FileResponse, Http404
 
 from appsettings.models import AppSetting
 from knowledge.models import Document
+from ai.phrases import phrase
 from ai.speech import SPEECH_FORMATS, speak, transcribe
 from verification.engine import Reply, handle_message
 from verification.models import Conversation
@@ -91,6 +92,19 @@ def _open_conversation(request: Request) -> tuple[Conversation, str | None]:
     return conversation, issued_key
 
 
+def _remember_language(conversation: Conversation, request: Request) -> None:
+    """The language the widget is showing, kept on the conversation.
+
+    Sent with every message, since the visitor can switch mid-conversation
+    and Ma'at should follow them. Only a short code is accepted; anything
+    else leaves the conversation as it was.
+    """
+    code = (request.data.get("language") or "").strip().lower()[:12]
+    if code and code.replace("-", "").isalpha() and code != conversation.language:
+        conversation.language = code
+        conversation.save(update_fields=["language"])
+
+
 def _respond(request: Request, conversation: Conversation, body: dict, issued_key: str | None) -> Response:
     """The reply, with the visitor cookie set when this browser was just given one."""
     response = Response({"conversation": str(conversation.id), **body})
@@ -124,13 +138,9 @@ class ChatView(APIView):
             return Response({"detail": "That is longer than I can read at once."}, status=status.HTTP_400_BAD_REQUEST)
 
         conversation, issued_key = _open_conversation(request)
+        _remember_language(conversation, request)
         reply = handle_message(conversation, text)
         return _respond(request, conversation, {"reply": reply.as_dict()}, issued_key)
-
-
-#: What a voice note gets when nothing could be heard: the transcriber was
-#: offline, the clip was silent, or the words did not come through.
-COULD_NOT_LISTEN = "I couldn’t make out that voice note. Try again a little closer to the microphone, or type what you heard."
 
 
 class VoiceChatView(ChatView):
@@ -156,7 +166,7 @@ class VoiceChatView(ChatView):
         if heard is None:
             # Nothing to weigh, so nothing is recorded: no conversation is
             # opened for a note that carried no words.
-            reply = Reply(kind="text", text=COULD_NOT_LISTEN, degraded=True)
+            reply = Reply(kind="text", text=phrase("could_not_listen", language), degraded=True)
             return Response({
                 "conversation": request.data.get("conversation") or None,
                 "transcript": "",
@@ -165,8 +175,9 @@ class VoiceChatView(ChatView):
             })
 
         conversation, issued_key = _open_conversation(request)
+        _remember_language(conversation, request)
         reply = handle_message(conversation, heard.text[:MAX_MESSAGE_CHARS])
-        spoken = speak(reply.text, language=language)
+        spoken = speak(reply.text, language=conversation.language)
         payload = {
             "transcript": heard.text,
             "reply": reply.as_dict(),

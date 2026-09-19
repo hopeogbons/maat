@@ -29,6 +29,8 @@ export interface Source {
   quote?: string
   /** Character offsets inside `quote` of the sentence the judgement rests on. */
   highlight?: [number, number] | null
+  /** What the highlighted sentence says in the visitor's language; empty for English readers. */
+  translation?: string
   /** What the passage does to the claim: supports, contradicts, settles_nothing. */
   judgement?: string
 }

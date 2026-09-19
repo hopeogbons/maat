@@ -50,11 +50,15 @@ export function getLanguageMeta(code: LanguageCode): Language {
   return LANGUAGES.find((l) => l.code === code) ?? LANGUAGES[0]
 }
 
-/** Languages that belong to no country (English), then each country's list. */
-export function groupLanguages() {
+/**
+ * Languages that belong to no country (English), then each listed country's
+ * languages. The store's groupLanguages() is the one the pickers use: it
+ * passes only the countries switched on in Settings.
+ */
+export function groupAllLanguages(countries: readonly CountryCode[] = COUNTRIES.map((c) => c.code)) {
   return {
     global: LANGUAGES.filter((l) => !l.country),
-    countries: COUNTRIES.map((country) => ({
+    countries: COUNTRIES.filter((country) => countries.includes(country.code)).map((country) => ({
       ...country,
       languages: LANGUAGES.filter((l) => l.country === country.code),
     })),

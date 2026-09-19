@@ -155,6 +155,7 @@ export const ig: Messages = {
     send: "Zipu",
     voiceUpload: "Bulite ozi olu",
     voiceNote: "Ozi olu",
+    meaning: "Nkọwa",
     yes: "Ee",
     no: "Mba",
     record: "Dekọọ ozi olu",

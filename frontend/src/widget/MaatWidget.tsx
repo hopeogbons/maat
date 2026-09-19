@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
-import { useLanguage } from '@/i18n'
+import { loadCoverage, useLanguage } from '@/i18n'
 import { ChatScreen } from './components/ChatScreen'
 import { LanguageScreen } from './components/LanguageScreen'
 import { Launcher } from './components/Launcher'
@@ -55,6 +55,11 @@ export function MaatWidget({ client, defaultOpen = false }: MaatWidgetProps) {
     const timer = window.setTimeout(() => setPhase('closed'), CLOSE_FALLBACK_MS)
     return () => window.clearTimeout(timer)
   }, [phase])
+
+  // Which countries are on decides which languages the picker offers.
+  useEffect(() => {
+    void loadCoverage()
+  }, [])
 
   // The host page can open the panel by dispatching the `maat:open` event.
   useEffect(() => {

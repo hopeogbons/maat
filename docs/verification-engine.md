@@ -120,6 +120,31 @@ says so. A covered country's own states are recognised before a name is taken
 to mean a country outside, so "Niger" is Niger State before it is the
 republic next door.
 
+### 3.2.1 Language
+
+The widget sends the language it is showing with every message, and the
+conversation remembers it. Everything Ma'at says follows that language: the
+read-back, the questions, the consent ask and the answer are written in it by
+the model, and the few fixed sentences, declining to look further, the notes
+on scope, the offer of a copy, are kept once per language in
+`backend/ai/phrases.py`, English standing in where a line is missing. A voice
+note is transcribed with that language named and the reply is spoken in it.
+
+The record stays English. The claim is extracted into English, the search
+runs in English, and a quotation from a document is shown as published,
+because the highlighted sentence must match the record word for word. Under
+the quotation goes what the highlighted sentence says in the visitor's
+language, so they are carried along. A Hausa answer over an English
+quotation with its meaning beneath is the honest shape of it.
+
+Which languages are offered follows coverage. Every language belongs to a
+country, except English, which is shared. Switching a country on in Settings
+puts its languages on the picker; switching it off takes them off, and a
+visitor reading in one of them is returned to English. The widget asks the
+public coverage endpoint on every load and remembers the last answer so the
+picker is right from the first paint. The staff dashboard stays English: it
+is for the people who run Ma'at, not for the public.
+
 ### 3.3 The claim record
 
 The interview produces one structured record, and that record is what the rest
@@ -459,6 +484,8 @@ Each step usable before the next begins.
 | `conversation.py` | Greetings, pleasantries, reading the claim back, the consent ask. |
 | `embeddings.py` | Vectors for storage (strict) and search (may degrade). |
 | `speech.py` | The ears and the mouth: a voice note transcribed, a reply read aloud (3.8). |
+| `phrases.py` | The fixed sentences, once per language (3.2.1). |
+| `translate.py` | What a highlighted sentence says, in the visitor's language (3.2.1). |
 | `enrichment.py` | Situating contexts and document cards, at ingestion (4.3). |
 | `rerank.py` | The recall gate, the first of the two numbers (3.5). |
 | `judge.py` | The judgement and the verdict, the second number and the gate (3.5). |

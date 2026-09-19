@@ -36,7 +36,7 @@ def greeting() -> str:
 def social_reply(paraphrase: str, history: History | None = None) -> str:
     """A warm, brief reply to conversation that carries no claim."""
     messages = [
-        {"role": "system", "content": prompts.VOICE + "\n" + prompts.SOCIAL},
+        {"role": "system", "content": prompts.voice() + "\n" + prompts.SOCIAL},
         *(history.as_messages(6) if history else []),
         {"role": "user", "content": paraphrase},
     ]
@@ -52,7 +52,7 @@ def read_back(fields: ClaimFields, history: History | None = None) -> str:
     known = {k: v for k, v in fields.as_dict().items() if v and k != "when_unknown"}
     fallback = f"So what you've heard is this: {fields.what}"
     messages = [
-        {"role": "system", "content": prompts.VOICE + "\n" + prompts.READ_BACK},
+        {"role": "system", "content": prompts.voice() + "\n" + prompts.READ_BACK},
         *(history.as_messages(4) if history else []),
         {"role": "user", "content": f"What they told you: {known}"},
     ]
@@ -75,7 +75,7 @@ def consent_ask(fields: ClaimFields, *, found_something: bool, history: History 
         else "You found nothing relevant to the claim at all."
     )
     messages = [
-        {"role": "system", "content": prompts.VOICE + "\n" + prompts.CONSENT_ASK},
+        {"role": "system", "content": prompts.voice() + "\n" + prompts.CONSENT_ASK},
         *(history.as_messages(4) if history else []),
         {"role": "user", "content": f"The claim: {fields.what}\nWhat happened: {situation}"},
     ]
