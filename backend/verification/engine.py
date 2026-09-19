@@ -43,7 +43,7 @@ from ai import (
     rerank_scored,
     social_reply,
 )
-from ai import prompts
+from ai import events, prompts
 from ai.phrases import phrase
 from ai.translate import translate_excerpts
 from ai.interview import ClaimDraft
@@ -495,6 +495,7 @@ def _weigh(conversation: Conversation, draft: ClaimDraft, read, history: History
         why=fields.why,
     )
 
+    events.progress("searching")
     passages = retrieval.search(
         fields.what, read.search_variants if read else [], country=country, global_only=scope.global_only
     )
@@ -502,6 +503,7 @@ def _weigh(conversation: Conversation, draft: ClaimDraft, read, history: History
         scores = rerank_scored(fields.what, [p.text for p in passages], gloss=read.paraphrase if read else "")
         if scores is not None:
             passages = _shortlist(passages, scores)
+    events.progress("weighing")
     judged = judge_passages(fields, passages) if passages else []
     decision = decide(judged, gate=settings.confidence_gate)
 
@@ -551,6 +553,7 @@ def _weigh(conversation: Conversation, draft: ClaimDraft, read, history: History
         # the visitors we could not settle it for, who need it most.
         return Reply(kind="text", text=text, article=_article_of(rumour), choices=YES_NO)
 
+    events.progress("writing")
     answer = compose_answer(fields, decision, history)
     conversation.state = {}
     conversation.save(update_fields=["state"])
@@ -685,6 +688,7 @@ def handle_message(conversation: Conversation, text: str) -> Reply:
 def _handle_message(conversation: Conversation, text: str) -> Reply:
     _forget_if_cold(conversation)
     history = _history(conversation)
+    events.progress("reading")
     read = interpret(text, history)
     _record_turn(conversation, Turn.Speaker.VISITOR, raw=text, read=read)
     settings = AppSetting.current()
@@ -738,7 +742,11 @@ def _handle_message(conversation: Conversation, text: str) -> Reply:
             reply = _weigh(conversation, draft, read, history)
         else:
             introduced = (conversation.state or {}).get("introduced", False)
+            events.progress("writing")
             lead = "" if introduced else read_back(draft.fields, history)
+            if lead:
+                # The stream has the read-back; the question follows a blank line.
+                events.delta("\n\n")
             question = next_question(draft, history, after_read_back=bool(lead)) or ""
             draft.followups_asked += 1
             _save_state(conversation, draft, introduced=True, pending_consent=False)

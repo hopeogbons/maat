@@ -161,7 +161,7 @@ def next_question(draft: ClaimDraft, history: History | None = None, *, after_re
         },
     ]
     try:
-        return chat_text("light", messages, max_tokens=120, temperature=0.6, timeout=20.0)
+        return chat_text("light", messages, max_tokens=120, temperature=0.6, timeout=20.0, spoken=True)
     except ProviderUnavailable as exc:
         logger.warning("follow-up degraded: %s", exc)
         return fallback

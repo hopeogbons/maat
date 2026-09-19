@@ -177,6 +177,7 @@ export const yo: Messages = {
     errorGeneric: "Ma’at kò lè ṣe èyí ní ìsinsìnyí. Jọ̀wọ́ tún gbìyànjú.",
     errorNetwork: "A kò lè dé ọ̀dọ̀ Ma’at. Ṣàyẹ̀wò ìsopọ̀ rẹ kí o sì tún gbìyànjú.",
     checking: "Ma’at ń ṣàyẹ̀wò",
+    stages: { reading: "Ń ka ohun tí o sọ", searching: "Ń wá inú àkọsílẹ̀", weighing: "Ń wọn ẹ̀rí", writing: "Ń kọ ìdáhùn" },
     back: "Padà sí ìbẹ̀rẹ̀",
     maximise: "Fẹ̀ ẹ́ sí i",
     restore: "Dá ìwọ̀n padà",

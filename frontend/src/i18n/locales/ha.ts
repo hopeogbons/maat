@@ -177,6 +177,7 @@ export const ha: Messages = {
     errorGeneric: "Ma’at ba ta iya sarrafa wannan a yanzu ba. Da fatan za a sake gwadawa.",
     errorNetwork: "Ba a iya isa ga Ma’at ba. Duba haɗin yanar gizonka ka sake gwadawa.",
     checking: "Ma’at na dubawa",
+    stages: { reading: "Ana karanta abin da ka faɗa", searching: "Ana bincika bayanan", weighing: "Ana auna shaidun", writing: "Ana rubuta amsa" },
     back: "Koma farko",
     maximise: "Faɗaɗa",
     restore: "Mayar da girman",

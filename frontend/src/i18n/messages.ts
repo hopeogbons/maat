@@ -135,6 +135,7 @@ export interface Messages {
     errorGeneric: string
     errorNetwork: string
     checking: string
+    stages: Record<'reading' | 'searching' | 'weighing' | 'writing', string>
     back: string
     maximise: string
     restore: string

@@ -84,7 +84,7 @@ def compose_answer(fields: ClaimFields, decision: Decision, history: History | N
         },
     ]
     try:
-        text = chat_text("answer", messages, max_tokens=260, temperature=0.3, timeout=30.0)
+        text = chat_text("answer", messages, max_tokens=260, temperature=0.3, timeout=30.0, spoken=True)
     except ProviderUnavailable as exc:
         logger.warning("answer degraded: %s", exc)
         return Answer(fallback, decision.verdict, decision.confidence, decision.reason, decision.citations, True)

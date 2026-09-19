@@ -219,6 +219,19 @@ context written during ingestion is retrieval machinery and stays internal.
 Public quotation is a short extract plus a link to the original, never a whole
 document.
 
+### 3.6.1 The turn, as it happens
+
+A turn takes seconds, most of them before any word of the reply exists. The
+widget is told what is going on rather than left with three dots: the engine
+names each stage as it begins, reading, searching the record, weighing,
+writing, and the reply's words are handed on as the model writes them, so
+the answer appears the way speech does, not all at once. The finished reply,
+with its card, closes the stream. The channel is server-sent events over the
+same POST as the plain endpoint, read with fetch; when it cannot be opened
+the plain endpoint stands in and the reply arrives whole. Only text the
+visitor will read is streamed; Ma'at's own working, the rerank scores and
+the document cards, never is.
+
 ### 3.7 Attribution
 
 The citation is whoever published the material.

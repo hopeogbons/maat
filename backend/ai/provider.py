@@ -25,6 +25,8 @@ from typing import Any
 
 from django.conf import settings
 
+from ai import events
+
 logger = logging.getLogger(__name__)
 
 ROLES = ("light", "answer", "rerank", "transcribe", "speak")
@@ -71,8 +73,18 @@ def chat_text(
     max_tokens: int = 400,
     temperature: float = 0.4,
     timeout: float = 30.0,
+    spoken: bool = False,
 ) -> str:
-    """One chat completion, returning the text. Raises ProviderUnavailable."""
+    """One chat completion, returning the text. Raises ProviderUnavailable.
+
+    `spoken` marks text the visitor will read. When a live channel is open
+    for the turn, such a completion is streamed and every piece is handed to
+    the channel as it arrives; the full text is still returned, so callers
+    are none the wiser. Text for Ma'at's own use, the rerank scores, the
+    document cards, is never streamed to anybody.
+    """
+    if spoken and events.sink.get() is not None:
+        return _chat_text_streamed(role, messages, max_tokens=max_tokens, temperature=temperature, timeout=timeout)
     try:
         response = client(timeout).chat.completions.create(
             model=model_for(role),
@@ -86,6 +98,33 @@ def chat_text(
     except Exception as exc:  # noqa: BLE001 - every provider failure is one kind to callers
         raise ProviderUnavailable(str(exc)) from exc
     if not content:
+        raise ProviderUnavailable("empty completion")
+    return content.strip()
+
+
+def _chat_text_streamed(role: str, messages: list[dict[str, str]], *, max_tokens: int, temperature: float, timeout: float) -> str:
+    """The same completion, streamed: each piece goes to the channel, the whole comes back."""
+    pieces: list[str] = []
+    try:
+        stream = client(timeout).chat.completions.create(
+            model=model_for(role),
+            messages=messages,
+            max_completion_tokens=max_tokens,
+            temperature=temperature,
+            stream=True,
+        )
+        for chunk in stream:
+            choices = getattr(chunk, "choices", None) or []
+            piece = choices[0].delta.content if choices and choices[0].delta else None
+            if piece:
+                pieces.append(piece)
+                events.delta(piece)
+    except ProviderUnavailable:
+        raise
+    except Exception as exc:  # noqa: BLE001 - every provider failure is one kind to callers
+        raise ProviderUnavailable(str(exc)) from exc
+    content = "".join(pieces)
+    if not content.strip():
         raise ProviderUnavailable("empty completion")
     return content.strip()
 

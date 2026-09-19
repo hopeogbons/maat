@@ -93,8 +93,24 @@ export function createMockClient({ delayMs = 900 }: MockClientOptions = {}): Maa
     return buildReply(counter++, subject, options)
   }
 
+  /** The demo streams too: the stages in turn, then the answer a few words at a time. */
+  async function sendStreamed(text: string, options?: SendOptions): Promise<Reply> {
+    const reply = await respond(excerpt(text), options)
+    if (!options?.onDelta) return reply
+    for (const stage of ['reading', 'searching', 'weighing', 'writing'] as const) {
+      options.onProgress?.(stage)
+      await wait(Math.round(delayMs / 4), options.signal)
+    }
+    const words = (reply.kind === 'verdict' ? reply.answer : reply.text).split(' ')
+    for (let i = 0; i < words.length; i += 3) {
+      options.onDelta(words.slice(i, i + 3).join(' ') + (i + 3 < words.length ? ' ' : ''))
+      await wait(40, options.signal)
+    }
+    return reply
+  }
+
   return {
-    send: (text, options) => respond(excerpt(text), options),
+    send: (text, options) => sendStreamed(text, options),
     sendVoice: async (file, options) => ({
       ...(await respond(file.name, options)),
       voice: { transcript: `(${file.name})`, audio: null },

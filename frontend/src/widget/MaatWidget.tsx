@@ -112,6 +112,7 @@ export function MaatWidget({ client, defaultOpen = false }: MaatWidgetProps) {
             <ChatScreen
               messages={chat.messages}
               pending={chat.pending}
+              stage={chat.stage}
               onSendText={chat.sendText}
               onSendVoice={chat.sendVoice}
               expanded={expanded}

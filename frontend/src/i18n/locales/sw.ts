@@ -177,6 +177,7 @@ export const sw: Messages = {
     errorGeneric: "Ma’at haikuweza kushughulikia hilo sasa hivi. Tafadhali jaribu tena.",
     errorNetwork: "Haikuwezekana kufikia Ma’at. Angalia muunganisho wako na ujaribu tena.",
     checking: "Ma’at inahakiki",
+    stages: { reading: "Inasoma ulichosema", searching: "Inatafuta kwenye rekodi", weighing: "Inapima ushahidi", writing: "Inaandika jibu" },
     back: "Rudi mwanzo",
     maximise: "Panua",
     restore: "Rudisha ukubwa",

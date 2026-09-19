@@ -57,9 +57,10 @@ export function rememberCsrfToken(token: string | null | undefined): void {
   if (token) csrfToken = token
 }
 
-export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
+/** The headers every request to Django carries, for callers that fetch on their own. */
+export function requestHeaders(init: RequestInit = {}): Headers {
   const headers = new Headers(init.headers)
-  headers.set('Accept', 'application/json')
+  if (!headers.has('Accept')) headers.set('Accept', 'application/json')
   // FormData must set its own content type, because the boundary is part of
   // it and only the browser knows what it chose. Stamping application/json
   // here makes a multipart body unparseable at the far end.
@@ -73,6 +74,11 @@ export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise
     const token = readCookie('csrftoken') ?? csrfToken
     if (token) headers.set('X-CSRFToken', token)
   }
+  return headers
+}
+
+export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
+  const headers = requestHeaders(init)
 
   const response = await fetch(apiUrl(path), {
     ...init,

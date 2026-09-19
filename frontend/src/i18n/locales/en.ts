@@ -176,6 +176,7 @@ export const en: Messages = {
     errorGeneric: "Ma’at could not process that just now. Please try again.",
     errorNetwork: "Ma’at could not be reached. Check your connection and try again.",
     checking: "Ma’at is verifying",
+    stages: { reading: "Reading what you said", searching: "Searching the record", weighing: "Weighing the evidence", writing: "Writing the answer" },
     back: "Back to welcome",
     maximise: "Maximise panel",
     restore: "Restore panel size",

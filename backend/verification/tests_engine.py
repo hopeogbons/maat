@@ -9,6 +9,7 @@ conversation.
 """
 
 import base64
+import json
 import uuid
 from datetime import timedelta
 from types import SimpleNamespace
@@ -724,3 +725,73 @@ class LanguageTests(TestCase):
         self.assertEqual(rows[0]["translation"], "")
         self.assertNotIn("translation", _carry_along([{"quote": "x", "highlight": None}])[0])
 
+
+class StreamedChatTests(TestCase):
+    """The same turn, told as it happens: stages, then words, then the reply."""
+
+    def _events(self, response) -> list[tuple[str, dict]]:
+        raw = b"".join(response.streaming_content).decode("utf-8")
+        out = []
+        for block in raw.strip().split("\n\n"):
+            lines = dict(line.split(": ", 1) for line in block.split("\n") if ": " in line)
+            out.append((lines["event"], json.loads(lines["data"])))
+        return out
+
+    def test_a_turn_streams_its_stages_and_ends_with_the_reply(self):
+        response = self.client.post("/api/chat/stream/", {"text": "I heard fuel prices in Lagos go up by 40%"}, content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response["Content-Type"].startswith("text/event-stream"))
+        self.assertEqual(response["X-Accel-Buffering"], "no")
+        events = self._events(response)
+        stages = [data["stage"] for kind, data in events if kind == "progress"]
+        self.assertEqual(stages[0], "reading")
+        self.assertEqual(events[-1][0], "reply")
+        final = events[-1][1]
+        self.assertTrue(final["conversation"])
+        self.assertIn(final["reply"]["kind"], ("text", "verdict"))
+        self.assertTrue(Conversation.objects.filter(id=final["conversation"]).exists())
+
+    def test_spoken_completions_are_handed_on_piece_by_piece(self):
+        from ai import events as live
+        from ai import provider
+
+        class Delta:
+            def __init__(self, content):
+                self.content = content
+
+        class Choice:
+            def __init__(self, content):
+                self.delta = Delta(content)
+
+        class Chunk:
+            def __init__(self, content):
+                self.choices = [Choice(content)]
+
+        def create(**kwargs):
+            self.assertTrue(kwargs.get("stream"))
+            return iter([Chunk("Supported "), Chunk("by the record."), Chunk(None)])
+
+        client = lambda timeout=30.0: SimpleNamespace(chat=SimpleNamespace(completions=SimpleNamespace(create=create)))  # noqa: E731
+        heard: list[tuple[str, dict]] = []
+        token = live.sink.set(lambda kind, data: heard.append((kind, data)))
+        try:
+            with override_settings(AI_OFFLINE=False, OPENAI_API_KEY="x"), mock.patch.object(provider, "client", client):
+                text = provider.chat_text("light", [{"role": "user", "content": "hi"}], spoken=True)
+        finally:
+            live.sink.reset(token)
+        self.assertEqual(text, "Supported by the record.")
+        self.assertEqual([d["text"] for k, d in heard if k == "delta"], ["Supported ", "by the record."])
+
+    def test_nothing_is_streamed_when_nobody_listens_or_the_text_is_not_spoken(self):
+        from ai import events as live
+
+        heard: list = []
+        live.delta("unheard")
+        self.assertEqual(heard, [])
+        token = live.sink.set(lambda kind, data: heard.append(kind))
+        try:
+            live.delta("")
+            live.progress("reading")
+        finally:
+            live.sink.reset(token)
+        self.assertEqual(heard, ["progress"])

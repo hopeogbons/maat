@@ -1,19 +1,24 @@
 import { useLanguage } from '@/i18n'
 import { useAutoScroll } from '../hooks/useAutoScroll'
-import type { Message } from '../types'
+import type { Message, Stage } from '../types'
 import { AssistantBubble, MessageBubble } from './MessageBubble'
 import { TypingIndicator } from './TypingIndicator'
 
 interface MessageListProps {
   messages: Message[]
   pending: boolean
+  /** What Ma'at is doing, while the reply has not started arriving. */
+  stage?: Stage | null
   /** Sends a tapped answer as if the visitor had typed it. */
   onQuickReply?: (text: string) => void
 }
 
-export function MessageList({ messages, pending, onQuickReply }: MessageListProps) {
+export function MessageList({ messages, pending, stage, onQuickReply }: MessageListProps) {
   const { t } = useLanguage()
-  const ref = useAutoScroll<HTMLDivElement>(`${messages.length}:${pending ? 1 : 0}`)
+  const last = messages[messages.length - 1]
+  // Once words are arriving, the growing bubble is the indicator.
+  const writing = last?.role === 'assistant' && last.kind === 'text' && last.streaming === true
+  const ref = useAutoScroll<HTMLDivElement>(`${messages.length}:${pending ? 1 : 0}:${writing && last.kind === 'text' ? last.text.length : 0}`)
 
   return (
     <div
@@ -34,9 +39,9 @@ export function MessageList({ messages, pending, onQuickReply }: MessageListProp
             <MessageBubble message={message} onPick={i === messages.length - 1 && !pending ? onQuickReply : undefined} />
           </li>
         ))}
-        {pending && (
+        {pending && !writing && (
           <li className="maat:animate-fade-up maat:motion-reduce:animate-none">
-            <TypingIndicator />
+            <TypingIndicator stage={stage} />
           </li>
         )}
       </ol>

@@ -6,10 +6,12 @@ import { Composer } from './Composer'
 import { Emblem } from './Emblem'
 import { ExpandToggle } from './ExpandToggle'
 import { MessageList } from './MessageList'
+import type { Stage } from '../types'
 
 interface ChatScreenProps {
   messages: Message[]
   pending: boolean
+  stage?: Stage | null
   onSendText: (text: string) => void
   onSendVoice: (file: File) => void
   expanded: boolean
@@ -21,6 +23,7 @@ interface ChatScreenProps {
 export function ChatScreen({
   messages,
   pending,
+  stage,
   onSendText,
   onSendVoice,
   expanded,
@@ -49,7 +52,7 @@ export function ChatScreen({
         </Button>
       </header>
 
-      <MessageList messages={messages} pending={pending} onQuickReply={onSendText} />
+      <MessageList messages={messages} pending={pending} stage={stage} onQuickReply={onSendText} />
 
       <Composer disabled={pending} onSendText={onSendText} onSendVoice={onSendVoice} />
     </div>

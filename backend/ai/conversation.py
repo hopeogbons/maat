@@ -41,7 +41,7 @@ def social_reply(paraphrase: str, history: History | None = None) -> str:
         {"role": "user", "content": paraphrase},
     ]
     try:
-        return chat_text("light", messages, max_tokens=100, temperature=0.7, timeout=15.0)
+        return chat_text("light", messages, max_tokens=100, temperature=0.7, timeout=15.0, spoken=True)
     except ProviderUnavailable as exc:
         logger.warning("social reply degraded: %s", exc)
         return FALLBACK_SOCIAL
@@ -57,7 +57,7 @@ def read_back(fields: ClaimFields, history: History | None = None) -> str:
         {"role": "user", "content": f"What they told you: {known}"},
     ]
     try:
-        return chat_text("light", messages, max_tokens=90, temperature=0.5, timeout=15.0)
+        return chat_text("light", messages, max_tokens=90, temperature=0.5, timeout=15.0, spoken=True)
     except ProviderUnavailable as exc:
         logger.warning("read back degraded: %s", exc)
         return fallback
@@ -80,7 +80,7 @@ def consent_ask(fields: ClaimFields, *, found_something: bool, history: History 
         {"role": "user", "content": f"The claim: {fields.what}\nWhat happened: {situation}"},
     ]
     try:
-        return chat_text("light", messages, max_tokens=160, temperature=0.4, timeout=15.0)
+        return chat_text("light", messages, max_tokens=160, temperature=0.4, timeout=15.0, spoken=True)
     except ProviderUnavailable as exc:
         logger.warning("consent ask degraded: %s", exc)
         return FALLBACK_CONSENT

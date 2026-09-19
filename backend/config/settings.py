@@ -258,6 +258,10 @@ VOICE_NOTE_MAX_BYTES = int(os.environ.get("VOICE_NOTE_MAX_BYTES", str(5 * 1024 *
 # True makes every AI call use its deterministic fallback. Tests run this way,
 # and so can a machine with no key: the site must still work without a provider.
 AI_OFFLINE = env_bool("AI_OFFLINE", False) or RUNNING_TESTS
+# The streamed chat runs the engine on a thread so events can be written as
+# they happen. Under test it runs inline: a second connection cannot see the
+# test's own transaction.
+CHAT_STREAM_INLINE = RUNNING_TESTS
 
 # ---------------------------------------------------------------------------
 # Cache

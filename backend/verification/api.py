@@ -8,7 +8,11 @@ per-visitor rate limit that the dashboard can tune, not with a login wall.
 from __future__ import annotations
 
 import base64
+import json
+import logging
 import uuid
+from queue import Queue
+from threading import Thread
 
 from rest_framework import status
 from rest_framework.parsers import FormParser, MultiPartParser
@@ -19,16 +23,20 @@ from rest_framework.throttling import SimpleRateThrottle
 from rest_framework.views import APIView
 
 from django.conf import settings
-from django.http import FileResponse, Http404
+from django.db import connection
+from django.http import FileResponse, Http404, StreamingHttpResponse
 
 from appsettings.models import AppSetting
 from knowledge.models import Document
+from ai import events
 from ai.phrases import phrase
 from ai.speech import SPEECH_FORMATS, speak, transcribe
 from verification.engine import Reply, handle_message
 from verification.models import Conversation
 
 MAX_MESSAGE_CHARS = 4000
+
+logger = logging.getLogger(__name__)
 
 #: The de-duplication cookie. Long-lived because a rumour collects mentions
 #: over days, and separate from the session cookie because that one is cleared
@@ -141,6 +149,83 @@ class ChatView(APIView):
         _remember_language(conversation, request)
         reply = handle_message(conversation, text)
         return _respond(request, conversation, {"reply": reply.as_dict()}, issued_key)
+
+
+def _sse(kind: str, data: dict) -> str:
+    return f"event: {kind}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
+
+
+class ChatStreamView(ChatView):
+    """POST {"text", "conversation?", "language?"} -> a stream of events, ending in the reply.
+
+    The same turn as ChatView, told as it happens: `progress` events name the
+    stage under way, `delta` events carry the reply's words as the model
+    writes them, and one `reply` event closes with the finished reply in the
+    shape ChatView returns. Text/event-stream over a plain POST, read by the
+    widget with fetch; nothing here needs a socket.
+
+    The engine runs on its own thread so the response can be written while
+    it works; under test it runs inline, since a second database connection
+    cannot see the test's own transaction.
+    """
+
+    def post(self, request: Request) -> StreamingHttpResponse | Response:
+        text = (request.data.get("text") or "").strip()
+        if not text:
+            return Response({"detail": "Say something first."}, status=status.HTTP_400_BAD_REQUEST)
+        if len(text) > MAX_MESSAGE_CHARS:
+            return Response({"detail": "That is longer than I can read at once."}, status=status.HTTP_400_BAD_REQUEST)
+
+        conversation, issued_key = _open_conversation(request)
+        _remember_language(conversation, request)
+        queue: Queue = Queue()
+
+        def work() -> None:
+            token = events.sink.set(lambda kind, data: queue.put((kind, data)))
+            try:
+                reply = handle_message(conversation, text)
+                queue.put(("reply", {"conversation": str(conversation.id), "reply": reply.as_dict()}))
+            except Exception:  # noqa: BLE001 - the stream must end with a word, never hang
+                logger.exception("streamed turn failed")
+                queue.put(("error", {"detail": "Ma’at could not process that just now."}))
+            finally:
+                events.sink.reset(token)
+                queue.put(None)
+
+        inline = getattr(settings, "CHAT_STREAM_INLINE", False)
+        if inline:
+            work()
+        else:
+            def on_thread() -> None:
+                try:
+                    work()
+                finally:
+                    connection.close()
+
+            Thread(target=on_thread, daemon=True).start()
+
+        def stream():
+            while True:
+                item = queue.get()
+                if item is None:
+                    return
+                kind, data = item
+                yield _sse(kind, data)
+
+        response = StreamingHttpResponse(stream(), content_type="text/event-stream; charset=utf-8")
+        response["Cache-Control"] = "no-cache"
+        # Tell nginx not to hold the events back until the turn is over.
+        response["X-Accel-Buffering"] = "no"
+        if issued_key:
+            response.set_cookie(
+                VISITOR_COOKIE,
+                issued_key,
+                max_age=VISITOR_COOKIE_MAX_AGE,
+                httponly=True,
+                samesite="Lax",
+                secure=request.is_secure(),
+            )
+        return response
 
 
 class VoiceChatView(ChatView):

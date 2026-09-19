@@ -177,6 +177,7 @@ export const pcm: Messages = {
     errorGeneric: "Ma’at no fit process that one now. Abeg try again.",
     errorNetwork: "We no fit reach Ma’at. Check your connection and try again.",
     checking: "Ma’at dey verify",
+    stages: { reading: "Dey read wetin you talk", searching: "Dey search the record", weighing: "Dey weigh the evidence", writing: "Dey write the answer" },
     back: "Go back to start",
     maximise: "Make am big",
     restore: "Return the size",

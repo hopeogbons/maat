@@ -1,5 +1,5 @@
-import { apiFetch } from '@/lib/api'
-import type { MaatClient, Reply, SendOptions, Voice } from './types'
+import { ApiError, apiFetch, apiUrl, requestHeaders } from '@/lib/api'
+import type { MaatClient, Reply, SendOptions, Stage, Voice } from './types'
 
 interface ChatResponse {
   conversation: string | null
@@ -71,13 +71,85 @@ export function createApiClient(): MaatClient {
     return { kind: 'text', text: reply.text, attachments: attachmentsOf(reply), voice, choices: reply.choices ?? [] }
   }
 
-  async function send(text: string, options?: SendOptions): Promise<Reply> {
+  async function sendWhole(text: string, options?: SendOptions): Promise<Reply> {
     const data = await apiFetch<ChatResponse>('/api/chat/', {
       method: 'POST',
       body: JSON.stringify({ text, conversation, language: options?.language }),
       signal: options?.signal,
     })
     return replyOf(data)
+  }
+
+  /**
+   * The turn as it happens. The server tells the stage under way, then hands
+   * over the reply's words as they are written, then the finished reply. If
+   * the stream cannot be opened at all, the plain request stands in and the
+   * reply simply arrives whole.
+   */
+  async function send(text: string, options?: SendOptions): Promise<Reply> {
+    if (!options?.onDelta && !options?.onProgress) return sendWhole(text, options)
+    const body = JSON.stringify({ text, conversation, language: options.language })
+    let response: Response
+    try {
+      response = await fetch(apiUrl('/api/chat/stream/'), {
+        method: 'POST',
+        headers: requestHeaders({ method: 'POST', body, headers: { Accept: 'text/event-stream' } }),
+        body,
+        credentials: 'include',
+        signal: options.signal,
+      })
+    } catch (error) {
+      if (options.signal?.aborted) throw error
+      return sendWhole(text, options)
+    }
+    const type = response.headers.get('content-type') ?? ''
+    if (!response.ok || !response.body || !type.includes('text/event-stream')) {
+      if (response.status >= 400 && response.status < 500 && response.status !== 404) {
+        const detail: unknown = await response.text().catch(() => null)
+        throw new ApiError(response.status, detail)
+      }
+      return sendWhole(text, options)
+    }
+
+    const reader = response.body.getReader()
+    const decoder = new TextDecoder()
+    let buffer = ''
+    let final: ChatResponse | null = null
+    let failure: ApiError | null = null
+    const handle = (event: string, payload: string) => {
+      let data: unknown
+      try {
+        data = JSON.parse(payload)
+      } catch {
+        return
+      }
+      const record = data as Record<string, unknown>
+      if (event === 'progress') options.onProgress?.(String(record.stage) as Stage)
+      else if (event === 'delta') options.onDelta?.(String(record.text ?? ''))
+      else if (event === 'reply') final = data as ChatResponse
+      else if (event === 'error') failure = new ApiError(500, data)
+    }
+    for (;;) {
+      const { value, done } = await reader.read()
+      if (done) break
+      buffer += decoder.decode(value, { stream: true })
+      let cut = buffer.indexOf('\n\n')
+      while (cut >= 0) {
+        const block = buffer.slice(0, cut)
+        buffer = buffer.slice(cut + 2)
+        let event = 'message'
+        const payload: string[] = []
+        for (const line of block.split('\n')) {
+          if (line.startsWith('event:')) event = line.slice(6).trim()
+          else if (line.startsWith('data:')) payload.push(line.slice(5).trimStart())
+        }
+        handle(event, payload.join('\n'))
+        cut = buffer.indexOf('\n\n')
+      }
+    }
+    if (failure) throw failure
+    if (!final) throw new ApiError(502, 'The stream ended before the reply.')
+    return replyOf(final)
   }
 
   /**

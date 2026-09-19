@@ -87,10 +87,17 @@ export interface TextReply {
 
 export type Reply = VerdictReply | TextReply
 
+/** What Ma'at is doing while a turn runs. */
+export type Stage = 'reading' | 'searching' | 'weighing' | 'writing'
+
 export interface SendOptions {
   signal?: AbortSignal
   /** Language the visitor is reading in. */
   language?: AvailableLanguageCode
+  /** Called as each stage of the turn begins, when the client can tell. */
+  onProgress?: (stage: Stage) => void
+  /** Called with each piece of the reply as it is written, when the client can tell. */
+  onDelta?: (text: string) => void
 }
 
 /**
@@ -115,6 +122,8 @@ export type Message =
       /** A voice note came back with no words heard: the bubble says so in the visitor's language. */
       unheard?: boolean
       choices?: Choice[]
+      /** Still being written: the text grows as pieces arrive. */
+      streaming?: boolean
     }
   | { id: string; role: 'assistant'; kind: 'verdict'; result: VerdictReply; audioUrl?: string; choices?: Choice[] }
   | { id: string; role: 'assistant'; kind: 'error'; reason: 'generic' | 'network' }

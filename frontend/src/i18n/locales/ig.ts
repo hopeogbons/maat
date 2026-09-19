@@ -177,6 +177,7 @@ export const ig: Messages = {
     errorGeneric: "Ma’at enweghị ike ịrụ nke ahụ ugbu a. Biko nwaa ọzọ.",
     errorNetwork: "Enweghị ike iru Ma’at. Lelee njikọ gị ma nwaa ọzọ.",
     checking: "Ma’at na-enyocha",
+    stages: { reading: "Na-agụ ihe i kwuru", searching: "Na-achọ na ndekọ", weighing: "Na-atụle ihe akaebe", writing: "Na-ede azịza" },
     back: "Laghachi na mmalite",
     maximise: "Gbasaa",
     restore: "Weghachi nha",
