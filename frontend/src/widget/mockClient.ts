@@ -11,6 +11,7 @@ const SAMPLE_SOURCES: Record<'verified' | 'unverified', Source> = {
   verified: {
     title: 'Public notice on the revised academic calendar',
     issuer: 'Ministry of Education',
+    source: { name: 'Ministry of Education', short: 'FME', logoUrl: '', brand: '#0b6e4f' },
     date: '2026-09-03',
     url: 'https://example.org/notices/2026-09-03-academic-calendar',
     quote: 'The revised academic calendar takes effect from 14 September 2026 for all public schools.',
@@ -20,6 +21,7 @@ const SAMPLE_SOURCES: Record<'verified' | 'unverified', Source> = {
   unverified: {
     title: 'Press statement clarifying reports of a fuel price change',
     issuer: 'Petroleum Regulatory Authority',
+    source: { name: 'Petroleum Regulatory Authority', short: 'PRA', logoUrl: '', brand: '#8a5a00' },
     date: '2026-08-28',
     url: 'https://example.org/press/2026-08-28-fuel-price-clarification',
     quote: 'No change to the pump price has been approved. Reports of a 40% increase are not from this authority.',

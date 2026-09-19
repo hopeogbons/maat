@@ -1,6 +1,6 @@
 import { cn } from 'cn'
 import { AudioLines, CircleDashed, Download, FileText } from 'lucide-react'
-import type { CSSProperties, ReactNode } from 'react'
+import { useEffect, useRef, type CSSProperties, type ReactNode } from 'react'
 import { useLanguage } from '@/i18n'
 import { formatBytes } from '../lib/format'
 import type { Attachment, Message } from '../types'
@@ -137,17 +137,33 @@ export function Attachments({ items }: { items?: Attachment[] }) {
 export const FLOATING_RING = 'color-mix(in oklab, var(--foreground) 14%, transparent)'
 
 /**
- * The reply read aloud. It starts playing on its own: the visitor sent a
- * voice note a moment ago, so the answer arriving as a voice is what they
- * asked for, and the controls stay for hearing it again.
+ * Replies that have already been played once, by their audio URL. Kept
+ * outside any component on purpose: closing the panel unmounts every bubble,
+ * and a bubble that plays itself on mount would play again on every reopen,
+ * all of them at once. A reply plays by itself exactly once, when it arrives.
+ */
+const spokenOnce = new Set<string>()
+
+/**
+ * The reply read aloud. It plays on its own the moment it arrives: the
+ * visitor sent a voice note, so the answer arriving as a voice is what they
+ * asked for. Afterwards the controls are the only way to hear it again.
  */
 export function SpokenReply({ url, className }: { url?: string; className?: string }) {
   const { t } = useLanguage()
+  const ref = useRef<HTMLAudioElement>(null)
+  useEffect(() => {
+    if (!url || spokenOnce.has(url)) return
+    spokenOnce.add(url)
+    ref.current?.play().catch(() => {
+      // Playback can be refused without a fresh gesture; the controls remain.
+    })
+  }, [url])
   if (!url) return null
   return (
     <audio
+      ref={ref}
       controls
-      autoPlay
       preload="auto"
       src={url}
       aria-label={t.widget.spokenReply}

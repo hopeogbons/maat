@@ -279,9 +279,6 @@ def _recount(rumour: Rumour, *, threshold: int) -> None:
     rumour.save(update_fields=fields)
 
 
-COPY_OFFER = "I have the document itself. Would you like a copy?"
-COPY_DECLINED = "Of course. The citation above links to the publisher’s own page if you want it later."
-COPY_SENT = "Here it is. This is the document the answer rests on, exactly as it was published."
 
 
 def _shareable_documents(decision) -> list[Document]:
@@ -321,6 +318,18 @@ def _attachment_payload(document: Document) -> dict:
     }
 
 
+def _source_mark(document: Document | None) -> dict | None:
+    """The publisher's mark, so a citation shows whose it is at a glance.
+
+    The same four fields the dashboard draws from: the name, the short form
+    for a monogram, the logo when the body has one, and its brand colour.
+    """
+    if document is None or not document.source_id:
+        return None
+    source = document.source
+    return {"name": source.name, "short": source.short, "logoUrl": source.logo_url, "brand": source.brand}
+
+
 def _sources_payload(decision) -> list[dict]:
     """Citations in the shape the widget shows: title, issuer, date, link, quote."""
     ids = [c.reference for c in decision.citations if c.reference]
@@ -333,6 +342,7 @@ def _sources_payload(decision) -> list[dict]:
             {
                 "title": document.title if document else citation.citation,
                 "issuer": citation.citation,
+                "source": _source_mark(document),
                 "date": document.published_at.isoformat() if document and document.published_at else "",
                 "url": (document.url or "") if document else "",
                 "quote": citation.quote,
@@ -471,6 +481,7 @@ def _closest_records(claim: Claim | None) -> list[dict]:
             {
                 "title": document.title,
                 "issuer": document.source.name if document.source_id else "",
+                "source": _source_mark(document),
                 "date": document.published_at.isoformat() if document.published_at else "",
                 "url": document.url or "",
                 "quote": row.quote,
@@ -529,6 +540,11 @@ def _after_consent(conversation: Conversation, read, history: History) -> Reply:
     conversation.state = {**(conversation.state or {}), "pending_consent": False, "looked_up": True}
     conversation.save(update_fields=["state"])
     return _weigh(conversation, draft, read, history)
+
+
+COPY_OFFER = "I have the document itself. Would you like a copy?"
+COPY_DECLINED = "Of course. The citation above links to the publisher’s own page if you want it later."
+COPY_SENT = "Here it is. This is the document the answer rests on, exactly as it was published."
 
 
 def handle_message(conversation: Conversation, text: str) -> Reply:

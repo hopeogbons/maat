@@ -158,16 +158,16 @@
       transform: scale(1.6);
     }
   }
+  /* The typing dots stay put: only their colour travels along the row, one
+     dot after the other. Movement here read as the interface twitching. */
   @keyframes maat-dot {
     0%,
-    80%,
+    70%,
     100% {
-      opacity: 0.35;
-      transform: translateY(0);
+      background-color: color-mix(in oklab, var(--primary) 25%, transparent);
     }
-    40% {
-      opacity: 1;
-      transform: translateY(-3px);
+    35% {
+      background-color: var(--primary);
     }
   }
 }

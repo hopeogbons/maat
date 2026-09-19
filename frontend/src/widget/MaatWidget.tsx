@@ -74,7 +74,7 @@ export function MaatWidget({ client, defaultOpen = false }: MaatWidgetProps) {
 
   return (
     <div className="maat-root">
-      <Teaser hidden={isMounted} onOpen={open} />
+      <Teaser hidden={isMounted || chat.messages.length > 0} onOpen={open} />
       <Launcher
         ref={launcherRef}
         open={isOpen}

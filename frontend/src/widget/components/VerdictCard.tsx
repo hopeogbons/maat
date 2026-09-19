@@ -5,6 +5,7 @@ import { Badge } from '../ui/badge'
 import { Card, CardContent, CardHeader } from '../ui/card'
 import type { Source, VerdictReply } from '../types'
 import { BUBBLE_RING, Tail } from './MessageBubble'
+import { SourceMark } from './SourceMark'
 
 const STYLES: Record<Verdict, { icon: LucideIcon; badge: string; bar: string; tail: string }> = {
   verified: {
@@ -64,16 +65,18 @@ function SourceBlock({ source }: { source: Source }) {
       <p className="maat:text-[11px] maat:font-medium maat:tracking-wide maat:text-muted-foreground maat:uppercase">
         {source.judgement === 'settles_nothing' ? t.widget.closestRecord : t.widget.citedSource}
       </p>
-      <p className="maat:mt-0.5 maat:font-medium maat:text-foreground">{source.title}</p>
-      <p className="maat:text-xs maat:text-muted-foreground">
-        {source.issuer}
-        {source.date && (
-          <>
-            {' · '}
-            <time dateTime={source.date}>{formatDate(source.date, code)}</time>
-          </>
-        )}
-      </p>
+      <div className="maat:mt-1.5 maat:flex maat:items-center maat:gap-2.5">
+        <SourceMark source={source.source ?? { name: source.issuer, short: '', logoUrl: '', brand: '' }} />
+        <div className="maat:min-w-0">
+          <p className="maat:truncate maat:font-semibold maat:text-foreground">{source.issuer}</p>
+          {source.date && (
+            <time dateTime={source.date} className="maat:block maat:text-xs maat:text-muted-foreground">
+              {formatDate(source.date, code)}
+            </time>
+          )}
+        </div>
+      </div>
+      <p className="maat:mt-2 maat:text-[13px] maat:font-medium maat:leading-snug maat:text-foreground/90">{source.title}</p>
       {source.quote && <Quote quote={source.quote} highlight={source.highlight ?? null} />}
       {source.url && (
         <a

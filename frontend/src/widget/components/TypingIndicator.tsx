@@ -12,8 +12,8 @@ export function TypingIndicator() {
         {[0, 1, 2].map((i) => (
           <span
             key={i}
-            className="maat:size-1.5 maat:rounded-full maat:bg-muted-foreground maat:animate-dot maat:motion-reduce:animate-none"
-            style={{ animationDelay: `${i * 140}ms` }}
+            className="maat:size-1.5 maat:rounded-full maat:bg-primary/25 maat:animate-dot maat:motion-reduce:animate-none"
+            style={{ animationDelay: `${i * 180}ms` }}
           />
         ))}
       </div>

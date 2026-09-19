@@ -2,12 +2,25 @@ import type { AvailableLanguageCode, Verdict } from '@/i18n'
 
 export type { Verdict }
 
+/** What a publisher's mark needs: the same four fields the dashboard draws from. */
+export interface SourceMarkInfo {
+  name: string
+  /** Short form for the monogram, e.g. "NAN"; derived from the name when empty. */
+  short: string
+  /** The body's own logo, when it has one that can be served. */
+  logoUrl: string
+  /** Brand colour for the monogram, as CSS. */
+  brand: string
+}
+
 /** A citation to the document behind a verdict. */
 export interface Source {
   /** Title of the document, e.g. "Press statement on school calendar". */
   title: string
   /** Issuing body, e.g. "Ministry of Education". This is the citation. */
   issuer: string
+  /** The issuing body's mark, when the document came from a configured source. */
+  source?: SourceMarkInfo | null
   /** ISO 8601 date (YYYY-MM-DD) the document was issued, or "" if unknown. */
   date: string
   /** Link to the original document, or "" for an upload. */

@@ -6,7 +6,10 @@ import { Emblem } from './Emblem'
 import { FLOATING_RING, Tail } from './MessageBubble'
 
 const DISMISSED_KEY = 'maat:teaser-dismissed'
-const SHOW_AFTER_MS = 1200
+// The teaser waits for the page to have been read a little before it speaks.
+// Appearing at once reads as a hard-coded pop-up; ten seconds in, it reads
+// as someone noticing you.
+const SHOW_AFTER_MS = 10_000
 
 function wasDismissed(): boolean {
   try {
@@ -25,7 +28,11 @@ function remember() {
 }
 
 interface TeaserProps {
-  /** Hidden whenever the panel is open or opening. */
+  /**
+   * Hidden whenever the panel is open or opening, and whenever a conversation
+   * is already under way: an opening line beside a chat that has already
+   * happened is not an opening line.
+   */
   hidden: boolean
   onOpen: () => void
 }
@@ -33,7 +40,9 @@ interface TeaserProps {
 /**
  * The opening line, spoken from beside the launcher while the panel is closed.
  * A visitor landing for the first time sees Ma’at start the conversation
- * without having to click anything. Dismissing it is remembered for the visit.
+ * without having to click anything, ten seconds after the page loads. It
+ * never shows beside a conversation that has already begun. Dismissing it is
+ * remembered for the visit.
  */
 export function Teaser({ hidden, onOpen }: TeaserProps) {
   const { t } = useLanguage()
