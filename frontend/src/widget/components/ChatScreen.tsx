@@ -49,7 +49,7 @@ export function ChatScreen({
         </Button>
       </header>
 
-      <MessageList messages={messages} pending={pending} />
+      <MessageList messages={messages} pending={pending} onQuickReply={onSendText} />
 
       <Composer disabled={pending} onSendText={onSendText} onSendVoice={onSendVoice} />
     </div>

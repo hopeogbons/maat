@@ -41,7 +41,7 @@ export function useChat(client: MaatClient) {
         }
         const message: Message =
           reply.kind === 'verdict'
-            ? { id: uid(), role: 'assistant', kind: 'verdict', result: reply, audioUrl }
+            ? { id: uid(), role: 'assistant', kind: 'verdict', result: reply, audioUrl, choices: reply.choices }
             : {
                 id: uid(),
                 role: 'assistant',
@@ -50,6 +50,7 @@ export function useChat(client: MaatClient) {
                 attachments: reply.attachments,
                 audioUrl,
                 unheard: reply.voice !== undefined && reply.voice.transcript === '',
+                choices: reply.choices,
               }
         const transcript = reply.voice?.transcript
         setMessages((prev) => [

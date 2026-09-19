@@ -7,9 +7,11 @@ import { TypingIndicator } from './TypingIndicator'
 interface MessageListProps {
   messages: Message[]
   pending: boolean
+  /** Sends a tapped answer as if the visitor had typed it. */
+  onQuickReply?: (text: string) => void
 }
 
-export function MessageList({ messages, pending }: MessageListProps) {
+export function MessageList({ messages, pending, onQuickReply }: MessageListProps) {
   const { t } = useLanguage()
   const ref = useAutoScroll<HTMLDivElement>(`${messages.length}:${pending ? 1 : 0}`)
 
@@ -27,9 +29,9 @@ export function MessageList({ messages, pending }: MessageListProps) {
             <p className="maat:whitespace-pre-wrap">{t.widget.greeting}</p>
           </AssistantBubble>
         </li>
-        {messages.map((message) => (
+        {messages.map((message, i) => (
           <li key={message.id} className="maat:animate-fade-up maat:motion-reduce:animate-none">
-            <MessageBubble message={message} />
+            <MessageBubble message={message} onPick={i === messages.length - 1 && !pending ? onQuickReply : undefined} />
           </li>
         ))}
         {pending && (

@@ -53,6 +53,7 @@ export interface VerdictReply {
   degraded?: boolean
   attachments?: Attachment[]
   voice?: Voice
+  choices?: Choice[]
 }
 
 /** A document Ma'at has been cleared to hand over, once the visitor said yes. */
@@ -67,12 +68,19 @@ export interface Attachment {
   url: string
 }
 
+/** A one-tap answer to a question the reply asks. `send` goes back as if typed. */
+export interface Choice {
+  kind: 'yes' | 'no' | string
+  send: string
+}
+
 /** Conversation: a greeting, a question back, a request for permission. */
 export interface TextReply {
   kind: 'text'
   text: string
   attachments?: Attachment[]
   voice?: Voice
+  choices?: Choice[]
 }
 
 export type Reply = VerdictReply | TextReply
@@ -104,6 +112,7 @@ export type Message =
       audioUrl?: string
       /** A voice note came back with no words heard: the bubble says so in the visitor's language. */
       unheard?: boolean
+      choices?: Choice[]
     }
-  | { id: string; role: 'assistant'; kind: 'verdict'; result: VerdictReply; audioUrl?: string }
+  | { id: string; role: 'assistant'; kind: 'verdict'; result: VerdictReply; audioUrl?: string; choices?: Choice[] }
   | { id: string; role: 'assistant'; kind: 'error'; reason: 'generic' | 'network' }

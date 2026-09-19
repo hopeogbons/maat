@@ -107,6 +107,8 @@ class EngineTests(TestCase):
         self.assertEqual(Claim.objects.count(), 1)
         self.assertEqual(reply.kind, "text")
         self.assertTrue(self.conversation.state["pending_consent"])
+        # The consent question comes with its two answers ready to tap.
+        self.assertEqual([c["send"] for c in reply.choices], ["Yes", "No"])
 
     def test_the_same_rumour_twice_is_one_rumour_with_two_mentions(self):
         for key in ("one", "two"):

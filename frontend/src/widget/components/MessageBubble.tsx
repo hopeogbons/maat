@@ -3,7 +3,8 @@ import { AudioLines, CircleDashed, Download, FileText } from 'lucide-react'
 import { useEffect, useRef, type CSSProperties, type ReactNode } from 'react'
 import { useLanguage } from '@/i18n'
 import { formatBytes } from '../lib/format'
-import type { Attachment, Message } from '../types'
+import type { Attachment, Choice, Message } from '../types'
+import { Button } from '../ui/button'
 import { Emblem } from './Emblem'
 import { VerdictCard } from './VerdictCard'
 
@@ -172,6 +173,37 @@ export function SpokenReply({ url, className }: { url?: string; className?: stri
   )
 }
 
+/**
+ * The answers to a question, ready to tap. Shown under the latest reply only,
+ * and only while it is still the visitor's turn: an answer to a question
+ * three messages ago is not an answer. Tapping one sends its words as if
+ * typed, so the conversation reads the same either way.
+ */
+export function QuickReplies({ choices, onPick }: { choices?: Choice[]; onPick?: (text: string) => void }) {
+  const { t } = useLanguage()
+  if (!onPick || !choices || choices.length === 0) return null
+  const label = (choice: Choice) => (choice.kind === 'yes' ? t.widget.yes : choice.kind === 'no' ? t.widget.no : choice.send)
+  return (
+    <div className="maat:mt-2.5 maat:flex maat:flex-wrap maat:gap-2">
+      {choices.map((choice) => (
+        <Button
+          key={choice.kind + choice.send}
+          type="button"
+          variant={choice.kind === 'yes' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => onPick(choice.send)}
+          className={cn(
+            'maat:rounded-full maat:px-3.5',
+            choice.kind === 'yes' && 'maat:bg-gold maat:text-gold-foreground maat:hover:bg-gold/90',
+          )}
+        >
+          {label(choice)}
+        </Button>
+      ))}
+    </div>
+  )
+}
+
 /** Left-aligned bubble with the Ma’at mark, for plain assistant text. */
 export function AssistantBubble({ children }: { children: ReactNode }) {
   return (
@@ -185,7 +217,7 @@ export function AssistantBubble({ children }: { children: ReactNode }) {
   )
 }
 
-export function MessageBubble({ message }: { message: Message }) {
+export function MessageBubble({ message, onPick }: { message: Message; onPick?: (text: string) => void }) {
   const { t } = useLanguage()
 
   if (message.role === 'user') {
@@ -227,6 +259,7 @@ export function MessageBubble({ message }: { message: Message }) {
         </p>
         <SpokenReply url={message.audioUrl} className="maat:mt-2" />
         <Attachments items={message.attachments} />
+        <QuickReplies choices={message.choices} onPick={onPick} />
       </AssistantBubble>
     )
   }
@@ -238,6 +271,7 @@ export function MessageBubble({ message }: { message: Message }) {
         <div className="maat:min-w-0 maat:flex-1">
           <SpokenReply url={message.audioUrl} className="maat:mb-2" />
           <VerdictCard result={message.result} />
+          <QuickReplies choices={message.choices} onPick={onPick} />
         </div>
       </div>
     )

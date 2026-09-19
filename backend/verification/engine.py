@@ -103,6 +103,8 @@ NO_SOURCES_YET = (
     "so I have to stop here. What I hold does not settle this."
 )
 DECLINED = "Understood. I'll leave it at what I hold, which does not settle this one."
+#: The two answers a yes-or-no question offers for the tapping.
+YES_NO = [{"kind": "yes", "send": "Yes"}, {"kind": "no", "send": "No"}]
 OUTSIDE_COVERAGE = (
     "Ma’at does not yet cover {country}, so this was checked against the global sources only, "
     "the ones not tied to any one country."
@@ -129,6 +131,10 @@ class Reply:
     article: dict | None = None
     #: Documents the visitor accepted a copy of, ready to download.
     attachments: list[dict] = field(default_factory=list)
+    #: One-tap answers to a question this reply asks, when it asks one: the
+    #: widget draws them as buttons, a bot as a keyboard. `send` is what
+    #: choosing one sends back, as if typed.
+    choices: list[dict] = field(default_factory=list)
 
     def as_dict(self) -> dict:
         return asdict(self)
@@ -507,7 +513,7 @@ def _weigh(conversation: Conversation, draft: ClaimDraft, read, history: History
     stale = (timezone.now() - rumour.last_seen_at).days > RECURRENCE_WINDOW_DAYS
     if rumour.status == Rumour.Status.PUBLISHED and stale and not state.get("recurrence_asked"):
         _save_state(conversation, draft, recurrence_asked=True, recurrence_rumour=str(rumour.id))
-        return Reply(kind="text", text=_recurrence_ask(rumour), article=_article_of(rumour))
+        return Reply(kind="text", text=_recurrence_ask(rumour), article=_article_of(rumour), choices=YES_NO)
 
     Mention.objects.create(
         rumour=rumour, claim=claim, verdict=decision.verdict, confidence=decision.confidence, match_score=match
@@ -541,7 +547,7 @@ def _weigh(conversation: Conversation, draft: ClaimDraft, read, history: History
         # The article travels on whichever reply answers them. Attaching it
         # only to the verdict path would hide the existing record from exactly
         # the visitors we could not settle it for, who need it most.
-        return Reply(kind="text", text=text, article=_article_of(rumour))
+        return Reply(kind="text", text=text, article=_article_of(rumour), choices=YES_NO)
 
     answer = compose_answer(fields, decision, history)
     conversation.state = {}
@@ -580,6 +586,7 @@ def _weigh(conversation: Conversation, draft: ClaimDraft, read, history: History
         sources=_sources_payload(decision),
         degraded=answer.degraded,
         article=article,
+        choices=YES_NO if offerable else [],
     )
 
 

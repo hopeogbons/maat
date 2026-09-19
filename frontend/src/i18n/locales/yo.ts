@@ -155,6 +155,8 @@ export const yo: Messages = {
     send: "Ránṣẹ́",
     voiceUpload: "Gbé ìránṣẹ́ ohùn sókè",
     voiceNote: "Ìránṣẹ́ ohùn",
+    yes: "Bẹ́ẹ̀ni",
+    no: "Rárá",
     record: "Gba ìránṣẹ́ ohùn sílẹ̀",
     stopRecording: "Dá gbígbàsílẹ̀ dúró",
     recording: "Ń gbà sílẹ̀",

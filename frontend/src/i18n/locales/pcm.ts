@@ -155,6 +155,8 @@ export const pcm: Messages = {
     send: "Send",
     voiceUpload: "Upload voice note",
     voiceNote: "Voice note",
+    yes: "Yes",
+    no: "No",
     record: "Record voice note",
     stopRecording: "Stop recording",
     recording: "Dey record",

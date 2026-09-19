@@ -11,6 +11,7 @@ interface ChatResponse {
     sources?: Reply extends { sources: infer S } ? S : never
     degraded?: boolean
     attachments?: Record<string, unknown>[]
+    choices?: { kind: string; send: string }[]
   }
 }
 
@@ -64,9 +65,10 @@ export function createApiClient(): MaatClient {
         degraded: reply.degraded,
         attachments: attachmentsOf(reply),
         voice,
+        choices: reply.choices ?? [],
       }
     }
-    return { kind: 'text', text: reply.text, attachments: attachmentsOf(reply), voice }
+    return { kind: 'text', text: reply.text, attachments: attachmentsOf(reply), voice, choices: reply.choices ?? [] }
   }
 
   async function send(text: string, options?: SendOptions): Promise<Reply> {

@@ -114,6 +114,8 @@ export interface Messages {
     send: string
     voiceUpload: string
     voiceNote: string
+    yes: string
+    no: string
     record: string
     stopRecording: string
     recording: string

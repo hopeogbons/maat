@@ -155,6 +155,8 @@ export const ha: Messages = {
     send: "Aika",
     voiceUpload: "Ɗora saƙon murya",
     voiceNote: "Saƙon murya",
+    yes: "Eh",
+    no: "A’a",
     record: "Yi rikodin saƙon murya",
     stopRecording: "Tsayar da rikodi",
     recording: "Ana rikodi",
