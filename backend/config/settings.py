@@ -247,6 +247,14 @@ OPENAI_MODEL = os.environ.get("OPENAI_MODEL", "gpt-4.1-mini")
 OPENAI_ANSWER_MODEL = os.environ.get("OPENAI_ANSWER_MODEL", "gpt-4.1")
 OPENAI_RERANK_MODEL = os.environ.get("OPENAI_RERANK_MODEL", OPENAI_MODEL)
 OPENAI_EMBEDDING_MODEL = os.environ.get("OPENAI_EMBEDDING_MODEL", "text-embedding-3-small")
+# The ears and the mouth: a voice note transcribed, a reply read aloud.
+OPENAI_TRANSCRIBE_MODEL = os.environ.get("OPENAI_TRANSCRIBE_MODEL", "gpt-4o-transcribe")
+OPENAI_SPEECH_MODEL = os.environ.get("OPENAI_SPEECH_MODEL", "gpt-4o-mini-tts")
+OPENAI_SPEECH_VOICE = os.environ.get("OPENAI_SPEECH_VOICE", "marin")
+# A voice note longer than this is refused before it is transcribed. Sixty
+# seconds of Opus is well under a megabyte; the ceiling leaves room for
+# browsers that record less thriftily.
+VOICE_NOTE_MAX_BYTES = int(os.environ.get("VOICE_NOTE_MAX_BYTES", str(5 * 1024 * 1024)))
 # True makes every AI call use its deterministic fallback. Tests run this way,
 # and so can a machine with no key: the site must still work without a provider.
 AI_OFFLINE = env_bool("AI_OFFLINE", False) or RUNNING_TESTS

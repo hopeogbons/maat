@@ -8,11 +8,13 @@ rumour is created and mentioned, and the endpoint keeps a visitor to their own
 conversation.
 """
 
+import base64
 import uuid
 from datetime import timedelta
 from types import SimpleNamespace
+from unittest import mock
 
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.utils import timezone
 
 from verification.engine import _recount, _shareable_documents, handle_message
@@ -429,3 +431,47 @@ class ClosestRecordsTests(TestCase):
         self.assertEqual(records[0]["url"], "https://nannews.ng/ngo")
         self.assertEqual(records[0]["judgement"], "settles_nothing")
         self.assertEqual(_closest_records(None), [])
+
+
+class VoiceApiTests(TestCase):
+    """The voice endpoint: the same road as text, with ears and a mouth on either end."""
+
+    def _note(self, size: int = 64):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+
+        return SimpleUploadedFile("note.webm", b"\x1a\x45\xdf\xa3" + b"\0" * size, content_type="audio/webm")
+
+    def test_a_note_nobody_could_hear_is_said_so_and_opens_no_conversation(self):
+        response = self.client.post("/api/chat/voice/", {"audio": self._note(), "language": "yo"})
+        self.assertEqual(response.status_code, 200)
+        body = response.json()
+        self.assertEqual(body["transcript"], "")
+        self.assertIsNone(body["conversation"])
+        self.assertIsNone(body["audio"])
+        self.assertTrue(body["reply"]["degraded"])
+        self.assertEqual(Conversation.objects.count(), 0)
+
+    def test_the_words_heard_take_the_same_road_as_typed_text(self):
+        from ai.speech import Transcript
+
+        with (
+            mock.patch("verification.api.transcribe", return_value=Transcript("Good morning", "en")) as ears,
+            mock.patch("verification.api.speak", return_value=b"ID3spoken") as mouth,
+        ):
+            response = self.client.post("/api/chat/voice/", {"audio": self._note(), "language": "en"})
+        self.assertEqual(response.status_code, 200)
+        body = response.json()
+        self.assertEqual(body["transcript"], "Good morning")
+        self.assertEqual(body["reply"]["kind"], "text")
+        self.assertEqual(body["audio"]["content_type"], "audio/mpeg")
+        self.assertEqual(base64.b64decode(body["audio"]["base64"]), b"ID3spoken")
+        self.assertEqual(ears.call_args.kwargs["language"], "en")
+        self.assertEqual(mouth.call_args.args[0], body["reply"]["text"])
+        conversation = Conversation.objects.get(id=body["conversation"])
+        self.assertTrue(Turn.objects.filter(conversation=conversation, raw_text="Good morning").exists())
+
+    def test_a_missing_or_oversized_note_is_refused(self):
+        self.assertEqual(self.client.post("/api/chat/voice/", {}).status_code, 400)
+        with override_settings(VOICE_NOTE_MAX_BYTES=10):
+            self.assertEqual(self.client.post("/api/chat/voice/", {"audio": self._note()}).status_code, 400)
+

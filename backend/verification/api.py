@@ -7,20 +7,24 @@ per-visitor rate limit that the dashboard can tune, not with a login wall.
 
 from __future__ import annotations
 
+import base64
 import uuid
 
 from rest_framework import status
+from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.throttling import SimpleRateThrottle
 from rest_framework.views import APIView
 
+from django.conf import settings
 from django.http import FileResponse, Http404
 
 from appsettings.models import AppSetting
 from knowledge.models import Document
-from verification.engine import handle_message
+from ai.speech import SPEECH_FORMATS, speak, transcribe
+from verification.engine import Reply, handle_message
 from verification.models import Conversation
 
 MAX_MESSAGE_CHARS = 4000
@@ -57,6 +61,51 @@ def _looks_like_visitor_key(value: str) -> bool:
     return len(value) == 32 and all(c in "0123456789abcdef" for c in value)
 
 
+def _open_conversation(request: Request) -> tuple[Conversation, str | None]:
+    """The conversation this browser is continuing, or a fresh one.
+
+    Also returns the visitor key to issue when the browser arrived without a
+    valid one, so the response can set the cookie; None when it already had it.
+    """
+    if not request.session.session_key:
+        request.session.save()
+    session_key = request.session.session_key
+
+    visitor_key = request.COOKIES.get(VISITOR_COOKIE) or ""
+    issued_key = None
+    if not _looks_like_visitor_key(visitor_key):
+        visitor_key = uuid.uuid4().hex
+        issued_key = visitor_key
+
+    conversation = None
+    wanted = request.data.get("conversation")
+    if wanted:
+        conversation = Conversation.active.filter(id=wanted, session_key=session_key, is_closed=False).first()
+    if conversation is None:
+        conversation = Conversation.objects.create(session_key=session_key, visitor_key=visitor_key)
+    elif conversation.visitor_key != visitor_key:
+        # A conversation resumed after the cookie was reissued. Take the
+        # current key so this thread counts under one reporter, not two.
+        conversation.visitor_key = visitor_key
+        conversation.save(update_fields=["visitor_key"])
+    return conversation, issued_key
+
+
+def _respond(request: Request, conversation: Conversation, body: dict, issued_key: str | None) -> Response:
+    """The reply, with the visitor cookie set when this browser was just given one."""
+    response = Response({"conversation": str(conversation.id), **body})
+    if issued_key:
+        response.set_cookie(
+            VISITOR_COOKIE,
+            issued_key,
+            max_age=VISITOR_COOKIE_MAX_AGE,
+            httponly=True,
+            samesite="Lax",
+            secure=request.is_secure(),
+        )
+    return response
+
+
 class ChatView(APIView):
     """POST {"text": "...", "conversation": "<id or null>"} -> a reply."""
 
@@ -74,40 +123,60 @@ class ChatView(APIView):
         if len(text) > MAX_MESSAGE_CHARS:
             return Response({"detail": "That is longer than I can read at once."}, status=status.HTTP_400_BAD_REQUEST)
 
-        if not request.session.session_key:
-            request.session.save()
-        session_key = request.session.session_key
-
-        visitor_key = request.COOKIES.get(VISITOR_COOKIE) or ""
-        issued = False
-        if not _looks_like_visitor_key(visitor_key):
-            visitor_key = uuid.uuid4().hex
-            issued = True
-
-        conversation = None
-        wanted = request.data.get("conversation")
-        if wanted:
-            conversation = Conversation.active.filter(id=wanted, session_key=session_key, is_closed=False).first()
-        if conversation is None:
-            conversation = Conversation.objects.create(session_key=session_key, visitor_key=visitor_key)
-        elif conversation.visitor_key != visitor_key:
-            # A conversation resumed after the cookie was reissued. Take the
-            # current key so this thread counts under one reporter, not two.
-            conversation.visitor_key = visitor_key
-            conversation.save(update_fields=["visitor_key"])
-
+        conversation, issued_key = _open_conversation(request)
         reply = handle_message(conversation, text)
-        response = Response({"conversation": str(conversation.id), "reply": reply.as_dict()})
-        if issued:
-            response.set_cookie(
-                VISITOR_COOKIE,
-                visitor_key,
-                max_age=VISITOR_COOKIE_MAX_AGE,
-                httponly=True,
-                samesite="Lax",
-                secure=request.is_secure(),
-            )
-        return response
+        return _respond(request, conversation, {"reply": reply.as_dict()}, issued_key)
+
+
+#: What a voice note gets when nothing could be heard: the transcriber was
+#: offline, the clip was silent, or the words did not come through.
+COULD_NOT_LISTEN = "I couldn’t make out that voice note. Try again a little closer to the microphone, or type what you heard."
+
+
+class VoiceChatView(ChatView):
+    """POST multipart {audio, conversation?, language?} -> the words heard, a reply, and the reply read aloud.
+
+    The same conversation, the same rate limit and the same road through the
+    engine as typed text. Only the first and last steps differ: the note is
+    transcribed on the way in, and the reply is spoken on the way out. The
+    audio is read once here and never written anywhere.
+    """
+
+    parser_classes = [MultiPartParser, FormParser]
+
+    def post(self, request: Request) -> Response:
+        upload = request.FILES.get("audio")
+        if upload is None:
+            return Response({"detail": "Send a voice note."}, status=status.HTTP_400_BAD_REQUEST)
+        if upload.size > settings.VOICE_NOTE_MAX_BYTES:
+            return Response({"detail": "That voice note is longer than I can listen to at once."}, status=status.HTTP_400_BAD_REQUEST)
+        language = (request.data.get("language") or "").strip()[:8]
+
+        heard = transcribe(upload.read(), upload.name, language=language)
+        if heard is None:
+            # Nothing to weigh, so nothing is recorded: no conversation is
+            # opened for a note that carried no words.
+            reply = Reply(kind="text", text=COULD_NOT_LISTEN, degraded=True)
+            return Response({
+                "conversation": request.data.get("conversation") or None,
+                "transcript": "",
+                "reply": reply.as_dict(),
+                "audio": None,
+            })
+
+        conversation, issued_key = _open_conversation(request)
+        reply = handle_message(conversation, heard.text[:MAX_MESSAGE_CHARS])
+        spoken = speak(reply.text, language=language)
+        payload = {
+            "transcript": heard.text,
+            "reply": reply.as_dict(),
+            "audio": (
+                {"content_type": SPEECH_FORMATS["mp3"], "base64": base64.b64encode(spoken).decode("ascii")}
+                if spoken
+                else None
+            ),
+        }
+        return _respond(request, conversation, payload, issued_key)
 
 
 class DocumentDownloadView(APIView):

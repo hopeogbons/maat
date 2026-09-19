@@ -93,6 +93,9 @@ export function createMockClient({ delayMs = 900 }: MockClientOptions = {}): Maa
 
   return {
     send: (text, options) => respond(excerpt(text), options),
-    sendVoice: (file, options) => respond(file.name, options),
+    sendVoice: async (file, options) => ({
+      ...(await respond(file.name, options)),
+      voice: { transcript: `(${file.name})`, audio: null },
+    }),
   }
 }

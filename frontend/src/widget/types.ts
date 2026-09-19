@@ -20,6 +20,15 @@ export interface Source {
   judgement?: string
 }
 
+/**
+ * What came back with a voice note: the words Ma'at heard, so a mishearing is
+ * visible, and the reply read aloud, when the mouth was available.
+ */
+export interface Voice {
+  transcript: string
+  audio: Blob | null
+}
+
 /** A verdict, with the plain-language answer and the sources behind it. */
 export interface VerdictReply {
   kind: 'verdict'
@@ -30,6 +39,7 @@ export interface VerdictReply {
   /** The provider was unavailable and a plain reply stood in. */
   degraded?: boolean
   attachments?: Attachment[]
+  voice?: Voice
 }
 
 /** A document Ma'at has been cleared to hand over, once the visitor said yes. */
@@ -49,6 +59,7 @@ export interface TextReply {
   kind: 'text'
   text: string
   attachments?: Attachment[]
+  voice?: Voice
 }
 
 export type Reply = VerdictReply | TextReply
@@ -70,7 +81,16 @@ export interface MaatClient {
 
 export type Message =
   | { id: string; role: 'user'; kind: 'text'; text: string }
-  | { id: string; role: 'user'; kind: 'voice'; file: File; objectUrl: string }
-  | { id: string; role: 'assistant'; kind: 'text'; text: string; attachments?: Attachment[] }
-  | { id: string; role: 'assistant'; kind: 'verdict'; result: VerdictReply }
+  | { id: string; role: 'user'; kind: 'voice'; file: File; objectUrl: string; transcript?: string }
+  | {
+      id: string
+      role: 'assistant'
+      kind: 'text'
+      text: string
+      attachments?: Attachment[]
+      audioUrl?: string
+      /** A voice note came back with no words heard: the bubble says so in the visitor's language. */
+      unheard?: boolean
+    }
+  | { id: string; role: 'assistant'; kind: 'verdict'; result: VerdictReply; audioUrl?: string }
   | { id: string; role: 'assistant'; kind: 'error'; reason: 'generic' | 'network' }

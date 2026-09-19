@@ -1,8 +1,8 @@
 import { apiFetch } from '@/lib/api'
-import type { MaatClient, Reply, SendOptions } from './types'
+import type { MaatClient, Reply, SendOptions, Voice } from './types'
 
 interface ChatResponse {
-  conversation: string
+  conversation: string | null
   reply: {
     kind: 'text' | 'verdict'
     text: string
@@ -12,6 +12,19 @@ interface ChatResponse {
     degraded?: boolean
     attachments?: Record<string, unknown>[]
   }
+}
+
+interface VoiceChatResponse extends ChatResponse {
+  /** The words heard; empty when nothing could be made out. */
+  transcript: string
+  /** The reply read aloud, or null when the mouth was unavailable. */
+  audio: { content_type: string; base64: string } | null
+}
+
+function blobOf(audio: VoiceChatResponse['audio']): Blob | null {
+  if (!audio?.base64) return null
+  const bytes = Uint8Array.from(atob(audio.base64), (c) => c.charCodeAt(0))
+  return new Blob([bytes], { type: audio.content_type })
 }
 
 /** The wire shape uses snake_case for one field; everything else lines up. */
@@ -38,13 +51,8 @@ function attachmentsOf(reply: { attachments?: Record<string, unknown>[] }) {
 export function createApiClient(): MaatClient {
   let conversation: string | null = null
 
-  async function send(text: string, options?: SendOptions): Promise<Reply> {
-    const data = await apiFetch<ChatResponse>('/api/chat/', {
-      method: 'POST',
-      body: JSON.stringify({ text, conversation }),
-      signal: options?.signal,
-    })
-    conversation = data.conversation
+  function replyOf(data: ChatResponse, voice?: Voice): Reply {
+    if (data.conversation) conversation = data.conversation
     const { reply } = data
     if (reply.kind === 'verdict' && reply.verdict) {
       return {
@@ -55,17 +63,38 @@ export function createApiClient(): MaatClient {
         confidence: reply.confidence,
         degraded: reply.degraded,
         attachments: attachmentsOf(reply),
+        voice,
       }
     }
-    return { kind: 'text', text: reply.text, attachments: attachmentsOf(reply) }
+    return { kind: 'text', text: reply.text, attachments: attachmentsOf(reply), voice }
   }
 
-  return {
-    send,
-    // Voice notes are not transcribed yet. Say so rather than fail silently.
-    sendVoice: async () => ({
-      kind: 'text',
-      text: 'I can’t listen to voice notes just yet. Type what you heard and I’ll check it.',
-    }),
+  async function send(text: string, options?: SendOptions): Promise<Reply> {
+    const data = await apiFetch<ChatResponse>('/api/chat/', {
+      method: 'POST',
+      body: JSON.stringify({ text, conversation }),
+      signal: options?.signal,
+    })
+    return replyOf(data)
   }
+
+  /**
+   * A voice note goes up as it was recorded and comes back as words and, when
+   * the server could speak, as audio. Multipart, so no JSON content type: the
+   * browser sets its own boundary.
+   */
+  async function sendVoice(file: File, options?: SendOptions): Promise<Reply> {
+    const body = new FormData()
+    body.append('audio', file, file.name)
+    if (conversation) body.append('conversation', conversation)
+    if (options?.language) body.append('language', options.language)
+    const data = await apiFetch<VoiceChatResponse>('/api/chat/voice/', {
+      method: 'POST',
+      body,
+      signal: options?.signal,
+    })
+    return replyOf(data, { transcript: data.transcript, audio: blobOf(data.audio) })
+  }
+
+  return { send, sendVoice }
 }

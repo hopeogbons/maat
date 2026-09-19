@@ -114,6 +114,16 @@ export interface Messages {
     send: string
     voiceUpload: string
     voiceNote: string
+    record: string
+    stopRecording: string
+    recording: string
+    discardRecording: string
+    sendRecording: string
+    previewRecording: string
+    micDenied: string
+    heard: string
+    notHeard: string
+    spokenReply: string
     citedSource: string
     closestRecord: string
     openOriginal: string

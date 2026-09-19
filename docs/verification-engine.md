@@ -184,6 +184,35 @@ citation wherever it surfaces later.
 
 Multiple citations are expected and are laid out cleanly rather than as a dump.
 
+### 3.8 Voice notes
+
+A visitor may say the rumour instead of typing it. The widget records a note
+of up to sixty seconds, plays it back, and sends it only when the visitor
+presses send; a note can be deleted before anyone else has heard it. On the
+server the note is transcribed and the words take the same road as typed text,
+the quarantined read first. Nothing hears the audio but the transcriber, and
+the audio is never stored: the transcript is what becomes the turn, under the
+same retention as typed words.
+
+The words heard are shown beneath the visitor's own note, so a mishearing is
+visible before Ma'at reads the claim back. The reply is also read aloud when
+the speech model is available. Citations are spoken as issuer and date;
+addresses are not read out.
+
+The transcriber is told, in words, the language the visitor chose in the
+widget, for the languages it knows: English, Hausa, Yorùbá, Kiswahili and
+Naijá. Igbo is sent unlabelled. Quality in Hausa and Yorùbá is the
+provider's, not ours, and is to be measured with native speakers before it is
+promised on the page.
+
+Failure is honest and cheap. A silent clip, an unheard note or an offline
+provider gets "I couldn't make out that voice note" in the visitor's language,
+opens no conversation, and counts against the same per-visitor limit. A reply
+whose audio could not be made still comes back as text.
+
+The same endpoint logic is what a Telegram bot will use later: a voice message
+in, a transcript, a reply, and Opus audio out.
+
 ## 4. Leg two: ingestion
 
 One pipeline. Everything we trust flows through it, whatever door it came in by.
@@ -406,6 +435,7 @@ Each step usable before the next begins.
 | `interview.py` | The five Ws, the follow-up budget, "just tell me" (3.2, 3.3). |
 | `conversation.py` | Greetings, pleasantries, reading the claim back, the consent ask. |
 | `embeddings.py` | Vectors for storage (strict) and search (may degrade). |
+| `speech.py` | The ears and the mouth: a voice note transcribed, a reply read aloud (3.8). |
 | `enrichment.py` | Situating contexts and document cards, at ingestion (4.3). |
 | `rerank.py` | The recall gate, the first of the two numbers (3.5). |
 | `judge.py` | The judgement and the verdict, the second number and the gate (3.5). |

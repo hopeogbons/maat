@@ -31,11 +31,33 @@ export function useChat(client: MaatClient) {
       try {
         const reply = await request(controller.signal)
         if (controller.signal.aborted) return
+        // The spoken reply, when there is one, plays from the bubble. The
+        // transcript goes back onto the visitor's own note, so they can see
+        // what was heard beside what they said.
+        let audioUrl: string | undefined
+        if (reply.voice?.audio) {
+          audioUrl = URL.createObjectURL(reply.voice.audio)
+          objectUrls.current.push(audioUrl)
+        }
         const message: Message =
           reply.kind === 'verdict'
-            ? { id: uid(), role: 'assistant', kind: 'verdict', result: reply }
-            : { id: uid(), role: 'assistant', kind: 'text', text: reply.text, attachments: reply.attachments }
-        setMessages((prev) => [...prev, message])
+            ? { id: uid(), role: 'assistant', kind: 'verdict', result: reply, audioUrl }
+            : {
+                id: uid(),
+                role: 'assistant',
+                kind: 'text',
+                text: reply.text,
+                attachments: reply.attachments,
+                audioUrl,
+                unheard: reply.voice !== undefined && reply.voice.transcript === '',
+              }
+        const transcript = reply.voice?.transcript
+        setMessages((prev) => [
+          ...prev.map((m) =>
+            m.id === userMessage.id && m.kind === 'voice' && transcript !== undefined ? { ...m, transcript } : m,
+          ),
+          message,
+        ])
       } catch (error) {
         if (controller.signal.aborted) return
         const reason = error instanceof TypeError ? 'network' : 'generic'

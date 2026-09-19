@@ -14,7 +14,7 @@ from unittest import mock
 
 from django.test import SimpleTestCase, override_settings
 
-from ai import answer, embeddings, interpreter, interview, judge, provider, rerank
+from ai import answer, embeddings, interpreter, interview, judge, provider, rerank, speech
 from ai.schemas import (
     CONTRADICTS,
     INSUFFICIENT,
@@ -337,3 +337,22 @@ class AnswerTests(SimpleTestCase):
     def test_history_is_passed_as_chat_turns(self):
         history = History(turns=[("visitor", "hello"), ("maat", "Hello. Heard something?")])
         self.assertEqual(history.as_messages()[1], {"role": "assistant", "content": "Hello. Heard something?"})
+
+
+class SpeechOfflineTests(SimpleTestCase):
+    def test_the_ears_and_mouth_degrade_to_nothing_offline(self):
+        with override_settings(AI_OFFLINE=True):
+            self.assertIsNone(speech.transcribe(b"RIFF....", "note.wav", language="ha"))
+            self.assertIsNone(speech.speak("Sannu", language="ha"))
+
+    def test_the_spoken_form_drops_addresses_and_markers(self):
+        text = "The ministry said so on 3 May: https://example.gov/notice **See** the notice."
+        self.assertEqual(speech.spoken_form(text), "The ministry said so on 3 May: See the notice.")
+
+    def test_an_unknown_format_is_refused(self):
+        with self.assertRaises(ValueError):
+            speech.speak("hello", format="wma")
+
+    def test_only_languages_the_provider_knows_are_hinted(self):
+        self.assertEqual(speech.TRANSCRIBE_HINTS.get("ig"), None)
+        self.assertEqual(speech.TRANSCRIBE_HINTS["ha"], "Hausa")

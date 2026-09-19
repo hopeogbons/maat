@@ -10,6 +10,8 @@ Roles, not model names, are what callers ask for:
              situating contexts, document cards
     answer   the careful model: judging evidence and writing the verdict
     rerank   the recall gate
+    transcribe the ears: a voice note into words
+    speak      the mouth: a reply into a voice note
 
 Resolved at call time, not import time, so override_settings works in tests.
 """
@@ -25,7 +27,7 @@ from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
-ROLES = ("light", "answer", "rerank")
+ROLES = ("light", "answer", "rerank", "transcribe", "speak")
 
 
 class ProviderUnavailable(RuntimeError):
@@ -44,6 +46,8 @@ def model_for(role: str) -> str:
         "light": settings.OPENAI_MODEL,
         "answer": settings.OPENAI_ANSWER_MODEL,
         "rerank": settings.OPENAI_RERANK_MODEL,
+        "transcribe": settings.OPENAI_TRANSCRIBE_MODEL,
+        "speak": settings.OPENAI_SPEECH_MODEL,
     }[role]
 
 

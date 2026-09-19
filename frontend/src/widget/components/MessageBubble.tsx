@@ -136,6 +136,26 @@ export function Attachments({ items }: { items?: Attachment[] }) {
 /** The same ring, translucent, for a bubble standing on an unknown background. */
 export const FLOATING_RING = 'color-mix(in oklab, var(--foreground) 14%, transparent)'
 
+/**
+ * The reply read aloud. It starts playing on its own: the visitor sent a
+ * voice note a moment ago, so the answer arriving as a voice is what they
+ * asked for, and the controls stay for hearing it again.
+ */
+export function SpokenReply({ url, className }: { url?: string; className?: string }) {
+  const { t } = useLanguage()
+  if (!url) return null
+  return (
+    <audio
+      controls
+      autoPlay
+      preload="auto"
+      src={url}
+      aria-label={t.widget.spokenReply}
+      className={cn('maat:h-8 maat:w-full maat:min-w-56', className)}
+    />
+  )
+}
+
 /** Left-aligned bubble with the Ma’at mark, for plain assistant text. */
 export function AssistantBubble({ children }: { children: ReactNode }) {
   return (
@@ -171,6 +191,11 @@ export function MessageBubble({ message }: { message: Message }) {
                 </div>
               </div>
               <audio controls preload="metadata" src={message.objectUrl} className="maat:mt-2 maat:h-8 maat:w-full maat:min-w-56" />
+              {message.transcript && (
+                <p className="maat:mt-2 maat:text-xs maat:text-primary-foreground/80">
+                  <span className="maat:font-medium">{t.widget.heard}:</span> “{message.transcript}”
+                </p>
+              )}
             </div>
           )}
         </div>
@@ -182,8 +207,9 @@ export function MessageBubble({ message }: { message: Message }) {
     return (
       <AssistantBubble>
         <p className="maat:whitespace-pre-wrap maat:break-words maat:leading-relaxed">
-          <Linkified text={message.text} />
+          <Linkified text={message.unheard ? t.widget.notHeard : message.text} />
         </p>
+        <SpokenReply url={message.audioUrl} className="maat:mt-2" />
         <Attachments items={message.attachments} />
       </AssistantBubble>
     )
@@ -194,6 +220,7 @@ export function MessageBubble({ message }: { message: Message }) {
       <div className="maat:relative maat:flex maat:pl-9">
         <Emblem size="xs" className="maat-avatar" />
         <div className="maat:min-w-0 maat:flex-1">
+          <SpokenReply url={message.audioUrl} className="maat:mb-2" />
           <VerdictCard result={message.result} />
         </div>
       </div>
