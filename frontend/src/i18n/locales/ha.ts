@@ -103,6 +103,8 @@ export const ha: Messages = {
     checked: (date) => `An duba ${date}`,
     noSource: "Ba a sami tabbataccen madogara ba",
     read: "Karanta",
+    none: "Ba a buga kome ba tukuna. Idan mutane da yawa suka tambayi jita-jita iri ɗaya, abin da takardun hukuma suka faɗa zai bayyana a nan.",
+    missing: "Ba mu sami wannan tantancewar ba",
   },
   footer: {
     blurb:

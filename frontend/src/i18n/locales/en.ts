@@ -102,6 +102,8 @@ export const en: Messages = {
     checked: (date) => `Checked ${date}`,
     noSource: "No verified source found",
     read: "Read",
+    none: "Nothing has been published yet. When enough people raise the same rumour, what the record says about it appears here.",
+    missing: "We could not find that verification",
   },
   footer: {
     blurb:

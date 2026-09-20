@@ -2,13 +2,21 @@ import { cn } from 'cn'
 import { Newspaper } from 'lucide-react'
 import { useState } from 'react'
 import { useLanguage } from '@/i18n'
-import { ALL_TAGS, ARTICLES } from '../data/articles'
+import { useArticles } from '../data/useArticles'
 import { ArticleCard } from './ArticleCard'
 
 export function Articles() {
   const { t } = useLanguage()
-  const [activeTag, setActiveTag] = useState<string | null>(null)
-  const visible = activeTag ? ARTICLES.filter((a) => a.tags.includes(activeTag)) : ARTICLES
+  const [activeTag, setActiveTag] = useState<string | null>(
+    () => new URLSearchParams(window.location.search).get('topic'),
+  )
+  const { articles, tags, loading, empty } = useArticles()
+  const visible = activeTag ? articles.filter((a) => a.tags.includes(activeTag)) : articles
+
+  // Nothing published yet is a real state, not a failure: a fresh install has
+  // weighed nothing. The section keeps its heading and says so, rather than
+  // collapsing and leaving the page with a gap where a section was.
+  if (loading || empty) return <Empty heading={t} quiet={loading} />
 
   return (
     <section id="verifications" className="scroll-mt-16 bg-teal-soft/40 py-20 sm:py-24">
@@ -23,7 +31,7 @@ export function Articles() {
           </div>
           <p className="inline-flex items-center gap-2 text-sm text-ink-muted">
             <Newspaper className="size-4 text-gold-dark" />
-            <span aria-live="polite">{t.articles.count(visible.length, ARTICLES.length)}</span>
+            <span aria-live="polite">{t.articles.count(visible.length, articles.length)}</span>
           </p>
         </div>
 
@@ -31,7 +39,7 @@ export function Articles() {
           <FilterChip active={activeTag === null} onClick={() => setActiveTag(null)}>
             {t.articles.allTopics}
           </FilterChip>
-          {ALL_TAGS.map((tag) => (
+          {tags.map((tag) => (
             <FilterChip key={tag} active={activeTag === tag} onClick={() => setActiveTag(tag)}>
               {tag}
             </FilterChip>
@@ -63,5 +71,26 @@ function FilterChip({ active, onClick, children }: { active: boolean; onClick: (
     >
       {children}
     </button>
+  )
+}
+
+/**
+ * The section before anything has been published, and while the first request
+ * is in flight. Same shell, same heading: only the grid is missing, so the
+ * page does not jump when the articles arrive.
+ */
+function Empty({ heading, quiet }: { heading: ReturnType<typeof useLanguage>['t']; quiet: boolean }) {
+  return (
+    <section id="verifications" className="scroll-mt-16 bg-teal-soft/40 py-20 sm:py-24">
+      <div className="mx-auto max-w-6xl px-6 sm:px-10">
+        <p className="text-xs font-bold tracking-widest text-gold-dark uppercase">{heading.articles.eyebrow}</p>
+        <h2 className="mt-2 text-3xl font-extrabold tracking-tight text-teal-deep sm:text-4xl">
+          {heading.articles.title}
+        </h2>
+        <p className="mt-3 max-w-2xl text-lg text-ink-muted" aria-live="polite">
+          {quiet ? heading.articles.intro : heading.articles.none}
+        </p>
+      </div>
+    </section>
   )
 }

@@ -68,6 +68,10 @@ export interface Messages {
     checked: (date: string) => string
     noSource: string
     read: string
+    /** Shown in place of the grid when nothing has been published yet. */
+    none: string
+    /** The heading when a verification link points at nothing. */
+    missing: string
   }
   footer: {
     blurb: string

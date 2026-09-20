@@ -20,14 +20,14 @@ export function ArticleCard({ article, onTagClick }: { article: Article; onTagCl
           </span>
         </div>
 
-        <h3 className="mt-4 text-xl leading-snug font-bold text-teal-deep">
+        <h3 className="mt-4 line-clamp-2 text-xl leading-snug font-bold text-teal-deep">
           <a href={href} className="after:absolute after:inset-0 focus-visible:outline-none">
             {article.title}
           </a>
         </h3>
-        <p className="mt-3 leading-relaxed text-ink-muted">{article.summary}</p>
+        <p className="mt-3 line-clamp-3 leading-relaxed text-ink-muted">{article.summary}</p>
 
-        <ul className="relative z-10 mt-4 flex flex-wrap gap-1.5">
+        <ul className="relative z-10 mt-4 mb-5 flex flex-wrap gap-1.5">
           {article.tags.map((tag) => (
             <li key={tag}>
               <button
@@ -41,7 +41,7 @@ export function ArticleCard({ article, onTagClick }: { article: Article; onTagCl
           ))}
         </ul>
 
-        <div className="mt-5 flex items-end justify-between gap-3 border-t border-line pt-4 text-xs text-ink-muted">
+        <div className="mt-auto flex items-end justify-between gap-3 border-t border-line pt-4 text-xs text-ink-muted">
           <div className="min-w-0">
             {article.source ? (
               <p className="inline-flex items-center gap-1.5">

@@ -61,6 +61,7 @@ from knowledge.geography import (
 from knowledge.lookup import lookup as live_lookup
 from knowledge.models import Chunk, Document, Source
 from verification import retrieval
+from verification.publishing import publish
 from verification.models import Claim, Conversation, Evidence, LiveLookup, Mention, Rumour, Turn
 
 logger = logging.getLogger(__name__)
@@ -369,11 +370,22 @@ def _recount(rumour: Rumour, *, threshold: int) -> None:
     fields = ["mention_count", "reporter_count", "verdict", "confidence", "last_seen_at"]
 
     # Withheld is a decision somebody made; the threshold does not overrule it.
-    if reporters >= threshold and rumour.status == Rumour.Status.COLLECTING:
+    crossed = reporters >= threshold and rumour.status == Rumour.Status.COLLECTING
+    if crossed:
         rumour.status = Rumour.Status.PUBLISHED
         fields.append("status")
 
     rumour.save(update_fields=fields)
+
+    # The page is written by the same request that crossed the threshold, and
+    # its failure is not the visitor's problem: they asked a question and it
+    # has been answered. A rumour marked published without a page is repaired
+    # by `manage.py publish_rumours`.
+    if crossed:
+        try:
+            publish(rumour)
+        except Exception:  # noqa: BLE001 - never lose an answer over an article
+            logger.exception("publishing %s failed; it stays marked published", rumour.id)
 
 
 

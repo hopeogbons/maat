@@ -1,5 +1,13 @@
+from unittest import mock
+
+from django.contrib.auth import get_user_model
+from django.core.management import call_command
 from django.db import IntegrityError
 from django.test import TestCase
+from django.utils import timezone
+
+from ai.story import clean_tags
+from appsettings.models import AppSetting
 
 from knowledge.models import Chunk, Document, Source
 from verification.models import (
@@ -14,6 +22,7 @@ from verification.models import (
     Turn,
     Verdict,
 )
+from verification.publishing import publish
 
 
 class ConversationTests(TestCase):
@@ -142,3 +151,81 @@ class ArticleTests(TestCase):
         article.tags.add(Tag.objects.create(name="Health", slug="health"))
         self.assertEqual(rumour.article, article)
         self.assertEqual(article.tags.count(), 1)
+
+
+class PublishingTests(TestCase):
+    """A rumour that crosses the threshold gets a page, tagged, with a date."""
+
+    @classmethod
+    def setUpTestData(cls):
+        source = Source.objects.create(name="Federal Ministry of Health", slug="fmoh")
+        document = Document.objects.create(
+            source=source, title="Immunisation schedule", identifier="epi.pdf", fingerprint="b"
+        )
+        cls.chunk = Chunk.objects.create(document=document, text="Routine immunisation continues in all states.")
+
+    def _rumour(self) -> Rumour:
+        rumour = Rumour.objects.create(
+            statement="the measles vaccine has been withdrawn from all clinics",
+            slug="measles-withdrawn",
+            verdict=Verdict.UNVERIFIED,
+            reporter_count=3,
+            status=Rumour.Status.PUBLISHED,
+        )
+        Evidence.objects.create(
+            rumour=rumour,
+            chunk=self.chunk,
+            judgement=Evidence.Judgement.CONTRADICTS,
+            score=90,
+            quote="Routine immunisation continues in all states.",
+        )
+        return rumour
+
+    def test_publishing_writes_a_page_even_with_no_model(self):
+        """The provider being down must not cost the rumour its page."""
+        with mock.patch("verification.publishing.write_story", return_value={}):
+            article = publish(self._rumour())
+
+        self.assertTrue(article.slug)
+        self.assertIsNotNone(article.published_at)
+        self.assertIn("Federal Ministry of Health", article.summary)
+        self.assertEqual(article.verdict, Verdict.UNVERIFIED)
+
+    def test_publishing_twice_keeps_the_slug_and_the_original_date(self):
+        rumour = self._rumour()
+        with mock.patch("verification.publishing.write_story", return_value={}):
+            first = publish(rumour)
+            published_at, slug = first.published_at, first.slug
+            second = publish(rumour)
+
+        self.assertEqual(Article.objects.count(), 1)
+        self.assertEqual(second.slug, slug)
+        self.assertEqual(second.published_at, published_at)
+
+    def test_only_topics_from_the_vocabulary_become_tags(self):
+        story = {"title": "T", "summary": "S", "body": "B", "tags": clean_tags(["health", "Vaccines", "Health"])}
+        with mock.patch("verification.publishing.write_story", return_value=story):
+            article = publish(self._rumour())
+
+        # "Vaccines" is not in the vocabulary and "health" is the same topic twice.
+        self.assertEqual([tag.name for tag in article.tags.all()], ["Health"])
+        self.assertEqual(Tag.objects.count(), 1)
+
+
+class PublicArticlesTests(TestCase):
+    """The landing page's endpoint: published only, and no sign-in."""
+
+    def test_it_serves_published_articles_and_the_topics_in_use(self):
+        rumour = Rumour.objects.create(statement="claim", slug="claim", verdict=Verdict.VERIFIED)
+        article = Article.objects.create(
+            rumour=rumour, slug="claim", title="Claim", verdict=Verdict.VERIFIED, published_at=timezone.now()
+        )
+        article.tags.add(Tag.objects.create(name="Health", slug="health"))
+        hidden = Rumour.objects.create(statement="draft", slug="draft", verdict=Verdict.VERIFIED)
+        Article.objects.create(rumour=hidden, slug="draft", title="Draft", verdict=Verdict.VERIFIED)
+
+        response = self.client.get("/api/articles/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual([a["slug"] for a in response.json()["articles"]], ["claim"])
+        self.assertEqual(response.json()["tags"], ["Health"])

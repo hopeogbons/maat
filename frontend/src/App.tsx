@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { RequireAuth, SignInGate } from '@/auth'
+import { ArticlePage } from '@/landing/ArticlePage'
 import { LandingPage } from '@/landing/LandingPage'
 import { MaatWidget } from '@/widget'
 
@@ -44,6 +45,17 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Site />} />
+        {/* One verification, read in full. The widget rides along: somebody
+            who has just read a verdict is exactly who has the next question. */}
+        <Route
+          path="/verifications/:slug"
+          element={
+            <>
+              <ArticlePage />
+              <MaatWidget />
+            </>
+          }
+        />
         {/* Each signed-in page stands on its own path; none is filed under
             another. They share one component, which reads the path to know
             which page it is. */}

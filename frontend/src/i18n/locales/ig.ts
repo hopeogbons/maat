@@ -103,6 +103,8 @@ export const ig: Messages = {
     checked: (date) => `E nyochara ${date}`,
     noSource: "Ahụghị ebe o si e nyochara",
     read: "Gụọ",
+    none: "E bipụtabeghị ihe ọ bụla. Mgbe ọtụtụ mmadụ jụrụ otu asịrị ahụ, ihe akwụkwọ gọọmentị kwuru ga-apụta ebe a.",
+    missing: "Anyị achọtaghị nyocha ahụ",
   },
   footer: {
     blurb:

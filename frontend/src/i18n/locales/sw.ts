@@ -103,6 +103,8 @@ export const sw: Messages = {
     checked: (date) => `Imehakikiwa ${date}`,
     noSource: "Hakuna chanzo kilichothibitishwa",
     read: "Soma",
+    none: "Hakuna kilichochapishwa bado. Watu wengi wakiuliza kuhusu uvumi uleule, kile ambacho kumbukumbu zinasema kitaonekana hapa.",
+    missing: "Hatukupata uthibitisho huo",
   },
   footer: {
     blurb:

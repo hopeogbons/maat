@@ -103,6 +103,8 @@ export const pcm: Messages = {
     checked: (date) => `We check am ${date}`,
     noSource: "No verified source",
     read: "Read",
+    none: "Nothing never publish yet. When plenty people ask about the same tori, wetin the record talk go show here.",
+    missing: "We no fit find that verification",
   },
   footer: {
     blurb:

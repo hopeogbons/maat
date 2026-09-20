@@ -103,6 +103,8 @@ export const yo: Messages = {
     checked: (date) => `A ṣàyẹ̀wò ní ${date}`,
     noSource: "Kò sí orísun tí a fi ìdí rẹ̀ múlẹ̀",
     read: "Kà á",
+    none: "A kò tí ì tẹ ohunkóhun jáde. Nígbà tí ọ̀pọ̀ ènìyàn bá béèrè nípa àgbàsọ kan náà, ohun tí ìwé àṣẹ sọ yóò farahàn níbí.",
+    missing: "A kò rí ìjẹ́rìísí yẹn",
   },
   footer: {
     blurb:
