@@ -366,6 +366,80 @@ export interface GlobalCoverage {
   documents: number
 }
 
+export interface ConversationThread {
+  /** A short handle for one browser. The key itself never leaves the server. */
+  visitor: string
+  visits: number
+  turns: number
+  questions: number
+  languages: string[]
+  verdicts: Record<'verified' | 'unverified' | 'insufficient', number>
+  firstSeen: string
+  lastActive: string
+  conversations: {
+    id: string
+    language: string
+    turns: number
+    isClosed: boolean
+    startedAt: string
+    lastActive: string
+  }[]
+}
+
+export interface Transcript {
+  id: string
+  visitor: string
+  language: string
+  startedAt: string
+  lastActive: string
+  isClosed: boolean
+  turns: {
+    id: string
+    speaker: 'visitor' | 'maat'
+    said: string
+    /** True when what is shown is the restatement, not the visitor's own words. */
+    isParaphrase: boolean
+    /** True when the exact words were dropped because retention ran out. */
+    expired: boolean
+    intent: string
+    isManipulation: boolean
+    degraded: boolean
+    at: string
+  }[]
+  claims: { what: string; verdict: string; rumour: string; rumourSlug: string }[]
+}
+
+export interface ConversationsPage {
+  threads: ConversationThread[]
+  page: number
+  pages: number
+  pageSize: number
+  /** Browsers in total, not on this page. */
+  total: number
+  /** Browsers with more than one visit, in total. */
+  returning: number
+  /** The search the server actually ran, echoed back. */
+  query: string
+}
+
+/**
+ * One page of threads, grouped by browser, newest activity first.
+ *
+ * Paged on the server rather than in the browser: a thread is built by
+ * grouping conversations, so slicing the rows here would split a browser
+ * across two pages and count it twice.
+ */
+export function getConversations(page = 0, query = ''): Promise<ConversationsPage> {
+  const params = new URLSearchParams({ page: String(page) })
+  if (query) params.set('q', query)
+  return apiFetch<ConversationsPage>(`/api/chat/conversations/?${params}`)
+}
+
+/** One conversation, message by message. */
+export function getTranscript(id: string): Promise<Transcript> {
+  return apiFetch<Transcript>(`/api/chat/conversations/${id}/`)
+}
+
 export interface RefreshResult {
   source: SourceOption
   run: { status: string; seen: number; added: number; passages: number; error: string }

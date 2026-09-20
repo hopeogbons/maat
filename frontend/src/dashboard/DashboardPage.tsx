@@ -12,9 +12,10 @@ import { SettingsSection } from './sections/SettingsSection'
 import { Sources } from './sections/Sources'
 import { Documents } from './sections/Documents'
 import { Rumours } from './sections/Rumours'
+import { Conversations } from './sections/Conversations'
 
 /** Pages that are in the menu and routed, but have no screen built yet. */
-const BOOTSTRAPPED = new Set(['/conversations'])
+const BOOTSTRAPPED = new Set<string>()
 
 export function DashboardPage() {
   const { pathname } = useLocation()
@@ -43,6 +44,7 @@ export function DashboardPage() {
               <div className="mb-10">{heading}</div>
               {item.path === '/rumours' && <Rumours range={range} />}
               {item.path === '/documents' && <Documents />}
+              {item.path === '/conversations' && <Conversations />}
               {item.path === '/settings' && <SettingsSection />}
               {item.path === '/sources' && pathname === '/sources' && <Sources />}
               {pathname === '/sources/new' && <SourceForm mode="new" />}

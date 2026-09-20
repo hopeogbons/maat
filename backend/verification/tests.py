@@ -231,6 +231,55 @@ class PublicArticlesTests(TestCase):
         self.assertEqual(response.json()["tags"], ["Health"])
 
 
+class ConversationsDashboardTests(TestCase):
+    """Threads group by visitor, and expired words fall back to the paraphrase."""
+
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(username="staff", password="x")
+        self.client.force_login(self.user)
+
+    def test_two_visits_from_one_browser_are_one_thread(self):
+        for session in ("s1", "s2"):
+            Conversation.objects.create(session_key=session, visitor_key="v-abc", language="en")
+        Conversation.objects.create(session_key="s3", visitor_key="v-xyz", language="ha")
+
+        response = self.client.get("/api/chat/conversations/")
+
+        threads = response.json()["threads"]
+        self.assertEqual(len(threads), 2)
+        self.assertEqual(sorted(t["visits"] for t in threads), [1, 2])
+        self.assertEqual(response.json()["returning"], 1)
+
+    def test_the_transcript_hides_words_whose_retention_has_run_out(self):
+        conversation = Conversation.objects.create(session_key="s", visitor_key="v")
+        Turn.objects.create(
+            conversation=conversation,
+            speaker=Turn.Speaker.VISITOR,
+            raw_text="my exact words",
+            paraphrase="a claim about school fees",
+            raw_expires_at=timezone.now() - timezone.timedelta(days=1),
+        )
+        Turn.objects.create(
+            conversation=conversation,
+            speaker=Turn.Speaker.VISITOR,
+            raw_text="still within retention",
+            paraphrase="another claim",
+            raw_expires_at=timezone.now() + timezone.timedelta(days=1),
+        )
+
+        turns = self.client.get(f"/api/chat/conversations/{conversation.id}/").json()["turns"]
+
+        self.assertEqual(turns[0]["said"], "a claim about school fees")
+        self.assertTrue(turns[0]["expired"])
+        self.assertTrue(turns[0]["isParaphrase"])
+        self.assertEqual(turns[1]["said"], "still within retention")
+        self.assertFalse(turns[1]["expired"])
+
+    def test_it_needs_a_signed_in_user(self):
+        self.client.logout()
+        self.assertIn(self.client.get("/api/chat/conversations/").status_code, (401, 403))
+
+
 class PruneRawTextTests(TestCase):
     """The retention promise, kept: the words go, everything else stays."""
 
@@ -289,3 +338,90 @@ class PruneRawTextTests(TestCase):
 
         # No stamp left means nothing for the next run to find.
         self.assertFalse(Turn.objects.filter(raw_expires_at__isnull=False).exists())
+
+
+class ConversationPagingAndSearchTests(TestCase):
+    """Twenty browsers to a page, and search that reaches a whole thread."""
+
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(username="staff2", password="x")
+        self.client.force_login(self.user)
+
+    def _visitor(self, key: str, *, said: str = "", language: str = "en") -> Conversation:
+        conversation = Conversation.objects.create(
+            session_key=f"s-{key}", visitor_key=key, language=language
+        )
+        if said:
+            Turn.objects.create(
+                conversation=conversation, speaker=Turn.Speaker.VISITOR, raw_text=said, paraphrase=said
+            )
+        return conversation
+
+    def test_it_pages_at_twenty_browsers(self):
+        for n in range(23):
+            self._visitor(f"v{n:03d}")
+
+        first = self.client.get("/api/chat/conversations/").json()
+        second = self.client.get("/api/chat/conversations/?page=1").json()
+
+        self.assertEqual(first["pageSize"], 20)
+        self.assertEqual(len(first["threads"]), 20)
+        self.assertEqual(len(second["threads"]), 3)
+        self.assertEqual(first["pages"], 2)
+        # The total counts every browser, not the page: a figure that changed
+        # as you turned pages would be worse than no figure.
+        self.assertEqual(first["total"], 23)
+
+    def test_a_page_past_the_end_returns_the_last_one(self):
+        self._visitor("only")
+
+        payload = self.client.get("/api/chat/conversations/?page=99").json()
+
+        self.assertEqual(payload["page"], 0)
+        self.assertEqual(len(payload["threads"]), 1)
+
+    def test_one_browser_is_never_split_across_two_pages(self):
+        # Twenty-one conversations, one browser. Grouping must survive paging.
+        for n in range(21):
+            Conversation.objects.create(session_key=f"s{n}", visitor_key="same")
+
+        payload = self.client.get("/api/chat/conversations/").json()
+
+        self.assertEqual(payload["total"], 1)
+        self.assertEqual(len(payload["threads"]), 1)
+        self.assertEqual(payload["threads"][0]["visits"], 21)
+
+    def test_search_finds_a_browser_by_what_it_said(self):
+        self._visitor("aaa111", said="school fees are going up")
+        self._visitor("bbb222", said="the border is closed")
+
+        payload = self.client.get("/api/chat/conversations/?q=school").json()
+
+        self.assertEqual(payload["total"], 1)
+        self.assertEqual(payload["threads"][0]["visitor"], "AAA111")
+
+    def test_every_word_must_match_but_not_the_same_field(self):
+        self._visitor("ccc333", said="school fees", language="ha")
+        self._visitor("ddd444", said="school fees", language="en")
+
+        payload = self.client.get("/api/chat/conversations/?q=school+ha").json()
+
+        self.assertEqual([t["visitor"] for t in payload["threads"]], ["CCC333"])
+
+    def test_a_language_is_found_by_the_name_the_list_shows(self):
+        self._visitor("fff666", said="a claim", language="ig")
+        self._visitor("ggg777", said="a claim", language="ha")
+
+        found = self.client.get("/api/chat/conversations/?q=igbo").json()
+
+        # The column holds "ig"; the screen says "Igbo". Both must work.
+        self.assertEqual([t["visitor"] for t in found["threads"]], ["FFF666"])
+
+    def test_a_match_on_one_visit_returns_the_whole_browser(self):
+        early = self._visitor("eee555", said="a claim about school fees")
+        Conversation.objects.create(session_key="later", visitor_key="eee555")
+        del early
+
+        payload = self.client.get("/api/chat/conversations/?q=school").json()
+
+        self.assertEqual(payload["threads"][0]["visits"], 2)
