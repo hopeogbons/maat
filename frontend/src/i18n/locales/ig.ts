@@ -173,6 +173,7 @@ export const ig: Messages = {
     citedSource: "Ebe o si",
     closestRecord: "Ndekọ kacha nso",
     openOriginal: "Mepee akwụkwọ mbụ",
+    moreSources: (n: number) => `Gosi isi mmalite ${n} ọzọ`,
     abstentionTitle: "Ahụghị ebe o si e nyochara",
     abstentionText:
       "Ma’at na-enye naanị mkpebi o nwere ike igosi ebe o si. Tinye onye kwuru ya, ebe na mgbe, ma ọ bụ zipu njikọ ebe ị hụrụ ya, ma nwaa ọzọ.",

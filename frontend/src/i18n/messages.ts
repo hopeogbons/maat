@@ -134,6 +134,8 @@ export interface Messages {
     citedSource: string
     closestRecord: string
     openOriginal: string
+    /** The reveal under a capped list of citations. */
+    moreSources: (n: number) => string
     abstentionTitle: string
     abstentionText: string
     errorGeneric: string

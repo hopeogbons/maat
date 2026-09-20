@@ -173,6 +173,7 @@ export const yo: Messages = {
     citedSource: "Orísun",
     closestRecord: "Àkọsílẹ̀ tó súnmọ́ jùlọ",
     openOriginal: "Ṣí ìwé àkọ́kọ́",
+    moreSources: (n: number) => `Fi orísun ${n} sí i hàn`,
     abstentionTitle: "Kò sí orísun tí a fi ìdí rẹ̀ múlẹ̀",
     abstentionText:
       "Ma’at ń fún ni ní ìdájọ́ tó ní orísun nìkan. Fi ẹni tó sọ ọ́ kún un, ibi àti ìgbà, tàbí fi ọ̀nà sí ibi tí o ti rí i ránṣẹ́, kí o sì tún gbìyànjú.",

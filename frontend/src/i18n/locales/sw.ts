@@ -173,6 +173,7 @@ export const sw: Messages = {
     citedSource: "Chanzo",
     closestRecord: "Rekodi iliyo karibu zaidi",
     openOriginal: "Fungua hati asili",
+    moreSources: (n: number) => `Onyesha vyanzo ${n} zaidi`,
     abstentionTitle: "Hakuna chanzo kilichothibitishwa",
     abstentionText:
       "Ma’at hutoa tu uamuzi inaoweza kutaja chanzo chake. Ongeza aliyesema, wapi na lini, au shiriki kiungo cha ulipouona, kisha jaribu tena.",

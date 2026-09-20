@@ -173,6 +173,7 @@ export const ha: Messages = {
     citedSource: "Madogara",
     closestRecord: "Rikodin mafi kusa",
     openOriginal: "Buɗe ainihin takardar",
+    moreSources: (n: number) => `Nuna ƙarin tushe ${n}`,
     abstentionTitle: "Ba a sami tabbataccen madogara ba",
     abstentionText:
       "Ma’at na bayar da hukunci mai madogara kawai. Ƙara wanda ya faɗa, inda da lokacin, ko ka aiko da mahaɗin inda ka gan ta, sannan ka sake gwadawa.",

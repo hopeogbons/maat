@@ -172,6 +172,7 @@ export const en: Messages = {
     citedSource: "Cited source",
     closestRecord: "Closest record",
     openOriginal: "Open original document",
+    moreSources: (n: number) => `Show ${n} more source${n === 1 ? "" : "s"}`,
     abstentionTitle: "No verified source found",
     abstentionText:
       "Ma’at only gives a verdict it can cite. Add who said it, where and when, or share a link to where you saw it, and try again.",

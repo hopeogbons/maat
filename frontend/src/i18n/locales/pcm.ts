@@ -173,6 +173,7 @@ export const pcm: Messages = {
     citedSource: "Source",
     closestRecord: "Di closest record",
     openOriginal: "Open original document",
+    moreSources: (n: number) => `Show ${n} more source${n === 1 ? "" : "s"}`,
     abstentionTitle: "No verified source",
     abstentionText:
       "Ma’at dey only give verdict wey e fit cite. Add who talk am, where and when, or share link of where you see am, then try again.",

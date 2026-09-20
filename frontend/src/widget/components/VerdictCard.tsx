@@ -1,6 +1,8 @@
 import { cn } from 'cn'
 import { CircleAlert, CircleDashed, ExternalLink, ShieldCheck, type LucideIcon } from 'lucide-react'
+import { useState } from 'react'
 import { formatDate, useLanguage, type Verdict } from '@/i18n'
+import { excerpt } from '../lib/excerpt'
 import { Badge } from '../ui/badge'
 import { Card, CardContent, CardHeader } from '../ui/card'
 import type { Source, VerdictReply } from '../types'
@@ -46,15 +48,43 @@ export function VerdictCard({ result }: { result: VerdictReply }) {
         </CardHeader>
         <CardContent className="maat:flex maat:flex-col maat:gap-2.5 maat:px-3.5">
           <p className="maat:leading-relaxed">{result.answer}</p>
-          {result.sources.length > 0 ? (
-            result.sources.map((source, i) => <SourceBlock key={`${source.issuer}-${i}`} source={source} />)
-          ) : (
-            <Abstention />
-          )}
+          {result.sources.length > 0 ? <Sources sources={result.sources} /> : <Abstention />}
         </CardContent>
       </Card>
       <Tail side="left" fill={tail} ring={BUBBLE_RING} />
     </div>
+  )
+}
+
+/**
+ * How many citations the card shows before asking. Three is what fits in a
+ * chat bubble without turning the answer into a scroll, and the rest are one
+ * tap away rather than gone: an answer stands on its evidence, so hiding some
+ * of it permanently would be the wrong kind of brevity.
+ */
+const SHOWN = 3
+
+function Sources({ sources }: { sources: Source[] }) {
+  const { t } = useLanguage()
+  const [all, setAll] = useState(false)
+  const visible = all ? sources : sources.slice(0, SHOWN)
+  const hidden = sources.length - visible.length
+
+  return (
+    <>
+      {visible.map((source, i) => (
+        <SourceBlock key={`${source.issuer}-${i}`} source={source} />
+      ))}
+      {hidden > 0 && (
+        <button
+          type="button"
+          onClick={() => setAll(true)}
+          className="maat:self-start maat:rounded-full maat:border maat:border-border maat:px-3 maat:py-1 maat:text-xs maat:font-medium maat:text-primary maat:transition maat:hover:bg-muted"
+        >
+          {t.widget.moreSources(hidden)}
+        </button>
+      )}
+    </>
   )
 }
 
@@ -109,19 +139,16 @@ function Quote({
   translation?: string
 }) {
   const { t } = useLanguage()
-  const [start, end] = highlight ?? [-1, -1]
-  const marked = start >= 0 && end > start && end <= quote.length
+  const { before, marked, after, openedEarlier, continuesAfter } = excerpt(quote, highlight)
   return (
     <blockquote className="maat:mt-2 maat:border-l-2 maat:border-gold/60 maat:pl-2.5 maat:text-xs maat:leading-relaxed maat:text-foreground/85">
-      {marked ? (
-        <>
-          {quote.slice(0, start)}
-          <mark className="maat:rounded-sm maat:bg-gold/25 maat:px-0.5 maat:text-foreground">{quote.slice(start, end)}</mark>
-          {quote.slice(end)}
-        </>
-      ) : (
-        quote
+      {openedEarlier && <Gap />}
+      {before}
+      {marked && (
+        <mark className="maat:rounded-sm maat:bg-gold/25 maat:px-0.5 maat:text-foreground">{marked}</mark>
       )}
+      {after}
+      {continuesAfter && <Gap />}
       {translation && (
         <p className="maat:mt-2 maat:border-t maat:border-foreground/10 maat:pt-2 maat:text-foreground">
           <span className="maat:font-medium maat:text-gold-dark">{t.widget.meaning}: </span>
@@ -130,6 +157,15 @@ function Quote({
       )}
     </blockquote>
   )
+}
+
+/**
+ * Where the document goes on and this excerpt does not. Marked aria-hidden:
+ * a screen reader announcing "ellipsis" between every passage is noise, and
+ * the link to the original is what a reader who wants the rest follows.
+ */
+function Gap() {
+  return <span aria-hidden="true" className="maat:text-muted-foreground"> … </span>
 }
 
 /** Abstention state: no verified source, so no verdict is asserted. */
