@@ -13,4 +13,5 @@ urlpatterns = [
     path("documents/", include("knowledge.urls")),
     path("settings/", include("appsettings.urls")),
     path("dashboard/", DashboardView.as_view(), name="api_dashboard"),
+    path("telegram/", include("telegram.urls")),
 ]

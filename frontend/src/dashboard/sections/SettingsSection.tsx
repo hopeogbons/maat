@@ -1,5 +1,5 @@
 import { cn } from 'cn'
-import { ChevronDown, CircleAlert, Plus, Trash2 } from 'lucide-react'
+import { ChevronDown, CircleAlert, Plus, Send, Trash2 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import {
   coverCountry,
@@ -11,6 +11,10 @@ import {
   type AppSettings,
   type CoveredCountry,
   type Reference,
+  connectTelegram,
+  disconnectTelegram,
+  getTelegram,
+  type TelegramStatus,
 } from '@/lib/api'
 
 /**
@@ -182,6 +186,8 @@ Added switched off. Turn it on once its sources are working.
         </div>
       </Panel>
 
+      <TelegramPanel />
+
       <Panel title="Verdict thresholds" note="What Ma’at must be sure of before it answers, and what it takes to publish a rumour.">
         <Number
           label="Confidence gate"
@@ -317,3 +323,107 @@ function Number({
   )
 }
 
+
+
+/**
+ * The Telegram bot. One paste of the token BotFather gives, and the bot
+ * answers on the phone the way the widget does on the page. The token is
+ * verified with Telegram before it is kept, and never shown again after.
+ */
+function TelegramPanel() {
+  const [bot, setBot] = useState<TelegramStatus | null>(null)
+  const [token, setToken] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    getTelegram()
+      .then(setBot)
+      .catch((e: Error) => setError(e.message))
+  }, [])
+
+  const settle = (work: Promise<TelegramStatus>) => {
+    setBusy(true)
+    setError('')
+    work
+      .then((next) => {
+        setBot(next)
+        setToken('')
+      })
+      .catch((e: Error & { body?: { detail?: string } }) => setError(e.body?.detail ?? e.message))
+      .finally(() => setBusy(false))
+  }
+
+  const when = (iso: string) => (iso ? new Date(iso).toLocaleString() : '')
+
+  return (
+    <Panel
+      title="Telegram"
+      note="Make a bot with BotFather, paste its token here, and people can text or send Ma’at voice notes from their phone. The API must be reachable over HTTPS for Telegram to deliver messages."
+    >
+      {error && (
+        <p className="mb-4 flex items-start gap-2 rounded-xl bg-unverified-soft px-4 py-3 text-sm text-unverified">
+          <CircleAlert className="mt-0.5 size-4 shrink-0" />
+          {error}
+        </p>
+      )}
+      {bot?.connected ? (
+        <div className="space-y-4">
+          <dl className="grid gap-x-6 gap-y-2 text-sm sm:grid-cols-[auto_1fr]">
+            <dt className="text-ink-muted">Bot</dt>
+            <dd className="font-semibold text-ink">
+              <a href={`https://t.me/${bot.username}`} target="_blank" rel="noopener noreferrer" className="underline-offset-2 hover:underline">
+                @{bot.username}
+              </a>
+            </dd>
+            <dt className="text-ink-muted">Webhook</dt>
+            <dd className="truncate font-mono text-xs text-ink">{bot.webhookUrl}</dd>
+            <dt className="text-ink-muted">Connected</dt>
+            <dd className="text-ink">{when(bot.connectedAt)}</dd>
+            <dt className="text-ink-muted">Messages</dt>
+            <dd className="text-ink">
+              {bot.messages}
+              {bot.lastUpdateAt ? ` · last ${when(bot.lastUpdateAt)}` : ''}
+            </dd>
+          </dl>
+          {bot.lastError && <p className="text-xs text-unverified">{bot.lastError}</p>}
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => settle(disconnectTelegram())}
+            className="inline-flex h-11 cursor-pointer items-center gap-2 rounded-full border border-line bg-white px-5 text-sm font-bold text-ink transition hover:border-unverified/40 hover:text-unverified disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <Trash2 className="size-4" />
+            Disconnect
+          </button>
+        </div>
+      ) : (
+        <form
+          className="flex flex-wrap items-center gap-3"
+          onSubmit={(e) => {
+            e.preventDefault()
+            if (token.trim() || bot?.hasEnvToken) settle(connectTelegram(token.trim()))
+          }}
+        >
+          <input
+            type="password"
+            value={token}
+            onChange={(e) => setToken(e.target.value)}
+            placeholder={bot?.hasEnvToken ? 'Token already on the server; connect, or paste another' : 'Bot token from BotFather, e.g. 123456789:ABC…'}
+            aria-label="Telegram bot token"
+            autoComplete="off"
+            className="h-11 min-w-0 flex-1 rounded-xl border border-line bg-white px-4 font-mono text-sm text-ink transition hover:border-teal/40 focus:border-gold focus:outline-none"
+          />
+          <button
+            type="submit"
+            disabled={busy || (!token.trim() && !bot?.hasEnvToken)}
+            className="inline-flex h-11 cursor-pointer items-center gap-2 rounded-full bg-gold px-5 text-sm font-bold text-gold-dark shadow-sm transition hover:bg-gold/90 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <Send className="size-4" />
+            {busy ? 'Connecting…' : 'Connect'}
+          </button>
+        </form>
+      )}
+    </Panel>
+  )
+}

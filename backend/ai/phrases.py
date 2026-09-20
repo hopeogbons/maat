@@ -19,6 +19,14 @@ from ai.prompts import reply_language
 
 PHRASES: dict[str, dict[str, str]] = {
     "en": {
+        "yes": "Yes",
+        "no": "No",
+        "greeting": "Hi, I’m Ma’at. Tell me what you heard, in text or a voice note, and I’ll verify it against the official record and show you the document behind the answer.",
+        "verdict_verified": "Verified: the record supports it",
+        "verdict_unverified": "Unverified: the record contradicts it",
+        "verdict_insufficient": "Insufficient evidence: no verified source found",
+        "cited_source": "Cited source",
+        "closest_record": "Closest record",
         "nothing_found_online": (
             "I asked the trusted sources set up for this country and none of them holds a figure "
             "that speaks to this. What I have does not settle it."
@@ -54,6 +62,14 @@ PHRASES: dict[str, dict[str, str]] = {
         ),
     },
     "ha": {
+        "yes": "Eh",
+        "no": "A’a",
+        "greeting": "Sannu, ni ce Ma’at. Faɗa mini abin da ka ji, a rubuce ko saƙon murya, zan duba shi da bayanan hukuma, in nuna maka takardar da ke bayan amsar.",
+        "verdict_verified": "An tabbatar: bayanai sun tabbatar da shi",
+        "verdict_unverified": "Ba a tabbatar ba: bayanai sun saɓa masa",
+        "verdict_insufficient": "Shaida ba ta isa ba: ba a sami tabbataccen madogara ba",
+        "cited_source": "Madogara",
+        "closest_record": "Bayanin da ya fi kusa",
         "nothing_found_online": (
             "Na tambayi amintattun madogaran da aka tanada wa wannan ƙasa, babu ɗayansu da ke da adadi "
             "da ya shafi wannan. Abin da nake da shi bai warware shi ba."
@@ -88,6 +104,14 @@ PHRASES: dict[str, dict[str, str]] = {
         ),
     },
     "yo": {
+        "yes": "Bẹ́ẹ̀ni",
+        "no": "Rárá",
+        "greeting": "Ẹ n lẹ́, èmi ni Ma’at. Sọ ohun tí o gbọ́ fún mi, ní kíkọ tàbí ìránṣẹ́ ohùn, èmi yóò ṣàyẹ̀wò rẹ̀ pẹ̀lú ìwé ìjọba, èmi yóò sì fi ìwé tó wà lẹ́yìn ìdáhùn náà hàn ọ́.",
+        "verdict_verified": "A fi ìdí rẹ̀ múlẹ̀: ẹ̀rí fi ìdí rẹ̀ múlẹ̀",
+        "verdict_unverified": "Kò fi ìdí múlẹ̀: ẹ̀rí tako o",
+        "verdict_insufficient": "Ẹ̀rí kò tó: kò sí orísun tí a fi ìdí rẹ̀ múlẹ̀",
+        "cited_source": "Orísun",
+        "closest_record": "Àkọsílẹ̀ tó súnmọ́ jùlọ",
         "nothing_found_online": (
             "Mo béèrè lọ́wọ́ àwọn orísun tí a gbẹ́kẹ̀lé tí a ṣètò fún orílẹ̀-èdè yìí, kò sí ọ̀kan nínú wọn tó ní "
             "iye tó sọ̀rọ̀ nípa èyí. Ohun tí mo ní kò yanjú rẹ̀."
@@ -122,6 +146,14 @@ PHRASES: dict[str, dict[str, str]] = {
         ),
     },
     "ig": {
+        "yes": "Ee",
+        "no": "Mba",
+        "greeting": "Ndewo, abụ m Ma’at. Gwa m ihe ị nụrụ, n'ederede ma ọ bụ ozi olu, m ga-enyocha ya site n'ihe ndekọ gọọmentị ma gosi gị akwụkwọ dị n'azụ azịza ahụ.",
+        "verdict_verified": "E kwenyere: ihe ndekọ kwadoro ya",
+        "verdict_unverified": "Enyochaghị: ihe ndekọ megidere ya",
+        "verdict_insufficient": "Ihe akaebe ezughị: ahụghị ebe o si e nyochara",
+        "cited_source": "Ebe o si",
+        "closest_record": "Ndekọ kacha nso",
         "nothing_found_online": (
             "Ajụrụ m isi mmalite ndị a tụkwasịrị obi e debere maka mba a, ọ dịghị nke ọ bụla n'ime ha nwere "
             "ọnụọgụ metụtara nke a. Ihe m nwere edozighị ya."
@@ -156,6 +188,14 @@ PHRASES: dict[str, dict[str, str]] = {
         ),
     },
     "pcm": {
+        "yes": "Yes",
+        "no": "No",
+        "greeting": "How far, na Ma’at be this. Tell me wetin you hear, as text or voice note, I go verify am with official record and show you the document behind the answer.",
+        "verdict_verified": "Verified: the record support am",
+        "verdict_unverified": "Unverified: the record contradict am",
+        "verdict_insufficient": "Evidence no reach: no verified source",
+        "cited_source": "Source",
+        "closest_record": "Closest record",
         "nothing_found_online": (
             "I ask the trusted sources wey dem set for this country and none of dem get figure wey talk about "
             "this one. Wetin I get no settle am."
@@ -190,6 +230,14 @@ PHRASES: dict[str, dict[str, str]] = {
         ),
     },
     "sw": {
+        "yes": "Ndiyo",
+        "no": "Hapana",
+        "greeting": "Habari, mimi ni Ma’at. Niambie ulichosikia, kwa maandishi au ujumbe wa sauti, nami nitakihakiki dhidi ya rekodi rasmi na kukuonyesha hati iliyo nyuma ya jibu.",
+        "verdict_verified": "Imethibitishwa: rekodi inauunga mkono",
+        "verdict_unverified": "Haijathibitishwa: rekodi inaupinga",
+        "verdict_insufficient": "Ushahidi hautoshi: hakuna chanzo kilichothibitishwa",
+        "cited_source": "Chanzo",
+        "closest_record": "Rekodi iliyo karibu zaidi",
         "nothing_found_online": (
             "Niliuliza vyanzo vya kuaminika vilivyowekwa kwa nchi hii, na hakuna hata kimoja chenye takwimu "
             "inayohusu jambo hili. Nilicho nacho hakikitatui."

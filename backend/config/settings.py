@@ -73,6 +73,7 @@ INSTALLED_APPS = [
     "appsettings",
     "knowledge",
     "verification",
+    "telegram",
 ]
 
 MIDDLEWARE = [
@@ -200,6 +201,14 @@ CSRF_TRUSTED_ORIGINS = env_list("CSRF_TRUSTED_ORIGINS")
 
 # Where the React landing page lives; the sign-in pages link back to it.
 FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:5173").rstrip("/")
+# Where Telegram reaches this API. Blank means the address the dashboard is
+# using when the bot is connected, which on the VPS is the public one.
+PUBLIC_API_URL = os.environ.get("PUBLIC_API_URL", "").rstrip("/")
+# Telegram's Bot API. One setting so a test or a proxy can stand in for it.
+TELEGRAM_API_BASE = os.environ.get("TELEGRAM_API_BASE", "https://api.telegram.org").rstrip("/")
+# The bot's token may also live in the environment; Settings then connects
+# it without anyone pasting it, and it is never shown.
+TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
 
 # The front end is our own site: it may call the API with cookies, and its POSTs
 # must pass Django's CSRF origin check. Both lists still accept extra entries

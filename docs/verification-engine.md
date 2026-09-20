@@ -274,6 +274,30 @@ whose audio could not be made still comes back as text.
 The same endpoint logic is what a Telegram bot will use later: a voice message
 in, a transcript, a reply, and Opus audio out.
 
+### 3.9 Telegram
+
+The same conversation, on a phone. A bot made with BotFather is connected
+from the dashboard with one paste of its token: Ma'at checks the token with
+Telegram, registers this API's webhook with a secret of its own, and from
+then on every message to the bot arrives at `/api/telegram/webhook/`. An
+update without the secret is refused. Disconnecting tells Telegram to stop
+and forgets the token, which is never shown again once stored.
+
+A chat is a Conversation keyed by its chat id, so a person on Telegram gets
+the same interview, weighing and verdict as a visitor on the page, in the
+language their Telegram is set to when Ma'at speaks it, else English. A
+voice note is transcribed on the way in and the reply is spoken on the way
+out as an Opus voice message, which is what Telegram plays inline. A verdict
+is one message: the verdict line, the answer, then each source with its
+issuer, date, title, the highlighted sentence, its meaning in the reader's
+language, and the link. The yes-or-no answers a reply offers are buttons
+under it. Telegram is answered at once and the turn runs behind, so nothing
+is retried and nothing is answered twice.
+
+To make it work after deployment: HTTPS on the API, since Telegram will not
+call anything else; `PUBLIC_API_URL` set if the dashboard does not reach the
+API at its public address; then the token pasted in Settings.
+
 ## 4. Leg two: ingestion
 
 One pipeline. Everything we trust flows through it, whatever door it came in by.

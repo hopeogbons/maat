@@ -372,3 +372,30 @@ export interface LatestRumour {
 export function getDashboard(days: number): Promise<DashboardStats> {
   return apiFetch<DashboardStats>(`/api/dashboard/?days=${days}`)
 }
+
+
+/** The Telegram bot's standing, as the settings page shows it. The token is never returned. */
+export interface TelegramStatus {
+  connected: boolean
+  username: string
+  webhookUrl: string
+  connectedAt: string
+  lastError: string
+  messages: number
+  lastUpdateAt: string
+  /** The server already holds a token in its environment; connecting needs no paste. */
+  hasEnvToken: boolean
+}
+
+export function getTelegram(): Promise<TelegramStatus> {
+  return apiFetch<TelegramStatus>('/api/telegram/')
+}
+
+/** Connect the bot with the token BotFather gave. Verified with Telegram before it is kept. */
+export function connectTelegram(token: string): Promise<TelegramStatus> {
+  return apiFetch<TelegramStatus>('/api/telegram/', { method: 'PUT', body: JSON.stringify({ token }) })
+}
+
+export function disconnectTelegram(): Promise<TelegramStatus> {
+  return apiFetch<TelegramStatus>('/api/telegram/', { method: 'DELETE' })
+}
