@@ -423,11 +423,6 @@ export function shelves(documents: DocumentRow[], order: string[]): Shelf[] {
     })
 }
 
-/**
- * Rows per page. A shelf can hold thousands of documents once ingestion is
- * running; a table that simply grows is unreadable long before then.
- */
-export const PAGE_SIZE = 20
 
 /**
  * Free-text match across what somebody would actually search by: the document's

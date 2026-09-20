@@ -24,8 +24,15 @@ from ai.prompts import LANGUAGE_NAMES
 
 from .models import Claim, Conversation, Turn
 
-#: Threads per page.
+#: Threads per page when the caller does not say. The widest step of the
+#: ladder the dashboard uses, so a caller that is not a browser gets the most.
 PAGE_SIZE = 20
+
+#: What a caller may ask for. An allowlist rather than a range, because page
+#: size decides how much work one request does, and a free number is an
+#: invitation to ask for a hundred thousand threads in one go. These are the
+#: steps in frontend/src/dashboard/useRowsPerPage.ts and nothing else.
+PAGE_SIZES = (6, 8, 12, 16, 20)
 
 #: Conversations listed inside one thread before the rest are counted only.
 VISITS_SHOWN = 20
@@ -74,11 +81,13 @@ class ConversationsView(APIView):
 
     def get(self, request: Request) -> Response:
         page = max(0, _int(request.query_params.get("page"), 0))
+        size = _int(request.query_params.get("pageSize"), PAGE_SIZE)
+        size = size if size in PAGE_SIZES else PAGE_SIZE
         query = (request.query_params.get("q") or "").strip()[:200]
         keys = _visitor_keys(query)
-        pages = max(1, -(-len(keys) // PAGE_SIZE))
+        pages = max(1, -(-len(keys) // size))
         page = min(page, pages - 1)
-        wanted = keys[page * PAGE_SIZE : (page + 1) * PAGE_SIZE]
+        wanted = keys[page * size : (page + 1) * size]
 
         # Only this page's browsers are read in full. Grouping happens in
         # Python, so paginating the conversations instead would cut threads in
@@ -134,7 +143,7 @@ class ConversationsView(APIView):
                 "threads": rows,
                 "page": page,
                 "pages": pages,
-                "pageSize": PAGE_SIZE,
+                "pageSize": size,
                 # Totals are of everything, not of this page: a figure that
                 # changed as you turned pages would be worse than no figure.
                 "total": len(keys),

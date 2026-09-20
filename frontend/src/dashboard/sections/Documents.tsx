@@ -1,4 +1,5 @@
 import { cn } from 'cn'
+import { useRowsPerPage } from '../useRowsPerPage'
 import {
   AlertTriangle,
   BookOpen,
@@ -43,7 +44,6 @@ import {
   ACCEPTED_EXTENSIONS,
   DOCUMENTS,
   GLOBAL,
-  PAGE_SIZE,
   fileKind,
   formatBytes,
   isAcceptedFile,
@@ -582,12 +582,15 @@ function Shelf({
     })
   }
 
-  const pages = Math.max(1, Math.ceil(documents.length / PAGE_SIZE))
+  // Each shelf pages on its own, so the ladder is the one every other list in
+  // the dashboard uses rather than a number chosen for this table.
+  const pageSize = useRowsPerPage()
+  const pages = Math.max(1, Math.ceil(documents.length / pageSize))
   // Belt and braces for any other way the list can shorten under the reader:
   // a page that no longer exists renders as an empty table, not as no results.
   const current = Math.min(page, pages - 1)
-  const start = current * PAGE_SIZE
-  const visible = documents.slice(start, start + PAGE_SIZE)
+  const start = current * pageSize
+  const visible = documents.slice(start, start + pageSize)
 
   return (
     <section className="overflow-hidden rounded-2xl border border-line bg-white">

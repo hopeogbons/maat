@@ -429,9 +429,12 @@ export interface ConversationsPage {
  * grouping conversations, so slicing the rows here would split a browser
  * across two pages and count it twice.
  */
-export function getConversations(page = 0, query = ''): Promise<ConversationsPage> {
+export function getConversations(page = 0, query = '', pageSize?: number): Promise<ConversationsPage> {
   const params = new URLSearchParams({ page: String(page) })
   if (query) params.set('q', query)
+  // The server keeps an allowlist and ignores anything else, so the page size
+  // can follow the viewport without the endpoint trusting the caller.
+  if (pageSize) params.set('pageSize', String(pageSize))
   return apiFetch<ConversationsPage>(`/api/chat/conversations/?${params}`)
 }
 

@@ -24,13 +24,12 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { getReference, getSettings, getSources, refreshSource, type CoveredCountry, type Reference, type SourceOption } from '@/lib/api'
 import { Link } from 'react-router-dom'
 import { Pager } from '../components/Pager'
+import { DENSE_ROWS, ROWS, useRowsPerPage } from '../useRowsPerPage'
 import { SourceMark } from '../components/SourceMark'
 import {
   DOORS,
   SCOPE,
   VERIFICATION,
-  SOURCE_CARD_PAGE_SIZE,
-  SOURCE_LIST_PAGE_SIZE,
   type SourceView,
   cadenceLabel,
   shortAddress,
@@ -134,7 +133,9 @@ export function Sources() {
 
   // A filter that shortens the list must not strand the reader past its end,
   // and switching view changes the page size, so it resets the page too.
-  const pageSize = view === 'list' ? SOURCE_LIST_PAGE_SIZE : SOURCE_CARD_PAGE_SIZE
+  // Cards are tall and the list is one line a row, so they page at different
+  // rates; both fall to a phone-sized handful on the smallest screen.
+  const pageSize = useRowsPerPage(view === 'list' ? DENSE_ROWS : ROWS)
   const pages = Math.max(1, Math.ceil(rest.length / pageSize))
   const current = Math.min(page, pages - 1)
   const [seen, setSeen] = useState(`${query}|${door}|${lens}|${view}`)
@@ -335,14 +336,32 @@ function Option({
   )
 }
 
-/** The four doors, their order, and the rules the pages door runs under. Stated once, at the top. */
+/**
+ * The four doors, their order, and the rules the pages door runs under.
+ * Stated once, at the top.
+ *
+ * On a phone it states itself once and then gets out of the way: the rules
+ * matter when you are adding a source, and somebody who opened this page to
+ * find one should not scroll two screens of policy to reach the register.
+ * From the small breakpoint up there is room for both, so it is simply open.
+ */
 function Principle() {
+  const [open, setOpen] = useState(false)
   return (
     <section className="rounded-2xl bg-teal-deep px-6 py-5 text-white sm:px-7">
       <div className="flex flex-wrap items-start gap-4">
         <h2 className="mr-auto flex items-center gap-2 font-serif text-lg font-bold tracking-tight">
-          <ShieldCheck className="size-5 text-gold" />
+          <ShieldCheck className="size-5 shrink-0 text-gold" />
           How Ma’at reads a source
+          <button
+            type="button"
+            onClick={() => setOpen(!open)}
+            aria-expanded={open}
+            aria-label={open ? 'Hide how Ma’at reads a source' : 'Show how Ma’at reads a source'}
+            className="text-white/60 transition hover:text-gold sm:hidden"
+          >
+            <ChevronDown className={cn('size-4 transition', open && 'rotate-180')} />
+          </button>
         </h2>
         {/* The act of adding a source belongs beside the rules it must obey,
             not beside the search, which only ever looks at what is already here. */}
@@ -354,7 +373,7 @@ function Principle() {
           Add a source
         </Link>
       </div>
-      <p className="mt-1.5 max-w-3xl text-sm text-white/70">
+      <p className={cn('mt-1.5 max-w-3xl text-sm text-white/70 sm:block', open ? 'block' : 'hidden')}>
         A body is connected by the best way in it offers, in this order: a public API, then a feed
         it maintains, then its own public pages. Pages are read only for official and
         public-interest bodies that publish neither, and only as a good citizen reads a notice
@@ -362,7 +381,7 @@ function Principle() {
         articles only, and never from behind a login or a paywall. No private outlet is read this
         way. Files added by hand remain the fourth door.
       </p>
-      <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className={cn('mt-4 gap-3 sm:grid sm:grid-cols-2 lg:grid-cols-4', open ? 'grid' : 'hidden')}>
         {(Object.keys(DOORS) as Door[]).map((key) => {
           const { label, icon: Icon, blurb } = DOORS[key]
           return (

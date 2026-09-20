@@ -372,6 +372,25 @@ class ConversationPagingAndSearchTests(TestCase):
         # as you turned pages would be worse than no figure.
         self.assertEqual(first["total"], 23)
 
+    def test_the_caller_may_ask_for_a_smaller_page(self):
+        for n in range(9):
+            self._visitor(f"w{n:03d}")
+
+        payload = self.client.get("/api/chat/conversations/?pageSize=6").json()
+
+        self.assertEqual(payload["pageSize"], 6)
+        self.assertEqual(len(payload["threads"]), 6)
+        self.assertEqual(payload["pages"], 2)
+
+    def test_a_page_size_off_the_ladder_is_ignored(self):
+        for n in range(3):
+            self._visitor(f"x{n:03d}")
+
+        # A free number would let one request ask for the whole table.
+        for asked in ("5000", "0", "-1", "seven", ""):
+            payload = self.client.get(f"/api/chat/conversations/?pageSize={asked}").json()
+            self.assertEqual(payload["pageSize"], 20, asked)
+
     def test_a_page_past_the_end_returns_the_last_one(self):
         self._visitor("only")
 

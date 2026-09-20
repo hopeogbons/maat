@@ -10,6 +10,7 @@ import {
 } from '@/lib/api'
 import { LANGUAGES } from '@/i18n'
 import { Pager } from '../components/Pager'
+import { useRowsPerPage } from '../useRowsPerPage'
 import { VerdictPill } from '../components/VerdictPill'
 
 const when = new Intl.DateTimeFormat('en-GB', {
@@ -59,16 +60,19 @@ export function Conversations() {
   // search it answers. Staleness is then derived rather than tracked: no
   // separate loading flag to set, and no window where a new request is in
   // flight but the old rows still look current.
-  const key = `${page}|${term}`
+  // Six threads on a phone, twenty on a desktop. The server pages, so the
+  // size goes with the request rather than being applied to what came back.
+  const rows = useRowsPerPage()
+  const key = `${page}|${term}|${rows}`
   useEffect(() => {
     let live = true
-    getConversations(page, term)
-      .then((payload) => live && setData({ key: `${page}|${term}`, payload }))
+    getConversations(page, term, rows)
+      .then((payload) => live && setData({ key: `${page}|${term}|${rows}`, payload }))
       .catch(() => undefined)
     return () => {
       live = false
     }
-  }, [page, term])
+  }, [page, term, rows])
 
   const payload = data?.payload ?? null
   const loading = data === null || data.key !== key

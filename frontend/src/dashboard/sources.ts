@@ -600,11 +600,11 @@ export function matchesSource(source: SourceRow, query: string, country = ''): b
  * updated, and the error when one failed.
  */
 
-/** Sources per page. The register grows; the page should not. */
-/** Cards say everything about a source; twenty a page, as Hope asked. */
-export const SOURCE_CARD_PAGE_SIZE = 20
-/** The list says only what changes; fifty rows is the whole register at a glance. */
-export const SOURCE_LIST_PAGE_SIZE = 50
+/**
+ * How a source is read, not how many fit: the page size follows the viewport
+ * now and lives in useRowsPerPage.ts, so cards and the list share one ladder
+ * with every other paged page in the dashboard.
+ */
 export type SourceView = 'cards' | 'list'
 
 
