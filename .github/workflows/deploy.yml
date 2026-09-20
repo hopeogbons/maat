@@ -46,7 +46,7 @@ env:
   NODE_VERSION: "22"
   # The API's public origin: API_DOMAIN in the kit's apps/maat/app.conf.
   # Change both together.
-  API_URL: https://api.maatverify.com
+  API_URL: https://maat-api.customersupport.ng
 
 jobs:
   # ────────────────────────────────────────────────────────────────
