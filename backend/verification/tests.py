@@ -229,3 +229,63 @@ class PublicArticlesTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual([a["slug"] for a in response.json()["articles"]], ["claim"])
         self.assertEqual(response.json()["tags"], ["Health"])
+
+
+class PruneRawTextTests(TestCase):
+    """The retention promise, kept: the words go, everything else stays."""
+
+    def setUp(self):
+        self.conversation = Conversation.objects.create(session_key="s", visitor_key="v")
+
+    def _turn(self, *, days: int, text: str = "my exact words") -> Turn:
+        return Turn.objects.create(
+            conversation=self.conversation,
+            speaker=Turn.Speaker.VISITOR,
+            raw_text=text,
+            paraphrase="a claim about school fees",
+            intent="verify",
+            raw_expires_at=timezone.now() + timezone.timedelta(days=days),
+        )
+
+    def test_it_drops_expired_words_and_leaves_the_rest_alone(self):
+        old, fresh = self._turn(days=-1), self._turn(days=5)
+
+        call_command("prune_raw_text", verbosity=0)
+
+        old.refresh_from_db()
+        fresh.refresh_from_db()
+        self.assertEqual(old.raw_text, "")
+        self.assertIsNone(old.raw_expires_at)
+        # Everything the product actually runs on survives.
+        self.assertEqual(old.paraphrase, "a claim about school fees")
+        self.assertEqual(old.intent, "verify")
+        self.assertEqual(fresh.raw_text, "my exact words")
+
+    def test_a_dry_run_changes_nothing(self):
+        turn = self._turn(days=-1)
+
+        call_command("prune_raw_text", "--dry-run", verbosity=0)
+
+        turn.refresh_from_db()
+        self.assertEqual(turn.raw_text, "my exact words")
+
+    def test_restamping_applies_a_shortened_retention_to_old_turns(self):
+        turn = self._turn(days=25)  # written when retention was longer
+        # Restamping counts from when the turn was written, so it has to be
+        # genuinely old for a one-day retention to have run out.
+        Turn.objects.filter(id=turn.id).update(created_at=timezone.now() - timezone.timedelta(days=10))
+        settings = AppSetting.current()
+        settings.raw_text_retention_days = 1
+        settings.save(update_fields=["raw_text_retention_days"])
+
+        call_command("prune_raw_text", "--restamp", verbosity=0)
+
+        turn.refresh_from_db()
+        self.assertEqual(turn.raw_text, "")
+
+    def test_a_turn_already_pruned_is_not_walked_again(self):
+        self._turn(days=-1)
+        call_command("prune_raw_text", verbosity=0)
+
+        # No stamp left means nothing for the next run to find.
+        self.assertFalse(Turn.objects.filter(raw_expires_at__isnull=False).exists())
