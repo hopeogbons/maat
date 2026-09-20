@@ -6,6 +6,8 @@ polled on a schedule and do not come through here.
 
 from __future__ import annotations
 
+import logging
+
 from django.db.models import Count, Q
 from rest_framework import status
 from rest_framework.parsers import MultiPartParser
@@ -17,9 +19,12 @@ from rest_framework.views import APIView
 from ai.embeddings import EmbeddingUnavailable
 from appsettings.models import switched_on
 from core.models import Country
+from knowledge.feeds import poll_now
 from knowledge.models import Document, Source
 from knowledge.parsing import SUPPORTED_EXTENSIONS, DocumentUnreadable, is_supported
 from knowledge.services import ingest_document
+
+logger = logging.getLogger(__name__)
 
 #: A published circular is a few hundred kilobytes. The cap is here so one
 #: mistaken upload cannot hold a worker for minutes and bill for thousands of
@@ -185,3 +190,44 @@ class SourcesView(APIView):
             .order_by("name", "country__name")
         )
         return Response({"sources": [_source_payload(s, s.document_count) for s in sources]})
+
+
+class SourceRefreshView(APIView):
+    """Pull from one source now, without waiting for its cadence.
+
+    Run in the request rather than handed to the poller, because the person
+    who pressed the button is watching: the answer is what the pull did, not
+    that it was queued. A source whose site is slow will hold the request for
+    as long as its reader takes, which is the honest cost of asking.
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request: Request, slug: str) -> Response:
+        source = Source.active.filter(slug=slug).first()
+        if source is None:
+            return Response({"detail": "No such source."}, status=status.HTTP_404_NOT_FOUND)
+        try:
+            run = poll_now(source)
+        except ValueError as exc:
+            return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as exc:  # noqa: BLE001 - the reader's failure is the answer
+            logger.exception("manual refresh of %s failed", source.slug)
+            return Response(
+                {"detail": f"The pull failed: {exc}"}, status=status.HTTP_502_BAD_GATEWAY
+            )
+
+        source.refresh_from_db()
+        documents = Document.active.filter(source=source, is_current=True).count()
+        return Response(
+            {
+                "source": _source_payload(source, documents),
+                "run": {
+                    "status": run.status,
+                    "seen": run.documents_seen,
+                    "added": run.documents_added,
+                    "passages": run.chunks_written,
+                    "error": run.error,
+                },
+            }
+        )

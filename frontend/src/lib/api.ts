@@ -357,6 +357,24 @@ export function getSources(): Promise<{ sources: SourceOption[] }> {
   return apiFetch<{ sources: SourceOption[] }>('/api/documents/sources/')
 }
 
+export interface RefreshResult {
+  source: SourceOption
+  run: { status: string; seen: number; added: number; passages: number; error: string }
+}
+
+/**
+ * Pull from one source now, ignoring its cadence.
+ *
+ * The request is held until the pull finishes, because the answer is what it
+ * fetched. A slow publisher makes for a slow button, which is the truth of
+ * what was asked for.
+ */
+export function refreshSource(slug: string): Promise<RefreshResult> {
+  return apiFetch<RefreshResult>(`/api/documents/sources/${encodeURIComponent(slug)}/refresh/`, {
+    method: 'POST',
+  })
+}
+
 /**
  * Upload one document. Multipart, so no JSON content type: the browser has to
  * set its own boundary and overriding it makes the body unparseable.

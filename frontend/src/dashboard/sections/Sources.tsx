@@ -10,6 +10,7 @@ import {
   Pencil,
   Plug,
   Plus,
+  RefreshCw,
   Link2,
   ChevronDown,
   Search,
@@ -20,7 +21,7 @@ import {
   X,
 } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { getReference, getSettings, getSources, type CoveredCountry, type Reference, type SourceOption } from '@/lib/api'
+import { getReference, getSettings, getSources, refreshSource, type CoveredCountry, type Reference, type SourceOption } from '@/lib/api'
 import { Link } from 'react-router-dom'
 import { Pager } from '../components/Pager'
 import { SourceMark } from '../components/SourceMark'
@@ -558,13 +559,16 @@ function SourceCard({ source, scope }: { source: SourceRow; scope: { label: stri
           {VERIFICATION[source.verification].label}
         </span>
         <Health health={source.health} isActive={source.isActive} onDemand={source.onDemand} />
-        <Link
-          to={`/sources/${source.id}/edit`}
-          className="ml-auto inline-flex items-center gap-1.5 text-xs font-medium text-ink-muted transition hover:text-teal-deep"
-        >
-          <Pencil className="size-3.5" />
-          Edit
-        </Link>
+        <span className="ml-auto inline-flex items-center gap-3">
+          <Refresh source={source} />
+          <Link
+            to={`/sources/${source.id}/edit`}
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-ink-muted transition hover:text-teal-deep"
+          >
+            <Pencil className="size-3.5" />
+            Edit
+          </Link>
+        </span>
       </div>
     </article>
   )
@@ -694,13 +698,16 @@ function SourceList({
                   {source.lastPolledAt ? when.format(new Date(source.lastPolledAt)) : 'Never'}
                 </td>
                 <td className="px-3 py-2 text-right whitespace-nowrap">
-                  <Link
-                    to={`/sources/${source.id}/edit`}
-                    className="inline-flex items-center gap-1 text-xs font-medium text-ink-muted transition hover:text-teal-deep"
-                  >
-                    <Pencil className="size-3.5" />
-                    Edit
-                  </Link>
+                  <span className="inline-flex items-center gap-3">
+                    <Refresh source={source} compact />
+                    <Link
+                      to={`/sources/${source.id}/edit`}
+                      className="inline-flex items-center gap-1 text-xs font-medium text-ink-muted transition hover:text-teal-deep"
+                    >
+                      <Pencil className="size-3.5" />
+                      Edit
+                    </Link>
+                  </span>
                 </td>
               </tr>
             )
@@ -709,6 +716,61 @@ function SourceList({
       </table>
       </div>
     </div>
+  )
+}
+
+/**
+ * Pull from this source now, whatever its cadence says.
+ *
+ * A source is configured and then waits hours to prove itself, which is no
+ * use to somebody who has just added one or is showing the product working.
+ * The button says what the pull actually did, and leaves the message up: a
+ * result that vanishes is a result nobody read.
+ *
+ * Uploads have no address to pull from, so they get no button rather than a
+ * button that always fails.
+ */
+function Refresh({ source, compact = false }: { source: SourceRow; compact?: boolean }) {
+  const [busy, setBusy] = useState(false)
+  const [said, setSaid] = useState('')
+
+  if (source.door === 'upload') return null
+
+  const pull = async () => {
+    setBusy(true)
+    setSaid('')
+    try {
+      const { run } = await refreshSource(source.id)
+      setSaid(
+        run.status === 'failed'
+          ? run.error || 'The pull failed.'
+          : `${run.added} new, ${run.seen} seen`,
+      )
+    } catch (error) {
+      setSaid(error instanceof Error ? error.message : 'The pull failed.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <span className="inline-flex items-center gap-2">
+      <button
+        type="button"
+        onClick={pull}
+        disabled={busy}
+        title="Pull from this source now, without waiting for its cadence"
+        className="inline-flex items-center gap-1 text-xs font-medium text-ink-muted transition hover:text-teal-deep disabled:opacity-60"
+      >
+        <RefreshCw className={cn('size-3.5', busy && 'animate-spin')} />
+        {busy ? 'Pulling…' : 'Refresh'}
+      </button>
+      {said && !compact && (
+        <span className="text-[11px] text-ink-muted" aria-live="polite">
+          {said}
+        </span>
+      )}
+    </span>
   )
 }
 

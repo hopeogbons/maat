@@ -1,11 +1,13 @@
 """What the dashboard is shown: global rows and the countries switched on."""
 
+from unittest import mock
+
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 
 from appsettings.models import CountryCoverage
 from core.models import Country
-from knowledge.models import Document, Source
+from knowledge.models import Document, IngestionRun, Source
 
 
 class ShownTests(TestCase):
@@ -57,3 +59,47 @@ class ShownTests(TestCase):
         self.kenya.save()
         self.kenya.delete()  # soft
         self.assertEqual(self._countries("/api/documents/sources/", "sources"), ["", "NG"])
+
+
+class SourceRefreshTests(TestCase):
+    """The refresh button: pull now, and say what the pull did."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = get_user_model().objects.create_user(username="staff", password="x")
+        cls.feed = Source.objects.create(
+            name="World Health Organization", slug="who-feed", door=Source.Door.FEED, address="https://who.example/feed"
+        )
+        cls.upload = Source.objects.create(name="By hand", slug="by-hand", door=Source.Door.UPLOAD)
+
+    def setUp(self):
+        self.client.force_login(self.user)
+
+    def test_it_polls_the_source_now_and_reports_what_arrived(self):
+        run = IngestionRun(source=self.feed, status=IngestionRun.Status.SUCCEEDED, documents_seen=4, documents_added=2)
+        run.save()
+        with mock.patch("knowledge.api.poll_now", return_value=run) as poll:
+            response = self.client.post(f"/api/documents/sources/{self.feed.slug}/refresh/")
+
+        poll.assert_called_once()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["run"]["added"], 2)
+        self.assertEqual(response.data["source"]["slug"], "who-feed")
+
+    def test_a_hand_upload_has_nothing_to_pull(self):
+        response = self.client.post(f"/api/documents/sources/{self.upload.slug}/refresh/")
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("by hand", response.data["detail"])
+
+    def test_a_reader_that_raises_is_reported_not_swallowed(self):
+        with mock.patch("knowledge.api.poll_now", side_effect=RuntimeError("host unreachable")):
+            response = self.client.post(f"/api/documents/sources/{self.feed.slug}/refresh/")
+
+        self.assertEqual(response.status_code, 502)
+        self.assertIn("host unreachable", response.data["detail"])
+
+    def test_it_needs_a_signed_in_user(self):
+        self.client.logout()
+        response = self.client.post(f"/api/documents/sources/{self.feed.slug}/refresh/")
+        self.assertIn(response.status_code, (401, 403))

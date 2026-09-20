@@ -282,10 +282,7 @@ def poll_due(*, force: bool = False) -> list[IngestionRun]:
     all, forced or not. Switching a country off is how it stops costing
     anything; switching it on is how polling starts again.
     """
-    from knowledge.connectors import poll_api
-    from knowledge.pages import poll_pages
-
-    readers = {Source.Door.FEED: poll, Source.Door.API: poll_api, Source.Door.PAGES: poll_pages}
+    readers = READERS()
     runs = []
     sources = Source.active.filter(switched_on(), is_active=True, door__in=POLLED_DOORS).exclude(schema__contains={"lookup": True})
     for source in sources:
@@ -296,3 +293,29 @@ def poll_due(*, force: bool = False) -> list[IngestionRun]:
         except Exception as exc:  # a reader must not take the loop down
             log.exception("polling %s raised: %s", source.slug, exc)
     return runs
+
+
+def READERS() -> dict[str, object]:
+    """The reader for each door, imported late to keep the module graph acyclic."""
+    from knowledge.connectors import poll_api
+    from knowledge.pages import poll_pages
+
+    return {Source.Door.FEED: poll, Source.Door.API: poll_api, Source.Door.PAGES: poll_pages}
+
+
+def poll_now(source: Source) -> IngestionRun:
+    """Poll one source immediately, whatever its cadence says.
+
+    The cadence is a promise to the publisher about how often Ma'at will come
+    knocking on its own. This is somebody asking for it deliberately, which is
+    a different thing: a source configured this morning should not have to wait
+    six hours to prove it works. The reader still honours robots.txt and still
+    paces itself inside the run.
+
+    A door that is never polled (a hand upload) has nothing to refresh, and
+    says so rather than pretending to have tried.
+    """
+    reader = READERS().get(source.door)
+    if reader is None:
+        raise ValueError("Documents from this source are added by hand, so there is nothing to pull.")
+    return reader(source)
