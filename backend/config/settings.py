@@ -64,6 +64,8 @@ INSTALLED_APPS = [
     "django.contrib.postgres",
     # Third party
     "rest_framework",
+    # The Token model behind the dashboard's bearer tokens (accounts/auth.py).
+    "rest_framework.authtoken",
     "corsheaders",
     # Local
     "core",
@@ -239,6 +241,12 @@ CSRF_COOKIE_SECURE = not DEBUG
 # served from another site (Vercel) and the API from the VPS, set both to None
 # so the browser still sends the session and CSRF cookies. None needs Secure.
 SESSION_COOKIE_SAMESITE = os.environ.get("SESSION_COOKIE_SAMESITE", "Lax")
+
+# How long a dashboard bearer token stays valid after it is issued. Shorter
+# than Django's two-week session default on purpose: unlike a session cookie
+# this credential is readable by JavaScript, so it should not outlive a working
+# day by much. Signing in again always mints a fresh one.
+API_TOKEN_TTL_HOURS = int(os.environ.get("API_TOKEN_TTL_HOURS", "12"))
 CSRF_COOKIE_SAMESITE = os.environ.get("CSRF_COOKIE_SAMESITE", "Lax")
 # Leave the http->https redirect to nginx by default; enable here if preferred.
 SECURE_SSL_REDIRECT = env_bool("SECURE_SSL_REDIRECT", False)
@@ -293,9 +301,16 @@ CACHES = {
 # ---------------------------------------------------------------------------
 
 REST_FRAMEWORK = {
-    # Session cookies only. Basic auth would hand out an unthrottled password
-    # oracle on every endpoint, and it skips the CSRF check.
-    "DEFAULT_AUTHENTICATION_CLASSES": ["rest_framework.authentication.SessionAuthentication"],
+    # Bearer token first, session second. The dashboard is on another site and
+    # cannot rely on a cookie reaching this API at all (accounts/auth.py says
+    # why); the session class stays so the Django admin, the browsable API and
+    # every test that calls force_login keep working against the same views.
+    # Basic auth is deliberately absent: it would hand out an unthrottled
+    # password oracle on every endpoint and skip the CSRF check.
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "accounts.auth.ExpiringTokenAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
+    ],
     # How many proxies sit in front of Django. Without this the throttle keys on
     # the whole X-Forwarded-For header, which the caller controls. nginx on the
     # VPS is one hop; running gunicorn directly is none.

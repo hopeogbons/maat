@@ -57,6 +57,82 @@ export function rememberCsrfToken(token: string | null | undefined): void {
   if (token) csrfToken = token
 }
 
+// ---------------------------------------------------------------------------
+// The bearer token
+// ---------------------------------------------------------------------------
+//
+// The dashboard is served from Vercel and this API from another domain. Those
+// are different sites, so a Django session cookie would need SameSite=None to
+// reach the API at all, and Safari blocks third-party cookies whatever that
+// attribute says. An Authorization header is not a cookie, so it just works.
+//
+// It is kept in localStorage so a reload does not sign the person out. That
+// does mean JavaScript can read it, which an HttpOnly cookie would have
+// prevented; the backend limits the damage by expiring tokens and by replacing
+// the old one on every sign-in (see backend/accounts/auth.py).
+//
+// Every access is wrapped: localStorage throws rather than returning null in
+// Safari's private mode and wherever site data is blocked, and an exception
+// here would take the whole page down.
+
+const TOKEN_KEY = 'maat.auth.token'
+const EXPIRY_KEY = 'maat.auth.expiresAt'
+
+let authToken: string | null = null
+let authExpiresAt: number | null = null
+let tokenLoaded = false
+
+function readStorage(key: string): string | null {
+  try {
+    return window.localStorage.getItem(key)
+  } catch {
+    return null
+  }
+}
+
+function writeStorage(key: string, value: string | null): void {
+  try {
+    if (value === null) window.localStorage.removeItem(key)
+    else window.localStorage.setItem(key, value)
+  } catch {
+    // Not fatal: the token still works for this tab, it just will not survive
+    // a reload. Signing in again is the recovery, and it is cheap.
+  }
+}
+
+/** The stored token, or null when there is none or it has already expired. */
+export function getAuthToken(): string | null {
+  if (!tokenLoaded) {
+    authToken = readStorage(TOKEN_KEY)
+    const stored = readStorage(EXPIRY_KEY)
+    authExpiresAt = stored ? Date.parse(stored) : null
+    tokenLoaded = true
+  }
+  // Drop it ourselves rather than spending a round trip discovering it is
+  // dead. The backend enforces the same deadline; this only saves the request.
+  if (authToken && authExpiresAt !== null && Number.isFinite(authExpiresAt) && Date.now() >= authExpiresAt) {
+    clearAuthToken()
+  }
+  return authToken
+}
+
+export function rememberAuthToken(token: string | null | undefined, expiresAt?: string | null): void {
+  if (!token) return
+  authToken = token
+  authExpiresAt = expiresAt ? Date.parse(expiresAt) : null
+  tokenLoaded = true
+  writeStorage(TOKEN_KEY, token)
+  writeStorage(EXPIRY_KEY, expiresAt ?? null)
+}
+
+export function clearAuthToken(): void {
+  authToken = null
+  authExpiresAt = null
+  tokenLoaded = true
+  writeStorage(TOKEN_KEY, null)
+  writeStorage(EXPIRY_KEY, null)
+}
+
 /** The headers every request to Django carries, for callers that fetch on their own. */
 export function requestHeaders(init: RequestInit = {}): Headers {
   const headers = new Headers(init.headers)
@@ -69,6 +145,15 @@ export function requestHeaders(init: RequestInit = {}): Headers {
     headers.set('Content-Type', 'application/json')
   }
 
+  const bearer = getAuthToken()
+  if (bearer && !headers.has('Authorization')) {
+    headers.set('Authorization', `Bearer ${bearer}`)
+  }
+
+  // Still sent for the session-authenticated paths: the Django admin, and the
+  // dev server where the Vite proxy makes this same-origin. Token auth ignores
+  // it -- CSRF exists because browsers attach cookies by themselves, and they
+  // never attach an Authorization header on their own.
   const method = (init.method ?? 'GET').toUpperCase()
   if (!SAFE_METHODS.has(method) && !headers.has('X-CSRFToken')) {
     const token = readCookie('csrftoken') ?? csrfToken
@@ -91,6 +176,10 @@ export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise
   const body: unknown = text ? safeJsonParse(text) : null
 
   if (!response.ok) {
+    // 401 means the token was refused: expired, revoked, or replaced by a
+    // sign-in somewhere else. Drop it so the app falls back to signed-out
+    // instead of retrying a credential that can never work again.
+    if (response.status === 401) clearAuthToken()
     throw new ApiError(response.status, body)
   }
   return body as T
@@ -130,6 +219,10 @@ export interface Session {
   isStaff?: boolean
   isSuperuser?: boolean
   csrfToken?: string
+  /** Returned by /api/auth/login/ only. Stored, then sent on every request. */
+  token?: string
+  /** ISO 8601. When the token above stops being accepted. */
+  expiresAt?: string
 }
 
 /** The fields a person may change about themselves. */
@@ -165,6 +258,8 @@ export async function signIn(username: string, password: string): Promise<Sessio
     method: 'POST',
     body: JSON.stringify({ username, password }),
   })
+  // The token is what authenticates every later request; store it first.
+  rememberAuthToken(session.token, session.expiresAt)
   // Django rotates the CSRF token on login. Without this, signing out later
   // fails wherever the cookie is not readable from this origin.
   rememberCsrfToken(session.csrfToken)
@@ -172,9 +267,16 @@ export async function signIn(username: string, password: string): Promise<Sessio
 }
 
 export async function signOut(): Promise<Session> {
-  const session = await apiFetch<Session>('/api/auth/logout/', { method: 'POST' })
-  rememberCsrfToken(session.csrfToken)
-  return session
+  try {
+    const session = await apiFetch<Session>('/api/auth/logout/', { method: 'POST' })
+    rememberCsrfToken(session.csrfToken)
+    return session
+  } finally {
+    // Whatever the server said, this browser is done with the token. A failed
+    // request here must not leave the person looking signed in; the server
+    // revokes its own copy, and an expiry bounds the rest.
+    clearAuthToken()
+  }
 }
 
 export function getProfile(): Promise<ProfilePayload> {

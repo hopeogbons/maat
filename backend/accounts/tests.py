@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
-from django.test import TestCase, override_settings
+from django.test import Client, TestCase, override_settings
 from django.urls import reverse
+from rest_framework.authtoken.models import Token
 
 
 @override_settings(FRONTEND_URL="https://maat.example")
@@ -99,6 +100,8 @@ class SessionApiTests(TestCase):
         self.assertEqual(response.status_code, 200)
         payload = response.json()
         self.assertTrue(payload.pop("csrfToken"))
+        self.assertTrue(payload.pop("token"))
+        self.assertTrue(payload.pop("expiresAt"))
         self.assertEqual(
             payload,
             {
@@ -135,6 +138,82 @@ class SessionApiTests(TestCase):
         response = self.client.post("/api/auth/logout/", content_type="application/json")
         self.assertEqual(response.status_code, 200)
         self.assertFalse(self.client.get("/api/auth/session/").json()["authenticated"])
+
+
+class BearerTokenTests(TestCase):
+    """The dashboard is on another site, so it signs in with a token.
+
+    Every request here is made WITHOUT a session, which is the situation the
+    dashboard is actually in: `Client()` with no force_login and no cookie
+    carried over means only the Authorization header can be authenticating it.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = get_user_model().objects.create_user(
+            username="hope", password="weigh-the-feather"
+        )
+
+    def sign_in(self) -> str:
+        response = self.client.post(
+            "/api/auth/login/",
+            {"username": "hope", "password": "weigh-the-feather"},
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        return response.json()["token"]
+
+    def test_token_alone_authenticates_a_request_with_no_cookies(self):
+        token = self.sign_in()
+        bare = Client()
+        payload = bare.get("/api/auth/profile/", HTTP_AUTHORIZATION=f"Bearer {token}")
+        self.assertEqual(payload.status_code, 200)
+        self.assertEqual(payload.json()["username"], "hope")
+
+    def test_without_the_header_the_same_request_is_rejected(self):
+        self.sign_in()
+        self.assertEqual(Client().get("/api/auth/profile/").status_code, 401)
+
+    def test_a_wrong_token_is_rejected(self):
+        self.sign_in()
+        response = Client().get("/api/auth/profile/", HTTP_AUTHORIZATION="Bearer not-a-real-token")
+        self.assertEqual(response.status_code, 401)
+
+    def test_signing_in_again_replaces_the_previous_token(self):
+        first = self.sign_in()
+        second = self.sign_in()
+        self.assertNotEqual(first, second)
+        self.assertEqual(
+            Client().get("/api/auth/profile/", HTTP_AUTHORIZATION=f"Bearer {first}").status_code,
+            401,
+        )
+        self.assertEqual(
+            Client().get("/api/auth/profile/", HTTP_AUTHORIZATION=f"Bearer {second}").status_code,
+            200,
+        )
+
+    def test_signing_out_revokes_the_token(self):
+        token = self.sign_in()
+        signed_in = Client()
+        self.assertEqual(
+            signed_in.post(
+                "/api/auth/logout/",
+                content_type="application/json",
+                HTTP_AUTHORIZATION=f"Bearer {token}",
+            ).status_code,
+            200,
+        )
+        self.assertEqual(
+            Client().get("/api/auth/profile/", HTTP_AUTHORIZATION=f"Bearer {token}").status_code,
+            401,
+        )
+
+    @override_settings(API_TOKEN_TTL_HOURS=0)
+    def test_an_expired_token_is_rejected_and_deleted(self):
+        token = self.sign_in()
+        response = Client().get("/api/auth/profile/", HTTP_AUTHORIZATION=f"Bearer {token}")
+        self.assertEqual(response.status_code, 401)
+        self.assertFalse(Token.objects.filter(key=token).exists())
 
 
 class CsrfOriginTests(TestCase):
@@ -233,7 +312,11 @@ class ProfileApiTests(TestCase):
         self.assertEqual(self.client.get("/api/auth/session/").json()["title"], "Administrator")
 
     def test_profile_requires_a_session(self):
-        self.assertEqual(self.client.get("/api/auth/profile/").status_code, 403)
+        # 401, not 403. DRF answers 403 only when no authentication class can
+        # name a scheme to retry with; token auth sends WWW-Authenticate, so an
+        # unauthenticated request is now correctly "unauthorised" rather than
+        # "forbidden". This changed when the dashboard moved to bearer tokens.
+        self.assertEqual(self.client.get("/api/auth/profile/").status_code, 401)
 
     def test_saving_a_name_and_title_shows_up_in_the_session(self):
         self.client.force_login(self.user)

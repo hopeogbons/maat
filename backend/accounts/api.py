@@ -1,8 +1,12 @@
-"""Session endpoints for the React front end.
+"""Sign-in endpoints for the React front end.
 
-The site signs people in with Django's own session cookie rather than a token:
-the dashboard and the admin are then the same session, and nothing sensitive is
-kept in browser storage.
+The dashboard signs in with a bearer token, not a session cookie: it is served
+from another site, and a cookie cannot be relied on to travel there at all.
+`accounts/auth.py` has the full reasoning and the trade-off it carries.
+
+A Django session is still opened alongside the token. That costs nothing and
+means somebody who signs in here is also signed in to the admin on this domain,
+which is how it behaved before tokens existed.
 """
 
 from django.contrib.auth import authenticate, login, logout
@@ -16,6 +20,7 @@ from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 
+from accounts.auth import issue_token, revoke_tokens, token_expires_at
 from accounts.models import Profile
 
 
@@ -136,14 +141,30 @@ class LoginView(APIView):
             )
 
         login(request, user)
+        # A fresh token every time, which invalidates any the person was still
+        # carrying elsewhere. `expiresAt` is returned so the dashboard can send
+        # them back here before a request fails rather than after.
+        token = issue_token(user)
         # Django rotates the CSRF token on login, and the front end may not be
-        # able to read the cookie, so hand the new one back in the body.
-        return Response({**describe(user), "csrfToken": get_token(request)})
+        # able to read the cookie, so hand the new one back in the body. Token
+        # auth does not use it; the admin on this domain does.
+        return Response(
+            {
+                **describe(user),
+                "token": token.key,
+                "expiresAt": token_expires_at(token).isoformat(),
+                "csrfToken": get_token(request),
+            }
+        )
 
 
 class LogoutView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request: Request) -> Response:
+        # Revoke before logout: `logout()` clears request.user, and an
+        # un-revoked token would go on working long after the person believed
+        # they had signed out.
+        revoke_tokens(request.user)
         logout(request)
         return Response({"authenticated": False, "csrfToken": get_token(request)})
