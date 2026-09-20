@@ -344,6 +344,20 @@ LOGGING = {
 # Email
 # ---------------------------------------------------------------------------
 
+# Ma'at sends no email: nothing in the codebase calls send_mail. These settings
+# exist because `manage.py check --deploy` rejects every development backend --
+# console, dummy and locmem all raise mail.E001 -- and that check gates the
+# deploy pipeline, so a console backend here fails the BUILD, not the runtime.
+#
+# Development keeps the console backend, where a message would be visible.
+# Production declares SMTP with no options, which defaults to localhost:25 and
+# is entirely inert while nothing sends. Django 6 forbids the old EMAIL_* names
+# once MAILERS is defined, so if email is ever added, its host and credentials
+# go inside this dict, not beside it.
 MAILERS = {
-    "default": {"BACKEND": "django.core.mail.backends.console.EmailBackend"},
+    "default": (
+        {"BACKEND": "django.core.mail.backends.console.EmailBackend"}
+        if DEBUG
+        else {"BACKEND": "django.core.mail.backends.smtp.EmailBackend"}
+    ),
 }
