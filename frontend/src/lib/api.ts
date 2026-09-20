@@ -357,6 +357,15 @@ export function getSources(): Promise<{ sources: SourceOption[] }> {
   return apiFetch<{ sources: SourceOption[] }>('/api/documents/sources/')
 }
 
+export interface GlobalCoverage {
+  name: string
+  isActive: boolean
+  /** Always true. Global coverage cannot be switched off or removed. */
+  isPermanent: boolean
+  sources: number
+  documents: number
+}
+
 export interface RefreshResult {
   source: SourceOption
   run: { status: string; seen: number; added: number; passages: number; error: string }
@@ -416,6 +425,8 @@ export interface AppSettings {
 
 export interface SettingsPayload {
   settings: AppSettings
+  /** Coverage of everywhere, which is permanent and heads the list. */
+  global: GlobalCoverage
   countries: CoveredCountry[]
 }
 

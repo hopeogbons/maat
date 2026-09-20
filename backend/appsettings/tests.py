@@ -89,3 +89,46 @@ class CoverageTests(TestCase):
         bad = self.client.patch("/api/settings/", {"confidence_gate": 500}, content_type="application/json")
         self.assertEqual(bad.status_code, 400)
         self.assertEqual(AppSetting.current().confidence_gate, 85)
+
+
+class GlobalCoverageTests(TestCase):
+    """Global is in the list, on, permanent, and counted from real rows."""
+
+    def setUp(self):
+        from django.contrib.auth import get_user_model
+
+        self.user = get_user_model().objects.create_user(username="staff", password="x" * 12)
+        self.client.force_login(self.user)
+
+    def test_it_is_present_and_permanent_even_with_no_country_covered(self):
+        payload = self.client.get("/api/settings/").json()
+
+        self.assertEqual(payload["countries"], [])
+        self.assertEqual(payload["global"]["name"], "Global")
+        self.assertTrue(payload["global"]["isActive"])
+        self.assertTrue(payload["global"]["isPermanent"])
+
+    def test_its_figures_count_only_sources_with_no_country(self):
+        from core.models import Country
+        from knowledge.models import Document, Source
+
+        ng = Country.objects.create(name="Nigeria", iso2="NG", iso3="NGA", numeric_code="566")
+        everywhere = Source.objects.create(name="WHO", slug="who", door=Source.Door.FEED)
+        Source.objects.create(name="NCDC", slug="ncdc", door=Source.Door.FEED, country=ng)
+        Document.objects.create(source=everywhere, title="a", identifier="a", fingerprint="a")
+
+        world = self.client.get("/api/settings/").json()["global"]
+
+        self.assertEqual(world["sources"], 1)
+        self.assertEqual(world["documents"], 1)
+
+    def test_switching_a_country_off_does_not_touch_global(self):
+        from core.models import Country
+
+        Country.objects.create(name="Kenya", iso2="KE", iso3="KEN", numeric_code="404")
+        self.client.post("/api/settings/countries/", {"iso2": "KE"}, content_type="application/json")
+
+        payload = self.client.get("/api/settings/").json()
+
+        self.assertFalse(payload["countries"][0]["isActive"])
+        self.assertTrue(payload["global"]["isActive"])

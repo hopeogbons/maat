@@ -1,5 +1,5 @@
 import { cn } from 'cn'
-import { ChevronDown, CircleAlert, Plus, Send, Trash2 } from 'lucide-react'
+import { ChevronDown, CircleAlert, Globe, Lock, Plus, Send, Trash2 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import {
   coverCountry,
@@ -10,6 +10,8 @@ import {
   setCountryActive,
   type AppSettings,
   type CoveredCountry,
+  type GlobalCoverage,
+  type SettingsPayload,
   type Reference,
   connectTelegram,
   disconnectTelegram,
@@ -29,6 +31,7 @@ import {
 export function SettingsSection() {
   const [numbers, setNumbers] = useState<AppSettings | null>(null)
   const [countries, setCountries] = useState<CoveredCountry[]>([])
+  const [world, setWorld] = useState<GlobalCoverage | null>(null)
   const [reference, setReference] = useState<Reference | null>(null)
   const [adding, setAdding] = useState('')
   const [error, setError] = useState('')
@@ -36,7 +39,8 @@ export function SettingsSection() {
 
   useEffect(() => {
     getSettings()
-      .then(({ settings, countries: list }) => {
+      .then(({ settings, countries: list, global: everywhere }) => {
+        setWorld(everywhere)
         setNumbers(settings)
         setCountries(list)
       })
@@ -53,10 +57,11 @@ export function SettingsSection() {
 
   const on = countries.filter((c) => c.isActive).length
 
-  const run = (work: Promise<{ settings: AppSettings; countries: CoveredCountry[] }>) => {
+  const run = (work: Promise<SettingsPayload>) => {
     setError('')
     work
-      .then(({ settings, countries: list }) => {
+      .then(({ settings, countries: list, global: everywhere }) => {
+        setWorld(everywhere)
         setNumbers(settings)
         setCountries(list)
         setSaved(true)
@@ -89,10 +94,10 @@ export function SettingsSection() {
         <div className="flex flex-wrap items-baseline gap-x-6 gap-y-2">
           <Count value={on} label={on === 1 ? 'country active' : 'countries active'} />
           <Count value={countries.length - on} label="switched off" muted />
-          <Count value={1} label="global, always on" muted />
         </div>
 
         <ul className="mt-5 space-y-2.5">
+          {world && <Everywhere world={world} />}
           {countries.map((c) => (
             <li
               key={c.iso2}
@@ -143,7 +148,7 @@ export function SettingsSection() {
 
           {countries.length === 0 && (
             <li className="rounded-xl border border-dashed border-line px-4 py-6 text-center text-sm text-ink-muted">
-  No country added yet. Ma’at answers globally only.
+              No country added yet, so Ma’at answers from global sources alone.
             </li>
           )}
         </ul>
@@ -252,6 +257,56 @@ function Panel({ children, note, title }: { children: React.ReactNode; note: str
       <p className="mt-0.5 max-w-2xl text-sm text-ink-muted">{note}</p>
       <div className="mt-5">{children}</div>
     </section>
+  )
+}
+
+/**
+ * Coverage of everywhere, at the head of the list.
+ *
+ * It has the same shape as a country row so the list reads as one thing, and
+ * three differences that are the whole point: the switch is on and disabled,
+ * there is no way to remove it, and it says why. A source with no country is
+ * let through whatever this table says, so a switch here would be a lie.
+ *
+ * It comes first because that is the order of the product. Ma’at answers from
+ * the world by default and a country narrows it; a list that opened with
+ * Nigeria would suggest the opposite.
+ */
+function Everywhere({ world }: { world: GlobalCoverage }) {
+  return (
+    <li className="flex flex-wrap items-center gap-3 rounded-xl border border-teal/25 bg-teal-soft/40 px-4 py-3">
+      <span aria-hidden="true" className="grid size-7 place-items-center rounded-full bg-teal-deep text-white">
+        <Globe className="size-4" />
+      </span>
+      <span className="min-w-0">
+        <span className="block font-medium text-teal-deep">{world.name}</span>
+        <span className="block text-xs text-ink-muted">
+          {world.sources.toLocaleString('en-GB')} sources ·{' '}
+          {world.documents.toLocaleString('en-GB')} documents · answers everywhere
+        </span>
+      </span>
+
+      <div className="ml-auto flex items-center gap-3">
+        <span
+          role="switch"
+          aria-checked="true"
+          aria-disabled="true"
+          aria-label="Global coverage is always on"
+          title="Global coverage cannot be switched off. Sources with no country answer everywhere."
+          className="relative h-6 w-11 shrink-0 cursor-not-allowed rounded-full bg-verified opacity-80"
+        >
+          <span aria-hidden="true" className="absolute top-0.5 left-[1.375rem] size-5 rounded-full bg-white shadow-sm" />
+        </span>
+        <span className="w-16 text-xs font-medium text-verified">Always on</span>
+        {/* Where a country has a delete, this has the reason it does not. */}
+        <span
+          className="ml-1 inline-flex size-8 items-center justify-center rounded-full text-ink-muted"
+          title="Global coverage is permanent"
+        >
+          <Lock className="size-4" />
+        </span>
+      </div>
+    </li>
   )
 }
 

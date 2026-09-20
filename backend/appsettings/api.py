@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from appsettings.models import AppSetting, CountryCoverage
+from knowledge.models import Document, Source
 from core.models import Country
 
 #: Editable from the dashboard. Everything else on the row is recorded rather
@@ -34,10 +35,36 @@ def _coverage_payload(row: CountryCoverage) -> dict:
     }
 
 
+def _global_payload() -> dict:
+    """Global coverage, which is permanent and belongs in the same list.
+
+    A source with no country speaks for everywhere, and `switched_on()` lets it
+    through whatever the coverage table says. That has always been true and was
+    only ever visible as a footnote, which made the list read as though Ma'at
+    covered nothing until somebody added a country. It covers the world by
+    default; countries narrow it. So global is shown as the first row, switched
+    on, with no way to switch it off, and the figures beside it are counted the
+    same way every other figure on this page is.
+    """
+    sources = Source.active.filter(country__isnull=True, is_active=True)
+    return {
+        "name": "Global",
+        "isActive": True,
+        # The frontend disables its switch and hides its delete on this alone,
+        # so the rule lives on the server rather than in a component.
+        "isPermanent": True,
+        "sources": sources.count(),
+        "documents": Document.active.filter(
+            source__country__isnull=True, is_current=True
+        ).count(),
+    }
+
+
 def _settings_payload() -> dict:
     row = AppSetting.current()
     return {
         "settings": {name: getattr(row, name) for name in EDITABLE},
+        "global": _global_payload(),
         "countries": [_coverage_payload(c) for c in CountryCoverage.active.select_related("country")],
     }
 
