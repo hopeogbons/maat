@@ -132,7 +132,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
             // If the server refuses, do not pretend: re-read who is signed in.
             signOut().catch(() => refreshSession())
           }}
-          className="mx-6 mb-10 flex items-center justify-center gap-2.5 rounded-xl py-2 text-[15px] font-bold text-white transition hover:text-gold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
+          className="mx-6 mb-10 flex cursor-pointer items-center justify-center gap-2.5 rounded-xl py-2 text-[15px] font-bold text-white transition hover:text-gold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
         >
           <span className="inline-flex size-7 items-center justify-center rounded-full bg-gold text-teal-deep">
             <LogOut className="size-3.5" strokeWidth={2.5} />
