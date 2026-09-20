@@ -5,8 +5,41 @@
 # The headless browser for sources marked `render`. It goes wherever
 # PLAYWRIGHT_BROWSERS_PATH points (/srv/maat/shared/ms-playwright: the units
 # cannot see ~/.cache), pinned to the playwright release in requirements.txt,
-# so this is a no-op unless that changed. The system libraries Chromium needs
-# are installed once, by root, in the guide's Phase 1; this runs unprivileged.
+# so this is a no-op unless that changed.
 set -euo pipefail
 
 "${VENV}/bin/python" -m playwright install chromium
+
+# Chromium also needs about fifty system libraries, which apt owns and this
+# hook cannot install: it runs unprivileged, by design. Downloading the browser
+# therefore succeeds on a server where it cannot actually start, and the only
+# symptom is every `render` source failing later, quietly, one at a time.
+#
+# So prove it launches. A failure here is reported, not fatal: `render` sources
+# are a minority and the rest of the API is fine without them, so this must not
+# block a deploy that is otherwise good.
+if ! "${VENV}/bin/python" - <<'PY' 2>/tmp/chromium-check.$$
+from playwright.sync_api import sync_playwright
+with sync_playwright() as p:
+    b = p.chromium.launch()
+    b.close()
+PY
+then
+    missing="$(grep -oE 'lib[A-Za-z0-9._+-]+\.so[0-9.]*' /tmp/chromium-check.$$ | sort -u | tr '\n' ' ')"
+    echo
+    echo "WARNING: Chromium downloaded but will not start on this server."
+    [ -n "$missing" ] && echo "         missing shared libraries: ${missing}"
+    echo "         Sources marked 'render' will fail until this is fixed."
+    echo
+    echo "         Fix it once, as root:"
+    echo
+    echo "             sudo PLAYWRIGHT_BROWSERS_PATH=${PLAYWRIGHT_BROWSERS_PATH:-/srv/maat/shared/ms-playwright} \\"
+    echo "               ${VENV}/bin/python -m playwright install-deps chromium"
+    echo
+    echo "         Everything else in this release is unaffected."
+    echo
+    rm -f /tmp/chromium-check.$$
+else
+    rm -f /tmp/chromium-check.$$
+    echo "Chromium launches: 'render' sources are available."
+fi
