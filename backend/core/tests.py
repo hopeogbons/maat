@@ -1,6 +1,9 @@
+import tempfile
+from pathlib import Path
+
 from django.contrib.auth import get_user_model
 from django.core.management import call_command
-from django.test import TestCase, RequestFactory
+from django.test import TestCase, RequestFactory, override_settings
 
 from core.context import CurrentUserMiddleware, get_current_user
 from core.models import Country, Currency, StateProvince, TimeZone
@@ -102,3 +105,27 @@ class CatalogueSeedTests(TestCase):
         call_command("sync_countries_and_states", verbosity=0)
         after = (Currency.objects.count(), Country.objects.count(), StateProvince.objects.count())
         self.assertEqual(before, after)
+
+
+class ResetCommandTests(TestCase):
+    """`reset` empties everything except what signing in needs."""
+
+    def test_reset_keeps_users_and_profiles_and_wipes_the_rest(self):
+        from accounts.models import Profile
+        from knowledge.models import Source
+
+        user = get_user_model().objects.create_user(username="keeper", password="x")
+        currency = Currency.objects.create(code="KES", name="Shilling")
+        country = Country.objects.create(iso2="KE", iso3="KEN", numeric_code="404", name="Kenya", currency=currency)
+        profile, _ = Profile.objects.get_or_create(user=user)
+        profile.country = country
+        profile.save()
+        Source.objects.create(slug="kbc", name="KBC", door="feed", address="https://kbc.example/feed")
+
+        with tempfile.TemporaryDirectory() as media, override_settings(MEDIA_ROOT=Path(media)):
+            call_command("reset", yes=True, verbosity=0)
+
+        self.assertTrue(get_user_model().objects.filter(username="keeper").exists())
+        self.assertIsNone(Profile.objects.get(user=user).country)
+        self.assertFalse(Source.objects.exists())
+        self.assertFalse(Country.objects.exists())

@@ -76,6 +76,8 @@ Useful commands:
 
 ```bash
 cd backend && .venv/bin/python manage.py test          # backend tests (needs CREATEDB on the role)
+python3 scripts/dev_reset.py                          # wipe the local database, keeping only users; --yes skips the prompt
+python3 scripts/dev_seed.py                           # catalogues + source register; on the server: scripts/deploy_reset.py, deploy_seed.py
 cd frontend && npm run build                          # type-check + production build
 ```
 
