@@ -15,6 +15,13 @@ Babel==2.18.0
 phonenumbers==9.0.39
 pycountry==26.2.16
 pgvector==0.5.0
+# The client for Django's RedisCache backend. Easy to miss: settings.py only
+# selects RedisCache when REDIS_URL is set, and a local checkout leaves it
+# unset and quietly uses LocMemCache -- so the whole test suite passes without
+# this package while PRODUCTION, which does set REDIS_URL, raises
+# ModuleNotFoundError inside the cache layer. That surfaces on the first
+# throttled request, i.e. the first sign-in, as a 500 with a healthy /health/.
+redis==8.1.0
 
 # The one model provider. See ai/provider.py.
 openai==3.13.0
