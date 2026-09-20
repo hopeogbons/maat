@@ -1,0 +1,243 @@
+# .github/workflows/deploy.yml  —  Ma'at
+#
+# Backend to the VPS, frontend to Vercel, from one push to main.
+#
+#   test            Django checks, the migration check and the test suite,
+#                   against a real pgvector Postgres on the runner. Gates the
+#                   deploy.
+#   check-frontend  Type-check, lint and build the React app, so a broken
+#                   frontend fails the commit visibly. It is NOT shipped from
+#                   here: Vercel's GitHub integration builds and deploys the
+#                   frontend on its own from the same push (root directory
+#                   `frontend`; see guides/maat-deploy-guide.md in the kit).
+#   deploy          rsync backend/ into a new release directory on the VPS and
+#                   activate it with /usr/local/bin/release-maat, which installs
+#                   dependencies, runs the hooks in backend/deploy/hooks/,
+#                   migrates, collects static files, flips the `current`
+#                   symlink and restarts gunicorn@maat and maat-poller. Smoke-
+#                   tested through Cloudflare; rolled back on failure.
+#
+# The 1 vCPU VPS never compiles anything; only finished code is rsynced.
+#
+# Required repository secrets (Settings → Secrets and variables → Actions),
+# printed by the kit's bootstrap-app.sh on the server:
+#   SSH_PRIVATE_KEY   private half of the gh-actions-maat keypair (ed25519)
+#   SSH_HOST          the VPS IP
+#   SSH_USER          deploy
+#   SSH_KNOWN_HOSTS   output of: ssh-keyscan -H <vps-ip>
+#
+# No application secrets belong here. They live in /etc/maat.env on the
+# server and in the Vercel project's environment variables.
+
+name: Deploy maat
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:        # redeploy by hand from the Actions tab
+
+# Never let two deploys race each other onto the box.
+concurrency:
+  group: deploy-maat
+  cancel-in-progress: false
+
+env:
+  PYTHON_VERSION: "3.12"    # Django 6 needs 3.12+; the server's venv is built with the same
+  NODE_VERSION: "22"
+  # The API's public origin: API_DOMAIN in the kit's apps/maat/app.conf.
+  # Change both together.
+  API_URL: https://api.maatverify.com
+
+jobs:
+  # ────────────────────────────────────────────────────────────────
+  test:
+    name: Test Django
+    runs-on: ubuntu-latest
+
+    # Postgres with pgvector as a service container ON THE RUNNER: GitHub's
+    # Docker, free, torn down after the job, never near the VPS.
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: maat
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      SECRET_KEY: test-key-not-used-in-production
+      DEBUG: "False"
+      ALLOWED_HOSTS: localhost,127.0.0.1
+      DATABASE_URL: postgres://test:test@localhost:5432/maat
+      FRONTEND_URL: http://localhost:5173
+      # No OpenAI key here, ever. settings.py forces the offline fallbacks
+      # under `manage.py test`; the checks below get the same explicitly.
+      AI_OFFLINE: "True"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check no environment files are committed
+        run: |
+          # A committed .env means secrets are in git history AND would ride
+          # the rsync to the server. Fail the whole pipeline immediately.
+          if git ls-files | grep -E '(^|/)\.env($|\.)|\.env$' | grep -vE '\.env\.(example|sample)$'; then
+            echo "::error::An environment file is committed to the repository. Remove it, rotate its secrets, and add it to .gitignore."
+            exit 1
+          fi
+          echo "OK: no environment files tracked by git."
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install dependencies
+        working-directory: backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Check for accidental local-model dependencies
+        run: |
+          # A stray transformers/torch install would blow the 2 GB budget.
+          # Fail loudly here rather than discovering it via the OOM killer.
+          if pip list --format=freeze | grep -Eiq '^(torch|transformers|sentence-transformers)=='; then
+            echo "::error::A local model dependency crept into requirements.txt."
+            pip list --format=freeze | grep -Ei '^(torch|transformers|sentence-transformers)=='
+            exit 1
+          fi
+          echo "OK: API-only models, no local weights."
+
+      - name: Django system checks
+        working-directory: backend
+        # HSTS and the https redirect are Cloudflare's and Nginx's job, which
+        # --deploy reports as warnings; anything at ERROR still fails.
+        run: python manage.py check --deploy --fail-level ERROR
+
+      - name: Detect missing migrations
+        working-directory: backend
+        run: python manage.py makemigrations --check --dry-run
+
+      - name: Run migrations
+        working-directory: backend
+        # The service container's user is a superuser, so the migration that
+        # creates the vector extension succeeds here. On the VPS the postgres
+        # superuser created it once by hand (bootstrap-app.sh prints the SQL).
+        run: python manage.py migrate --noinput
+
+      - name: Run tests
+        working-directory: backend
+        run: python manage.py test --noinput --verbosity 2
+
+  # ────────────────────────────────────────────────────────────────
+  check-frontend:
+    name: Check React
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install
+        working-directory: frontend
+        run: npm ci
+
+      - name: Lint
+        working-directory: frontend
+        run: npm run lint --if-present
+
+      - name: Type-check and build
+        working-directory: frontend
+        env:
+          VITE_API_BASE_URL: ${{ env.API_URL }}
+        run: npm run build
+        # Nothing is uploaded: Vercel builds the frontend it ships.
+
+  # ────────────────────────────────────────────────────────────────
+  deploy:
+    name: Deploy backend to VPS
+    runs-on: ubuntu-latest
+    needs: [test]
+    if: github.ref == 'refs/heads/main'
+
+    # Create this environment in repo Settings → Environments to add a
+    # manual approval gate or restrict which branches may deploy.
+    environment:
+      name: production
+      url: ${{ env.API_URL }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          echo "${{ secrets.SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: Set release identifier
+        id: rel
+        run: echo "id=$(date -u +%Y%m%dT%H%M%SZ)-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+
+      - name: Upload backend to a new release directory
+        env:
+          RELEASE: ${{ steps.rel.outputs.id }}
+        run: |
+          ssh "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
+            "mkdir -p /srv/maat/releases/$RELEASE"
+          # backend/'s CONTENTS become the release root: manage.py, config/,
+          # the apps, requirements.txt, gunicorn.conf.py and deploy/hooks/ at
+          # the top level, which is the layout release-maat and the systemd
+          # units expect. The excludes are anchored to backend/ and cover
+          # what a laptop checkout might carry; a CI checkout has none of it.
+          rsync -az --delete \
+            --exclude '/.venv' \
+            --exclude '/media' \
+            --exclude '/staticfiles' \
+            --exclude '/documents' \
+            --exclude '__pycache__' \
+            --exclude '*.pyc' \
+            --exclude '.env' \
+            --exclude '.env.*' \
+            --exclude '*.env' \
+            ./backend/ "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/srv/maat/releases/$RELEASE/"
+
+      - name: Activate release
+        env:
+          RELEASE: ${{ steps.rel.outputs.id }}
+        run: |
+          ssh "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
+            "/usr/local/bin/release-maat activate $RELEASE"
+
+      - name: Smoke test through Cloudflare
+        run: |
+          sleep 5
+          for i in 1 2 3 4 5; do
+            code=$(curl -sS -o /dev/null -w '%{http_code}' "$API_URL/api/health/" || true)
+            echo "attempt $i → HTTP $code"
+            [ "$code" = "200" ] && exit 0
+            sleep 5
+          done
+          echo "::error::Health check never returned 200; rolling back."
+          exit 1
+
+      - name: Roll back on failure
+        if: failure()
+        run: |
+          ssh "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
+            "/usr/local/bin/release-maat rollback" || true

@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# Run by release-maat after pip and before migrate, with /etc/maat.env loaded,
+# the release as the working directory and $VENV the shared virtualenv.
+#
+# The headless browser for sources marked `render`. It goes wherever
+# PLAYWRIGHT_BROWSERS_PATH points (/srv/maat/shared/ms-playwright: the units
+# cannot see ~/.cache), pinned to the playwright release in requirements.txt,
+# so this is a no-op unless that changed. The system libraries Chromium needs
+# are installed once, by root, in the guide's Phase 1; this runs unprivileged.
+set -euo pipefail
+
+"${VENV}/bin/python" -m playwright install chromium

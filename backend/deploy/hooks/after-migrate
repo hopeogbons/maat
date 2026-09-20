@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# Run by release-maat after migrate and collectstatic, before the `current`
+# symlink flips: a failure here aborts the release and the live one is left
+# untouched. /etc/maat.env is loaded, the release is the working directory,
+# $VENV is the shared virtualenv.
+set -euo pipefail
+
+# The ISO catalogues (currencies, time zones, countries, states) every install
+# needs. Offline and idempotent: about 5,000 rows refreshed, half a minute on
+# one core. Without --with-superuser, which prompts; the first staff account is
+# made by hand:   release-maat manage createsuperuser
+"${VENV}/bin/python" bootstrap_backend.py
+
+# The source register, knowledge/fixtures/register.json, as rows. Update-or-
+# create by slug, so a source edited in the dashboard keeps its documents and
+# its polling history.
+"${VENV}/bin/python" manage.py seed_sources

@@ -214,21 +214,33 @@ are environment variables, see `backend/.env.example`.
 
 ## Deploying
 
-**Backend to the VPS:** follow `backend/deploy/README.md`. After the one-time
-setup, each release is `bash /srv/maat/backend/deploy/deploy.sh` on the server.
+One push to `main` deploys both halves, independently:
 
-**Frontend to Vercel:**
+- **Backend → the VPS**, by `.github/workflows/deploy.yml`: the test suite
+  runs against a real pgvector Postgres on the runner, then `backend/` is
+  rsynced into a new release directory and activated with the deploy kit's
+  `release-maat`, which installs, runs `backend/deploy/hooks/`, migrates,
+  flips the `current` symlink and restarts `gunicorn@maat` and `maat-poller`.
+  Smoke-tested through Cloudflare; rolled back on failure.
+- **Frontend → Vercel**, by Vercel's GitHub integration, with **Root
+  Directory** set to `frontend` and `VITE_API_BASE_URL` set to the API's
+  origin (`https://api.yourdomain.com`, no trailing slash) for Production and
+  Preview. `frontend/vercel.json` rewrites client-side routes to `index.html`.
 
-1. Import this GitHub repo in Vercel.
-2. Set **Root Directory** to `frontend`. Vercel auto-detects Vite
-   (`npm run build`, output `dist`).
-3. Add the environment variable `VITE_API_BASE_URL=https://api.yourdomain.com`
-   for Production and Preview.
-4. Deploy. `frontend/vercel.json` rewrites client-side routes to `index.html`.
-5. Back on the VPS, add the Vercel domain to `CORS_ALLOWED_ORIGINS` (and the
-   preview regex to `CORS_ALLOWED_ORIGIN_REGEXES`) in `/srv/maat/backend/.env`,
-   then `sudo systemctl restart maat-api`.
+The server side (the release script, the poller unit, the Nginx site, the
+`/etc/maat.env` template) lives in the **vps-deploy-kit** project under
+`apps/maat/`; its `guides/maat-deploy-guide.md` is the runbook, from the
+one-time server setup to the first sign-in. Once it is set up:
 
-Verify with the browser: the deployed page should show "Backend connected".
-If it shows a network/CORS error, the Vercel origin is missing from
-`CORS_ALLOWED_ORIGINS`.
+| Task | Where |
+|---|---|
+| Deploy | `git push` |
+| Roll back the backend | `release-maat rollback` on the server |
+| What's deployed | `release-maat status` |
+| Any `manage.py` command in production | `release-maat manage <command>` |
+| Settings | `/etc/maat.env`, then `sudo systemctl restart gunicorn@maat maat-poller` |
+
+Production is cross-origin, so Django must list the Vercel origin(s) in
+`CORS_ALLOWED_ORIGINS` and `CSRF_TRUSTED_ORIGINS` (both in `/etc/maat.env`).
+The deployed page should show "Backend connected"; a network/CORS error means
+the Vercel origin in that file does not match the address in the browser.
