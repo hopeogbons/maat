@@ -29,6 +29,23 @@ striprtf==0.0.29
 # customer support corpus is chunked with, so chunk quality matches rather
 # than being re-derived and quietly worse.
 llama-index-core==0.14.23
+# Pinned below 2.0 because of the PRODUCTION CPU, not because of anything the
+# code needs. The VPS is a "QEMU Virtual CPU version 2.5+", which exposes only
+# baseline x86-64: no SSE4.2, POPCNT, SSSE3, SSE4.1 or AVX. Every NumPy 2.x
+# wheel is built with an x86-64-v2 baseline and aborts at import with
+#
+#     RuntimeError: NumPy was built with baseline optimizations: (X86_V2)
+#     but your machine doesn't support: (X86_V2)
+#
+# which takes down any Django command that imports llama_index -- including
+# `migrate`, so a deploy fails before it can go live. 1.26.x is the last
+# series whose wheels target plain x86-64 and it supports Python 3.12.
+# llama-index-core asks only for "numpy" with no bound, so this is free.
+#
+# The real fix is a better CPU model from the host (host-passthrough, or any
+# model from the last decade). Once the box reports sse4_2 and popcnt in
+# /proc/cpuinfo, this pin can go.
+numpy==1.26.4
 
 # Polling the feeds a body publishes. `feedparser` reads RSS and Atom and the
 # several dialects of each; `requests` is here for conditional GETs, which is
