@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Seed the local database: the ISO catalogues, then the source register.
+"""Seed the local database: the ISO catalogues, the source register, then coverage for its countries.
 
     python3 scripts/dev_seed.py
 
@@ -17,6 +17,7 @@ from dev_up import ROOT, VENV, activate_venv  # noqa: E402
 STEPS = [
     ["bootstrap_backend.py"],
     ["manage.py", "seed_sources"],
+    ["manage.py", "seed_coverage"],
 ]
 
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Seed the live database: the ISO catalogues, then the source register; the
+"""Seed the live database: the ISO catalogues, the source register, then coverage for its countries; the
 server sibling of the repo's scripts/dev_seed.py.
 
 Run ON THE VPS as the deploy user, from the active release:
@@ -19,7 +19,7 @@ from deploy_common import load_env, restart_poller, run  # noqa: E402
 
 def main():
     load_env()
-    for step in (["bootstrap_backend.py"], ["manage.py", "seed_sources"]):
+    for step in (["bootstrap_backend.py"], ["manage.py", "seed_sources"], ["manage.py", "seed_coverage"]):
         code = run(*step)
         if code:
             return code

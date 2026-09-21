@@ -1,5 +1,7 @@
 from django.test import TestCase
 
+from appsettings.models import CountryCoverage
+
 from appsettings.models import AppSetting
 
 
@@ -132,3 +134,32 @@ class GlobalCoverageTests(TestCase):
 
         self.assertFalse(payload["countries"][0]["isActive"])
         self.assertTrue(payload["global"]["isActive"])
+
+
+class SeedCoverageTests(TestCase):
+    """After a wipe, the register says which countries were decided on."""
+
+    def setUp(self):
+        from core.models import Country
+
+        self.ng = Country.objects.create(name="Nigeria", iso2="NG", iso3="NGA", numeric_code="566")
+        self.ke = Country.objects.create(name="Kenya", iso2="KE", iso3="KEN", numeric_code="404")
+
+    def test_it_covers_the_register_countries_switched_on(self):
+        from django.core.management import call_command
+
+        call_command("seed_coverage", verbosity=0)
+
+        rows = {c.country.iso2: c.is_active for c in CountryCoverage.active.all()}
+        self.assertEqual(rows, {"NG": True, "KE": True})
+
+    def test_a_deliberate_switch_off_or_drop_is_respected(self):
+        from django.core.management import call_command
+
+        CountryCoverage.objects.create(country=self.ng, is_active=False)
+        CountryCoverage.objects.create(country=self.ke).delete()  # dropped on purpose: soft-deleted
+
+        call_command("seed_coverage", verbosity=0)
+
+        self.assertFalse(CountryCoverage.objects.get(country=self.ng).is_active)
+        self.assertFalse(CountryCoverage.active.filter(country=self.ke).exists())
