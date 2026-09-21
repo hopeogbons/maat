@@ -107,8 +107,10 @@ class SessionApiTests(TestCase):
             {
                 "authenticated": True,
                 "username": "hope",
-                "name": "Hope Ogbons",
-                "title": "Member",
+                # Django's first and last name are ignored: the profile is the
+                # only source, and it is empty, so both fall back to the username.
+                "name": "Hope",
+                "title": "hope",
                 "avatarUrl": "",
                 "isStaff": False,
                 "isSuperuser": False,
@@ -271,12 +273,15 @@ class ApiAuthenticationTests(TestCase):
 
 
 class ProfileTests(TestCase):
-    def test_every_new_user_gets_a_profile(self):
+    def test_every_new_user_gets_an_empty_profile(self):
+        # Django's own name columns are never copied in: the profile is the
+        # application's record and starts blank however the user was made.
         user = get_user_model().objects.create_user(
             username="hope", password="x", first_name="Hope", last_name="Ogbons"
         )
-        self.assertEqual(user.profile.first_name, "Hope")
-        self.assertEqual(user.profile.display_name, "Hope Ogbons")
+        self.assertEqual(user.profile.first_name, "")
+        self.assertEqual(user.profile.last_name, "")
+        self.assertEqual(user.profile.display_name, "hope")
 
     def test_display_name_falls_back_to_the_username(self):
         user = get_user_model().objects.create_user(username="scribe", password="x")
@@ -297,19 +302,30 @@ class ProfileApiTests(TestCase):
             username="hope@maat.example", password="weigh-the-feather", email="hope@maat.example"
         )
 
-    def test_session_prefers_the_role_label_until_a_title_is_set(self):
+    def test_an_empty_profile_is_improvised_from_the_username(self):
         self.client.force_login(self.user)
         payload = self.client.get("/api/auth/session/").json()
         self.assertEqual(payload["username"], "hope@maat.example")
-        self.assertEqual(payload["name"], "")
-        self.assertEqual(payload["title"], "Member")
+        self.assertEqual(payload["name"], "Hope")
+        self.assertEqual(payload["title"], "hope@maat.example")
 
-    def test_a_superuser_is_described_as_an_administrator(self):
-        boss = get_user_model().objects.create_superuser(
-            username="boss", email="boss@maat.example", password="x"
+    def test_a_dotted_local_part_reads_as_a_full_name(self):
+        person = get_user_model().objects.create_user(
+            username="hope.ogbons@maat.example", email="hope.ogbons@maat.example", password="x"
         )
-        self.client.force_login(boss)
-        self.assertEqual(self.client.get("/api/auth/session/").json()["title"], "Administrator")
+        self.client.force_login(person)
+        self.assertEqual(self.client.get("/api/auth/session/").json()["name"], "Hope Ogbons")
+
+    def test_the_profile_wins_over_the_username_once_it_is_filled_in(self):
+        self.client.force_login(self.user)
+        self.client.patch(
+            "/api/auth/profile/",
+            {"first_name": "Hope", "last_name": "Ogbons", "job_title": "Verification lead"},
+            content_type="application/json",
+        )
+        payload = self.client.get("/api/auth/session/").json()
+        self.assertEqual(payload["name"], "Hope Ogbons")
+        self.assertEqual(payload["title"], "Verification lead")
 
     def test_profile_requires_a_session(self):
         # 401, not 403. DRF answers 403 only when no authentication class can

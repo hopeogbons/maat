@@ -69,7 +69,13 @@ class Profile(BaseModel):
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL, dispatch_uid="accounts_create_profile")
 def create_profile(sender, instance, created, **kwargs):
-    """Give every new user a profile, seeded from whatever the user row knows.
+    """Give every new user an empty profile.
+
+    Empty on purpose. The profile is the application's record of a person and
+    the only place a name is read from; it is not seeded from Django's own
+    first and last name columns, because a name typed into the admin would
+    then surface as though the person had entered it. Until they fill it in,
+    the interface improvises from the username.
 
     get_or_create rather than create: a fixture, a data migration or a second
     save must never raise here, because failing this signal would make creating
@@ -77,10 +83,4 @@ def create_profile(sender, instance, created, **kwargs):
     """
     if not created:
         return
-    Profile.objects.get_or_create(
-        user=instance,
-        defaults={
-            "first_name": getattr(instance, "first_name", "") or "",
-            "last_name": getattr(instance, "last_name", "") or "",
-        },
-    )
+    Profile.objects.get_or_create(user=instance)

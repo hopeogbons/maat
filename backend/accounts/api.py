@@ -24,30 +24,36 @@ from accounts.auth import issue_token, revoke_tokens, token_expires_at
 from accounts.models import Profile
 
 
-def role_label(user) -> str:
-    """What this person is, when they have not said it themselves."""
-    if user.is_superuser:
-        return "Administrator"
-    if user.is_staff:
-        return "Staff"
-    return "Member"
+def name_from_username(username: str) -> str:
+    """A name improvised from the sign-in name, for a profile with none set.
+
+    The username is an email address here, so the part before the @ is what
+    the person chose to be called: "hope.ogbons" reads as "Hope Ogbons". It
+    is a stand-in until they fill the profile in, never a replacement for it.
+    """
+    local = username.split("@", 1)[0]
+    words = [w for w in local.replace(".", " ").replace("_", " ").replace("-", " ").split() if w]
+    return " ".join(w[:1].upper() + w[1:] for w in words) or username
 
 
 def describe(user) -> dict:
     """The shape the front end stores for a signed-in person.
 
-    `name` is what the person calls themselves and may be empty: the front end
-    falls back to the username rather than showing a half-filled profile. The
-    two are returned separately so it can make that choice itself.
+    The profile is the only place a name or a title comes from. Django's own
+    first and last name columns are never consulted: the application owns the
+    person's details, and a name typed into the admin would otherwise show up
+    beside one typed into the profile with nothing to say which is right. When
+    the profile is blank, both fields are improvised from the username.
     """
     if not user.is_authenticated:
         return {"authenticated": False}
     profile = getattr(user, "profile", None)
+    username = user.get_username()
     return {
         "authenticated": True,
-        "username": user.get_username(),
-        "name": (profile.full_name if profile else "") or user.get_full_name(),
-        "title": (profile.job_title if profile else "") or role_label(user),
+        "username": username,
+        "name": (profile.full_name if profile else "") or name_from_username(username),
+        "title": (profile.job_title if profile else "") or username,
         "avatarUrl": (profile.avatar_url if profile else "") or "",
         "isStaff": user.is_staff,
         "isSuperuser": user.is_superuser,
