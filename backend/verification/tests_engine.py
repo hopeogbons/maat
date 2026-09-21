@@ -737,6 +737,24 @@ class StreamedChatTests(TestCase):
             out.append((lines["event"], json.loads(lines["data"])))
         return out
 
+    def test_the_stream_is_opened_when_asked_for_as_the_widget_asks(self):
+        # The widget sends Accept: text/event-stream. Negotiation used to answer
+        # 406 before the view ran, and the widget treats a 4xx as a hard error,
+        # so every turn from the page failed while the plain test client passed.
+        response = self.client.post(
+            "/api/chat/stream/", {"text": "Hi"}, content_type="application/json", HTTP_ACCEPT="text/event-stream"
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response["Content-Type"].startswith("text/event-stream"))
+        self.assertEqual(self._events(response)[-1][0], "reply")
+
+    def test_an_empty_message_is_refused_with_a_readable_detail_on_the_stream_route(self):
+        response = self.client.post(
+            "/api/chat/stream/", {"text": ""}, content_type="application/json", HTTP_ACCEPT="text/event-stream"
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(json.loads(response.content)["detail"], "Say something first.")
+
     def test_a_turn_streams_its_stages_and_ends_with_the_reply(self):
         response = self.client.post("/api/chat/stream/", {"text": "I heard fuel prices in Lagos go up by 40%"}, content_type="application/json")
         self.assertEqual(response.status_code, 200)

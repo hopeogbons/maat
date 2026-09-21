@@ -17,6 +17,7 @@ from threading import Thread
 from rest_framework import status
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import AllowAny
+from rest_framework.renderers import BaseRenderer, JSONRenderer
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.throttling import SimpleRateThrottle
@@ -155,6 +156,24 @@ def _sse(kind: str, data: dict) -> str:
     return f"event: {kind}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
 
 
+class EventStreamRenderer(BaseRenderer):
+    """Lets a request that asks for text/event-stream through content negotiation.
+
+    The framework negotiates before the view runs and answers 406 to any Accept
+    header no renderer claims, so without this the widget's own request for
+    the stream was refused at the door. The stream itself is a
+    StreamingHttpResponse the view builds, which never passes through here;
+    render() is reached only for an error Response, which it hands back as
+    JSON so the widget can read the detail.
+    """
+
+    media_type = "text/event-stream"
+    format = "sse"
+
+    def render(self, data, accepted_media_type=None, renderer_context=None):
+        return JSONRenderer().render(data, "application/json", renderer_context)
+
+
 class ChatStreamView(ChatView):
     """POST {"text", "conversation?", "language?"} -> a stream of events, ending in the reply.
 
@@ -168,6 +187,8 @@ class ChatStreamView(ChatView):
     it works; under test it runs inline, since a second database connection
     cannot see the test's own transaction.
     """
+
+    renderer_classes = [EventStreamRenderer, JSONRenderer]
 
     def post(self, request: Request) -> StreamingHttpResponse | Response:
         text = (request.data.get("text") or "").strip()
