@@ -110,7 +110,7 @@ class CatalogueSeedTests(TestCase):
 class ResetCommandTests(TestCase):
     """`reset` empties everything except what signing in needs."""
 
-    def test_reset_keeps_users_and_profiles_and_wipes_the_rest(self):
+    def test_reset_keeps_users_profiles_and_catalogues_and_wipes_the_rest(self):
         from accounts.models import Profile
         from knowledge.models import Source
 
@@ -126,6 +126,7 @@ class ResetCommandTests(TestCase):
             call_command("reset", yes=True, verbosity=0)
 
         self.assertTrue(get_user_model().objects.filter(username="keeper").exists())
-        self.assertIsNone(Profile.objects.get(user=user).country)
+        # The catalogue survives, and so does the profile's pointer into it.
+        self.assertTrue(Country.objects.filter(iso2="KE").exists())
+        self.assertEqual(Profile.objects.get(user=user).country, country)
         self.assertFalse(Source.objects.exists())
-        self.assertFalse(Country.objects.exists())

@@ -1,17 +1,23 @@
-"""Wipe the database clean, keeping only what signing in needs.
+"""Wipe the database clean, keeping what signing in needs and the catalogues.
 
     manage.py reset          # asks first
     manage.py reset --yes    # for scripts
 
-Kept: users, groups, permissions, sessions, API tokens and profiles, plus the
-migration and content-type bookkeeping the schema itself depends on. Every
-other table is emptied, uploaded files are deleted and the cache is flushed.
-The reference catalogues go too: `seed` puts them back.
+Kept: users, groups, permissions, sessions, API tokens and profiles; the ISO
+catalogues of countries, states, currencies and time zones; and the migration
+and content-type bookkeeping the schema itself depends on. Every other table
+is emptied, uploaded files are deleted and the cache is flushed.
 
-Rows are deleted rather than truncated because a kept table (the profile) has
-foreign keys into wiped ones (country, time zone); TRUNCATE refuses that
-outright, and CASCADE would take the profiles with it. Those keys are nulled
-first, then everything else goes in one transaction with constraints deferred.
+The catalogues stay because they are structure, not content: nobody entered
+them, a profile and the coverage list point into them, and a reset that took
+them left the profile page with empty country and time zone lists until
+somebody remembered to seed again.
+
+Rows are deleted rather than truncated because kept tables have foreign keys
+into wiped ones and wiped tables into kept ones; TRUNCATE refuses both, and
+CASCADE would take the kept rows with it. Any kept-side key into a wiped
+table is nulled first, then everything else goes in one transaction with
+constraints deferred.
 """
 
 import shutil
@@ -23,8 +29,9 @@ from django.core.management.base import BaseCommand, CommandError
 from django.core.management.color import no_style
 from django.db import connection, transaction
 
-#: Apps whose tables survive a reset.
-KEEP = {"auth", "contenttypes", "sessions", "authtoken", "accounts"}
+#: Apps whose tables survive a reset. `core` is the ISO catalogues and nothing
+#: else, which is why the whole app can be kept rather than a list of models.
+KEEP = {"auth", "contenttypes", "sessions", "authtoken", "accounts", "core"}
 
 
 def partition():
