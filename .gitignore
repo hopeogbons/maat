@@ -30,3 +30,6 @@ frontend/.certs/
 .idea/
 .DS_Store
 
+
+# The handbook, its screenshots and the source reference: kept locally, never in the repository.
+docs/
