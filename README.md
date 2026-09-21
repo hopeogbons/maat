@@ -7,7 +7,7 @@ Ma’at checks a rumour against documents published by official bodies, answers 
 Built for the Andela × Open Society Foundations hackathon, Track 1: stability and social cohesion.
 
 - **Live site:** https://maatverify.vercel.app
-- **API:** https://maat-api.customersupport.ng (health check at `/api/health/`)
+- **API:** https://maat-api.customersupport.ng/accounts/login/ (health check at `/api/health/`)
 - **Demo video:** _link to come_
 
 ![The Ma’at landing page: the feather mark, the tagline and the chat launcher on deep teal](.github/screenshots/landing.jpg)
