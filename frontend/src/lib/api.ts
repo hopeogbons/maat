@@ -294,10 +294,18 @@ let reference: Promise<Reference> | null = null
 
 /** Countries and time zones. Fetched once: the catalogue changes once a year. */
 export function getReference(): Promise<Reference> {
-  reference ??= apiFetch<Reference>('/api/reference/').catch((error) => {
-    reference = null
-    throw error
-  })
+  // Remembered only once it has something in it. An install seeded after the
+  // page loaded would otherwise keep an empty catalogue for the whole visit,
+  // and every country and time zone list would stay blank until a reload.
+  reference ??= apiFetch<Reference>('/api/reference/')
+    .then((catalogue) => {
+      if (catalogue.countries.length === 0 && catalogue.timezones.length === 0) reference = null
+      return catalogue
+    })
+    .catch((error) => {
+      reference = null
+      throw error
+    })
   return reference
 }
 
