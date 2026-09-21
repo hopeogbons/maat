@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Wipe the local database clean, keeping sign-in and the ISO catalogues.
+"""Wipe the local database clean, keeping sign-in, the ISO catalogues and Settings.
 
     python3 scripts/dev_reset.py          # asks first
     python3 scripts/dev_reset.py --yes

@@ -1,17 +1,20 @@
-"""Wipe the database clean, keeping what signing in needs and the catalogues.
+"""Wipe the content clean, keeping sign-in, the catalogues and Settings.
 
     manage.py reset          # asks first
     manage.py reset --yes    # for scripts
 
 Kept: users, groups, permissions, sessions, API tokens and profiles; the ISO
-catalogues of countries, states, currencies and time zones; and the migration
-and content-type bookkeeping the schema itself depends on. Every other table
-is emptied, uploaded files are deleted and the cache is flushed.
+catalogues of countries, states, currencies and time zones; Settings, meaning
+the countries covered and their switches, the thresholds, the rate limits and
+the retention; and the migration and content-type bookkeeping the schema
+itself depends on. Every other table is emptied, uploaded files are deleted
+and the cache is flushed.
 
-The catalogues stay because they are structure, not content: nobody entered
-them, a profile and the coverage list point into them, and a reset that took
-them left the profile page with empty country and time zone lists until
-somebody remembered to seed again.
+The line is setup versus content. An install that has been set up once stays
+set up: the catalogues are fixed facts about the world, and coverage and the
+thresholds are decisions already made. What a reset removes is what the
+install has taken in since: sources, documents, passages, conversations,
+claims, rumours, articles and the Telegram bot.
 
 Rows are deleted rather than truncated because kept tables have foreign keys
 into wiped ones and wiped tables into kept ones; TRUNCATE refuses both, and
@@ -30,8 +33,10 @@ from django.core.management.color import no_style
 from django.db import connection, transaction
 
 #: Apps whose tables survive a reset. `core` is the ISO catalogues and nothing
-#: else, which is why the whole app can be kept rather than a list of models.
-KEEP = {"auth", "contenttypes", "sessions", "authtoken", "accounts", "core"}
+#: else; `appsettings` is coverage and the thresholds. Whole apps rather than a
+#: list of models, so a table added to either later is kept without a change
+#: here.
+KEEP = {"auth", "contenttypes", "sessions", "authtoken", "accounts", "core", "appsettings"}
 
 
 def partition():

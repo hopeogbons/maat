@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Wipe the live database clean, keeping sign-in and the ISO catalogues; the
+"""Wipe the live database clean, keeping sign-in, the ISO catalogues and Settings; the
 server sibling of the repo's scripts/dev_reset.py.
 
 Run ON THE VPS as the deploy user, from the active release:

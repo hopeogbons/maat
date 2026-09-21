@@ -5,6 +5,7 @@ from django.contrib.auth import get_user_model
 from django.core.management import call_command
 from django.test import TestCase, RequestFactory, override_settings
 
+from appsettings.models import CountryCoverage
 from core.context import CurrentUserMiddleware, get_current_user
 from core.models import Country, Currency, StateProvince, TimeZone
 
@@ -110,7 +111,7 @@ class CatalogueSeedTests(TestCase):
 class ResetCommandTests(TestCase):
     """`reset` empties everything except what signing in needs."""
 
-    def test_reset_keeps_users_profiles_and_catalogues_and_wipes_the_rest(self):
+    def test_reset_keeps_sign_in_catalogues_and_settings_and_wipes_the_rest(self):
         from accounts.models import Profile
         from knowledge.models import Source
 
@@ -121,6 +122,7 @@ class ResetCommandTests(TestCase):
         profile.country = country
         profile.save()
         Source.objects.create(slug="kbc", name="KBC", door="feed", address="https://kbc.example/feed")
+        CountryCoverage.objects.create(country=country, is_active=True)
 
         with tempfile.TemporaryDirectory() as media, override_settings(MEDIA_ROOT=Path(media)):
             call_command("reset", yes=True, verbosity=0)
@@ -129,4 +131,6 @@ class ResetCommandTests(TestCase):
         # The catalogue survives, and so does the profile's pointer into it.
         self.assertTrue(Country.objects.filter(iso2="KE").exists())
         self.assertEqual(Profile.objects.get(user=user).country, country)
+        # Settings survive too: the country stays covered and switched on.
+        self.assertTrue(CountryCoverage.active.filter(country=country, is_active=True).exists())
         self.assertFalse(Source.objects.exists())
