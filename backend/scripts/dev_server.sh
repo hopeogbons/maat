@@ -3,7 +3,7 @@
 #
 # If a locally trusted certificate exists (made with mkcert, see the README;
 # frontend/.certs/dev.pem by default), Django is served over https by gunicorn,
-# which browsers require for hostnames such as maat.vercel.app. Otherwise it
+# which browsers require for hostnames such as maatverify.vercel.app. Otherwise it
 # falls back to Django's own runserver over plain http.
 #
 # Both modes reload on code changes; the https mode also reloads when .env

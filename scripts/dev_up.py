@@ -4,8 +4,8 @@
     python3 scripts/dev_up.py
 
 Services (both under the production hostname, see the README):
-  backend   https://maat.vercel.app:8765   backend/scripts/dev_server.sh   log /tmp/maat-backend.log
-  frontend  https://maat.vercel.app:5174   npm run dev                     log /tmp/maat-vite.log
+  backend   https://maatverify.vercel.app:8765   backend/scripts/dev_server.sh   log /tmp/maat-backend.log
+  frontend  https://maatverify.vercel.app:5174   npm run dev                     log /tmp/maat-vite.log
   poller    (no port)                      manage.py poll_feeds --loop     log /tmp/maat-poller.log
 
 Stop them with scripts/dev_down.py - detached means Ctrl-C will not reach them.
@@ -26,7 +26,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 VENV = ROOT / "backend/.venv"
-HOST = "maat.vercel.app"
+HOST = "maatverify.vercel.app"
 BACKEND_PORT = 8765
 FRONTEND_PORT = 5174
 

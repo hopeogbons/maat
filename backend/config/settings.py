@@ -188,7 +188,7 @@ STORAGES = {
 # Cross-origin access from the React frontend
 # ---------------------------------------------------------------------------
 
-# Exact origins, e.g. "https://maat.vercel.app,https://maat.example.com"
+# Exact origins, e.g. "https://maatverify.vercel.app"
 CORS_ALLOWED_ORIGINS = env_list("CORS_ALLOWED_ORIGINS")
 # Regexes, e.g. r"^https://maat-.*\.vercel\.app$" to allow Vercel preview deploys
 CORS_ALLOWED_ORIGIN_REGEXES = env_list("CORS_ALLOWED_ORIGIN_REGEXES")

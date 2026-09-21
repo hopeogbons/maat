@@ -44,7 +44,7 @@ export default defineConfig(({ mode }) => {
       https: trustedCert ? { cert: readFileSync(certFile), key: readFileSync(keyFile) } : undefined,
       // Hostnames the dev server will answer for besides localhost. Add the
       // production domain here if you point it at 127.0.0.1 in /etc/hosts.
-      allowedHosts: ['maat.vercel.app'],
+      allowedHosts: ['maatverify.vercel.app'],
       // In development the browser only talks to Vite; Vite forwards /api/* to
       // Django. That keeps CORS out of the picture until you deploy.
       proxy: {
