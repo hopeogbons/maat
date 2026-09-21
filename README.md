@@ -1,249 +1,250 @@
-# maat
+# Ma’at
 
-Django REST API (`backend/`) plus a React single-page app (`frontend/`).
-The frontend is deployed to Vercel and calls the backend, which runs on a VPS
-behind nginx. PostgreSQL is the only supported database.
+[![Deploy](https://github.com/hopeogbons/maat/actions/workflows/deploy.yml/badge.svg)](https://github.com/hopeogbons/maat/actions/workflows/deploy.yml)
+
+Ma’at checks a rumour against documents published by official bodies, answers in the user's language with the document cited, and says plainly when no verified source exists.
+
+Built for the Andela × Open Society Foundations hackathon, Track 1: stability and social cohesion.
+
+- **Live site:** https://maatverify.vercel.app
+- **API:** https://maat-api.customersupport.ng (health check at `/api/health/`)
+- **Demo video:** _link to come_
+
+![The Ma’at landing page: the feather mark, the tagline and the chat launcher on deep teal](.github/screenshots/landing.jpg)
+
+## The problem
+
+In moments of tension, unverified rumours travel faster than corrections. A message about an attack, a curfew, a recall or an exam date reaches a neighbourhood in minutes. The statement that settles it arrives hours later, by which time people have acted on the rumour or taken sides over it. Ma’at gives the person who received the message a way to check it against what the relevant institutions have actually published, before passing it on.
+
+## What it does
+
+- A chat widget on the site (text or voice note) and a Telegram bot, both answered by the same engine.
+- Reads the claim back, asks at most two follow-up questions (who, what, when, where), then weighs it.
+- Three verdicts: **Verified**, **Unverified**, **Insufficient evidence**. It never calls anything false.
+- Every verdict cites the document: issuing body, date, the exact sentence relied on, and a link to the original.
+- A staff dashboard: rumours, conversations, sources, documents and settings.
+- A rumour raised by enough different people (three, by default) becomes a public verification article.
+
+## Architecture
 
 ```
-maat/
-├── backend/      Django 6 + Django REST Framework, gunicorn, PostgreSQL
-│   ├── api/      the API app (health endpoint lives here)
-│   ├── config/   settings, root urls, wsgi
-│   ├── deploy/   systemd unit, nginx site, deploy script, VPS guide
-│   └── scripts/  create_local_db.sh
-└── frontend/     Vite + React + TypeScript + Tailwind v4 + shadcn/ui, deployed to Vercel
-    ├── src/i18n/        languages, translations and the language store
-    ├── src/landing/     the landing page (hero, how it works, verifications, footer)
-    ├── src/lib/api.ts   fetch wrapper for the Django API
-    └── src/widget/      the Ma’at chat widget (self-contained, see below)
+claim ────► interview ────► retrieve ────► judge ────► confidence gate ────► answer, cited
+text, voice   read back,      embedding       supports /      judgement ≥ 85          or
+or Telegram   ≤ 2 questions   search over     contradicts /   (never similarity)      abstain
+                              the record,     same subject /
+                              reranked        unrelated
 ```
 
-## Local development
+1. **Interview.** The message is read as data, never as instructions. The claim is extracted into a neutral paraphrase with its who, what, when and where; missing facts are asked for, at most two questions.
+2. **Retrieve.** The claim, in English, is embedded and searched against the record (PostgreSQL with pgvector). The closest passages are reranked.
+3. **Judge.** A second, more careful model reads each passage against the claim and returns one of four answers: supports, contradicts, same subject but settles nothing, unrelated. It also returns the exact sentence it relied on.
+4. **Confidence gate.** Similarity and judgement are separate numbers. Similarity says whether two texts are about the same thing; it cannot tell agreement from contradiction. The gate (85 by default, editable in Settings) sits on the judgement only.
+5. **Answer or abstain.** Supports above the gate is Verified. Contradicts above the gate is Unverified. Anything else is Insufficient evidence: Ma’at says the record does not settle it, shows the closest records with links so the reader can judge for themselves, and offers, only if the visitor says yes, to query the configured live sources.
 
-Prerequisites: Python 3.12+, Node 20+, a running PostgreSQL server.
+| Part | What it is |
+|---|---|
+| `backend/` | Django 6, Django REST Framework, PostgreSQL + pgvector, gunicorn. Apps: `verification` (conversations, rumours, verdicts), `knowledge` (sources, documents, ingestion), `ai` (interview, judge, rerank, embeddings, speech), `telegram`, `appsettings`, `accounts`, `core` (ISO catalogues), `api`. |
+| `frontend/` | Vite, React 19, TypeScript, Tailwind v4, shadcn/ui. The landing page, the widget and the dashboard. |
+| Models | OpenAI, by role: `gpt-4.1-mini` for reading the visitor and the interview, `gpt-4.1` for judging and writing the answer, `text-embedding-3-small`, `gpt-4o-transcribe`, `gpt-4o-mini-tts`. All set by environment variable. |
+| Hosting | Frontend on Vercel. Backend on a VPS behind nginx, deployed by GitHub Actions. |
+
+## The source registry
+
+A source is a body, the door its publications are read through, and a polling cadence. The doors, in order of preference:
+
+| Door | Used when |
+|---|---|
+| Public API (including the WordPress REST API most public bodies' sites carry) | The site has one. Complete text, exact dates. |
+| RSS or Atom feed | No API. Full text preferred; a summary-only feed still counts as the body's own words. |
+| The body's own public pages | Neither API nor feed, and only for an official or public-interest body. Robots rules obeyed, identified user agent, one page at a time, whole articles only, nothing behind a login or paywall. |
+| Direct upload | Bodies that publish files rather than a stream. |
+
+The door is decided by probing the site (`manage.py discover_source`, or the **Add a source** form in the dashboard, which does the same), not by assumption. The register is `backend/knowledge/fixtures/register.json`, loaded with `manage.py seed_sources`; the dashboard's Sources page edits the same rows. The poller (`manage.py poll_feeds --loop`) fetches new documents at each source's cadence (six hours by default), then parses, chunks and embeds them.
+
+### Adding a country
+
+1. Register its bodies: rows in `register.json`, or the dashboard form.
+2. Switch the country on in **Settings**.
+
+That is the whole change. A country that is switched off costs nothing: it is not polled, not searched, not asked about and not shown, and its languages are off the picker. Nigeria is on. Kenya is registered and off until its sources have been checked. Interface translations are code (`frontend/src/i18n/locales/`), so a language that is new to the picker needs a locale file; the verification itself does not.
+
+## Languages
+
+| Country | Available now | Listed as coming soon |
+|---|---|---|
+| (shared) | English | |
+| Nigeria | Hausa, Yorùbá, Igbo, Naijá (Nigerian Pidgin) | |
+| Kenya | Kiswahili | Gĩkũyũ, Dholuo, Luluhya, Kalenjin, Kikamba, Af-Soomaali |
+
+- The record is English. The claim is extracted into English, and retrieval and judgement run in English.
+- The answer is written in the language the widget is showing. A voice note is transcribed with that language named, and the reply is spoken in it.
+- A quoted sentence is shown as published, word for word, so the highlight matches the document. Its meaning in the visitor's language sits beside it. If that translation fails, the English stands alone: a missing translation is a gap, never an invented sentence.
+- Interface strings live in `frontend/src/i18n/locales/<code>.ts`. Each file must implement the whole `Messages` shape, so a missing string fails the build instead of silently showing English.
+
+## Running it from a clean clone
+
+### Requirements
+
+- Python 3.12 or newer
+- Node 22 or newer
+- PostgreSQL 15 or newer with the pgvector extension package installed (the first migration runs `CREATE EXTENSION vector`)
+- An OpenAI API key, or `AI_OFFLINE=True` to run every AI call on its offline fallback
+- Redis is not needed locally; production uses it for sign-in throttling
+
+### Steps
 
 ```bash
-# 1. Database (asks for sudo once; creates role "maat" / password "maat" / db "maat")
+git clone git@github.com:hopeogbons/maat.git
+cd maat
+
+# 1. Database: role "maat", password "maat", database "maat" (asks for sudo once)
 backend/scripts/create_local_db.sh
 
 # 2. Backend
 cd backend
 python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt
-cp .env.example .env        # then set SECRET_KEY to anything; DEBUG=True is fine locally
+cp .env.example .env                          # set SECRET_KEY and OPENAI_API_KEY (or AI_OFFLINE=True)
 .venv/bin/python manage.py migrate
-.venv/bin/python manage.py runserver        # http://127.0.0.1:8000
+.venv/bin/python manage.py createsuperuser    # the dashboard sign-in
+cd ..
 
-# 3. Frontend (second terminal)
-cd frontend
-npm install
-npm run dev                                 # http://localhost:5173
+# 3. Seed the ISO catalogues, the source register and coverage for its countries
+python3 scripts/dev_seed.py
+
+# 4. Fetch documents once (add --loop to keep polling)
+cd backend && .venv/bin/python manage.py poll_feeds && cd ..
+
+# 5. Run, in two terminals
+cd backend && .venv/bin/python manage.py runserver     # http://127.0.0.1:8000
+cd frontend && npm install && npm run dev              # http://localhost:5173
 ```
 
-Open http://localhost:5173. You get the Ma’at landing page with the chat
-widget in the bottom-right corner (add `?open` to the URL to start with it
-open). In development the Vite dev server proxies `/api/*` to Django, so no
-CORS configuration is needed.
+If `migrate` fails on the vector extension, run `CREATE EXTENSION vector;` in the `maat` database as the postgres superuser once, then run `migrate` again.
 
-To open the dev server under the production hostname, point it at yourself in
-`/etc/hosts` (`127.0.0.1 maat.vercel.app`). Browsers force https for every
-`vercel.app` address (it is on the HSTS preload list) and refuse self-signed
-certificates there, so make a locally trusted one once with mkcert:
+Open http://localhost:5173. The landing page loads with the widget bottom-right (`?open` on the URL starts with it open). The Vite dev server proxies `/api/*` to Django, so no CORS setup is needed locally. The dashboard is at http://localhost:5173/dashboard; sign in there with the superuser account.
+
+### Environment variables
+
+Backend, in `backend/.env` locally and `/etc/maat.env` in production. Every setting is documented in `backend/.env.example`.
+
+| Variable | Purpose |
+|---|---|
+| `SECRET_KEY`, `DEBUG` | Django. `DEBUG=True` only on your machine. |
+| `ALLOWED_HOSTS` | Hostnames Django answers for. Production: `maat-api.customersupport.ng`. |
+| `DATABASE_URL` | PostgreSQL connection string. |
+| `CORS_ALLOWED_ORIGINS`, `CORS_ALLOWED_ORIGIN_REGEXES`, `CSRF_TRUSTED_ORIGINS` | The site's origin. Production: `https://maatverify.vercel.app`, plus a regex for Vercel preview deployments. |
+| `FRONTEND_URL` | Where the sign-in and signed-out pages link back to. Production: `https://maatverify.vercel.app`. |
+| `API_TOKEN_TTL_HOURS` | How long a dashboard sign-in lasts (12). |
+| `OPENAI_API_KEY`, `OPENAI_MODEL`, `OPENAI_ANSWER_MODEL`, `OPENAI_RERANK_MODEL`, `OPENAI_EMBEDDING_MODEL`, `OPENAI_TRANSCRIBE_MODEL`, `OPENAI_SPEECH_MODEL`, `OPENAI_SPEECH_VOICE` | The models, by role. |
+| `AI_OFFLINE` | `True` makes every AI call use its offline fallback. |
+| `VOICE_NOTE_MAX_BYTES` | Voice notes larger than this are refused (5 MB). |
+| `PUBLIC_API_URL`, `TELEGRAM_BOT_TOKEN` | The Telegram webhook. The token can be pasted in Settings instead. |
+| `REDIS_URL` | Production cache for the sign-in throttle. |
+| `SECURE_SSL_REDIRECT` | Only if nginx is not already redirecting to https. |
+
+Frontend, in Vercel's project settings (or `frontend/.env.local` locally):
+
+| Variable | Purpose |
+|---|---|
+| `VITE_API_BASE_URL` | Empty in development (the Vite proxy handles it). On Vercel: `https://maat-api.customersupport.ng`, no trailing slash. |
+
+### Under the production hostname, locally
+
+Browsers force https for every `vercel.app` address and refuse self-signed certificates there. To run the dev servers as `maatverify.vercel.app`, point the name at yourself and make a trusted certificate once:
 
 ```bash
-sudo apt install -y mkcert libnss3-tools
-mkcert -install
+echo "127.0.0.1 maatverify.vercel.app" | sudo tee -a /etc/hosts
+sudo apt install -y mkcert libnss3-tools && mkcert -install
 cd frontend && mkdir -p .certs
-mkcert -cert-file .certs/dev.pem -key-file .certs/dev-key.pem maat.vercel.app localhost 127.0.0.1
-npm run dev   # now serves https://maat.vercel.app:5173
+mkcert -cert-file .certs/dev.pem -key-file .certs/dev-key.pem maatverify.vercel.app localhost 127.0.0.1
+cd .. && python3 scripts/dev_up.py      # backend :8765, frontend :5174 and the poller, detached
+python3 scripts/dev_down.py             # stops them
 ```
 
-`vite.config.ts` uses `.certs/dev.pem` automatically when present. The same
-certificate lets Django run over https too, which the browser also forces for
-that hostname. Start the backend with the dev script instead of `runserver`:
+`vite.config.ts` and `backend/scripts/dev_server.sh` pick up `.certs/dev.pem` automatically.
+
+### Tests and checks
 
 ```bash
-backend/scripts/dev_server.sh maat.vercel.app:8765   # https via gunicorn when the certificate exists
-VITE_DEV_API_PROXY=https://maat.vercel.app:8765 npm run dev   # in frontend/
+cd backend && .venv/bin/python manage.py test                        # needs CREATEDB on the role
+cd frontend && npm run build                                         # type-check and production build
+python3 scripts/dev_reset.py --yes && python3 scripts/dev_seed.py    # wipe and reseed the local database
+cd backend && .venv/bin/python manage.py prune_raw_text --dry-run    # what the retention promise would delete today
 ```
-
-Sign in then opens at `https://maat.vercel.app:8765/accounts/login/`. For a
-hostname that is not on the HSTS list, plain http works everywhere, or
-`VITE_DEV_HTTPS=1 npm run dev` gives a self-signed certificate you can accept
-once.
-
-Useful commands:
-
-```bash
-cd backend && .venv/bin/python manage.py test          # backend tests (needs CREATEDB on the role)
-python3 scripts/dev_reset.py                          # wipe the local database, keeping users, the ISO catalogues and Settings; --yes skips the prompt
-python3 scripts/dev_seed.py                           # catalogues, source register, coverage for its countries; on the server: scripts/deploy_reset.py, deploy_seed.py
-cd backend && .venv/bin/python manage.py prune_raw_text --dry-run   # what the retention promise would delete today
-cd frontend && npm run build                          # type-check + production build
-```
-
-## The landing page
-
-`frontend/src/landing/` is the public site: a full-screen teal hero with the
-feather wordmark, the tagline as a quote, an explanation of the goddess Ma’at
-and faded icons drifting in the background; a trending-topics ribbon; a
-three-step "how it works"; a filterable grid of verification articles; and a
-footer with helpline, WhatsApp, email, social links and a digest sign-up.
-
-- Contact details, social handles and nav links live in
-  `src/landing/site.ts`. They are placeholders: change them there once.
-- The verification articles in `src/landing/data/articles.ts` are sample
-  content. Their "Read" links point at `/verifications/<slug>`, which does not
-  exist yet.
-- The landing page uses a normal, unprefixed Tailwind setup in
-  `src/index.css` that only scans `src/landing/` and `App.tsx`. The widget
-  keeps its own isolated stylesheet.
-- Any element on the page can open the chat with
-  `window.dispatchEvent(new CustomEvent('maat:open'))`; see
-  `src/landing/widgetBridge.ts`.
-
-## Sign in
-
-The **Sign in** button in the header (and the footer) goes to Django's own
-login page, served by the backend at `/accounts/login/` and restyled to match
-the site: teal background with the drifting icons, gold feather mark, white
-card, amber (never red) error state.
-
-- `backend/accounts/` holds the views, the templates and `static/accounts/auth.css`.
-- After signing in you land on `/accounts/`, a small account page with a link
-  to the admin (for staff) and a **Sign out** button. Sign-out is a POST, as
-  Django requires, and shows a signed-out page.
-- Every one of these pages puts the Ma’at logo top-left and links it, and the
-  "Back to the site" links, to `FRONTEND_URL`. Set that env var on the VPS to
-  the Vercel address so signing out lands people back on the landing page.
-- The frontend builds the link from `VITE_API_BASE_URL` in production and
-  from `VITE_DEV_API_PROXY` in development (see `vite.config.ts`), so the page
-  always opens on Django's own origin and its form posts and styles work
-  without the dev proxy.
-- Create the first user on the backend with `manage.py createsuperuser`.
-
-## Languages
-
-Every string on the landing page and in the widget is translated. The picker
-(globe button in the header, and on the widget's welcome screen) lists English
-on its own at the top, then Nigeria and Kenya as sections that expand into
-their languages. No flags are used.
-
-| Country | Available now | Listed as coming soon |
-|---------|---------------|-----------------------|
-| (shared) | English | |
-| Nigeria | Hausa, Yorùbá, Igbo, Naijá (Nigerian Pidgin) | |
-| Kenya | Kiswahili | Gĩkũyũ, Dholuo, Luluhya, Kalenjin, Kikamba, Af-Soomaali |
-
-- `src/i18n/languages.ts` is the registry. Flip `available` to `true` once a
-  translation exists.
-- `src/i18n/locales/<code>.ts` holds one language. Each file must implement
-  the whole `Messages` shape from `src/i18n/messages.ts`, so a missing string
-  fails the build instead of silently showing English.
-- The choice is stored in `localStorage` under `maat:language`, applied to
-  `<html lang>`, and detected from the browser's languages on first visit.
-- The widget sends the current language to the backend in `VerifyOptions.language`
-  so answers can come back in it. The demo client already does.
-- Sample article content in `src/landing/data/articles.ts` is not translated;
-  in production that comes from the backend per article.
-
-## The Ma’at widget
-
-`frontend/src/widget/` is a floating chat widget for the rumour-verification
-assistant. A circular launcher in the bottom-right corner toggles a panel that
-is 380px wide on desktop and full screen on phones.
-
-- **Welcome view**: the Ma’at mark, "Heard something? Verify it before you
-  share it.", a legend of the three verdicts, a language button and a button
-  into the conversation.
-- **Conversation view**: header with back arrow, a message list pinned to the
-  newest message, and an input bar with send and voice-note upload.
-- **Sizes**: 380px card on desktop with a maximise control (before the close
-  button) that expands it to a centred 960px panel; full screen on phones,
-  where the maximise control is hidden because there is nothing to gain.
-- **Reply cards** show the verdict, the answer, the cited source with issuing
-  body and date, and a link to the original document. When no verified source
-  exists the card shows an explicit abstention instead of a citation.
-- **Palette**: deep teal with a warm gold accent on the shadcn "neutral" base.
-  Verdicts use muted green (verified), amber (unverified) and grey
-  (insufficient evidence). Nothing is red, including shadcn's `destructive`.
-
-### Plugging in the real backend
-
-The widget talks to a `MaatClient` (see `src/widget/types.ts`):
-
-```ts
-interface MaatClient {
-  verifyText(text: string, options?: { signal?: AbortSignal }): Promise<VerifyResult>
-  verifyVoice(file: File, options?: { signal?: AbortSignal }): Promise<VerifyResult>
-}
-```
-
-Without a client it uses `createMockClient()`, which rotates through the three
-verdicts with sample sources. Implement the interface on top of
-`src/lib/api.ts` and pass it in: `<MaatWidget client={apiClient} />`.
-
-### Style isolation
-
-The widget is meant to drop onto any page without touching it:
-
-- Tailwind utilities are prefixed (`maat:flex`) and generated only from files
-  under `src/widget/`, and they are emitted with `!important` so unlayered host
-  CSS cannot override them.
-- Tailwind's preflight is not imported. A scoped reset under `.maat-root`
-  replaces it, so no element selectors reach the host page.
-- All colour, radius and font tokens live on `.maat-root`, not on `:root`.
-- The root pins its own font, size, colour and text properties, so nothing
-  inherited from the host changes how the widget looks.
-
-Only the theme variables Tailwind itself emits (`--maat-*` on `:root`) and its
-`@property` registrations are global, and both are namespaced.
-
-Adding more shadcn components: `npx shadcn@latest add <name>` puts them in
-`src/widget/ui/` with the prefix already applied (see `components.json`).
-
-## How the frontend finds the backend
-
-`frontend/src/lib/api.ts` reads `VITE_API_BASE_URL` at build time.
-
-| Environment | `VITE_API_BASE_URL` | Requests go to |
-|-------------|---------------------|----------------|
-| `npm run dev` | empty | `/api/...` on Vite, proxied to Django on :8000 |
-| Vercel | `https://api.yourdomain.com` | the VPS directly |
-
-Because production is cross-origin, Django must list the Vercel URL(s) in
-`CORS_ALLOWED_ORIGINS` (and `CSRF_TRUSTED_ORIGINS` once you add auth). Both
-are environment variables, see `backend/.env.example`.
 
 ## Deploying
 
-One push to `main` deploys both halves, independently:
+One push to `main` deploys both halves, independently.
 
-- **Backend → the VPS**, by `.github/workflows/deploy.yml`: the test suite
-  runs against a real pgvector Postgres on the runner, then `backend/` is
-  rsynced into a new release directory and activated with the deploy kit's
-  `release-maat`, which installs, runs `backend/deploy/hooks/`, migrates,
-  flips the `current` symlink and restarts `gunicorn@maat` and `maat-poller`.
-  Smoke-tested through Cloudflare; rolled back on failure.
-- **Frontend → Vercel**, by Vercel's GitHub integration, with **Root
-  Directory** set to `frontend` and `VITE_API_BASE_URL` set to the API's
-  origin (`https://api.yourdomain.com`, no trailing slash) for Production and
-  Preview. `frontend/vercel.json` rewrites client-side routes to `index.html`.
-
-The server side (the release script, the poller unit, the Nginx site, the
-`/etc/maat.env` template) lives in the **vps-deploy-kit** project under
-`apps/maat/`; its `guides/maat-deploy-guide.md` is the runbook, from the
-one-time server setup to the first sign-in. Once it is set up:
+- **Backend, to the VPS** by `.github/workflows/deploy.yml`: the test suite runs against a pgvector PostgreSQL on the runner, then `backend/` is rsynced into a new release directory and activated with `release-maat`, which installs, runs `backend/deploy/hooks/`, migrates, flips the `current` symlink and restarts `gunicorn@maat` and `maat-poller`. The release is smoke-tested and rolled back on failure. The server side (the nginx site for `maat-api.customersupport.ng`, the poller unit, the `/etc/maat.env` template, the runbook) lives in the separate **vps-deploy-kit** project under `apps/maat/`.
+- **Frontend, to Vercel** by Vercel's GitHub integration, with **Root Directory** set to `frontend` and `VITE_API_BASE_URL` set to `https://maat-api.customersupport.ng`. `frontend/vercel.json` rewrites client-side routes to `index.html`.
 
 | Task | Where |
 |---|---|
 | Deploy | `git push` |
 | Roll back the backend | `release-maat rollback` on the server |
-| What's deployed | `release-maat status` |
+| What is deployed | `release-maat status` |
 | Any `manage.py` command in production | `release-maat manage <command>` |
 | Settings | `/etc/maat.env`, then `sudo systemctl restart gunicorn@maat maat-poller` |
 
-Production is cross-origin, so Django must list the Vercel origin(s) in
-`CORS_ALLOWED_ORIGINS` and `CSRF_TRUSTED_ORIGINS` (both in `/etc/maat.env`).
-The deployed page should show "Backend connected"; a network/CORS error means
-the Vercel origin in that file does not match the address in the browser.
+## How sources are selected
+
+Ma’at repeats only what a reliable institution has published, and cites it. A source is chosen for who it is, not for how easy it is to read. The register holds two kinds of body:
+
+- **Primary official records.** Ministries, departments and agencies; statutory regulators and commissions; state-owned bodies whose statements the public depends on; recognised humanitarian bodies such as the national Red Cross. Examples: NEMA, NCDC, NAFDAC, NCC, NERC and NIMC in Nigeria; NDMA, KEBS, the Central Bank and KEMRI in Kenya. A claim about what a body did or said is checked against that body's own publication.
+- **Credible reporting.** The public broadcaster and the state news agency (NTA, Radio Nigeria and the News Agency of Nigeria; KBC in Kenya), and public-interest global platforms such as UN News and the Humanitarian Data Exchange. Their reports are admitted as their own words. The verdict card always names the body, so a reader can see when a verdict rests on a report of a statement rather than on the statement itself.
+
+Never: private newspapers, television, radio, blogs or aggregators, and nothing behind a login, a paywall or a consent wall. Direct upload with the publisher's permission is the only exception.
+
+Every candidate is probed before it is added. A site that blocks automated reading, rate-limits every request or serves an invalid certificate is left out, not worked around. Who qualifies is a staff decision made in the register; the reader will read any site it is pointed at, so the register is where the line is held.
+
+## Limitations
+
+- **It only knows what registered bodies have published.** Silence in the record gives Insufficient evidence, not a denial. Ma’at never says a rumour is false; Unverified means the record contradicts it.
+- **Coverage is Nigeria.** Kenya's bodies are registered but switched off until their sources have been checked. No other country is covered.
+- **Some important bodies are missing** because their sites cannot be read automatically: they block bots, rate-limit every request, serve an invalid certificate or publish nothing reachable. Among them are the Central Bank of Nigeria, the Nigeria Police Force, Kenya's Ministry of Health and its electoral commission.
+- **There is a lag.** Sources are polled on a schedule, six hours by default. A statement published an hour ago may not be in the record yet. The live lookup narrows this, and only for configured sources and only with the visitor's consent.
+- **Text and voice only.** It cannot examine images, videos or screenshots, which is how many rumours travel.
+- **Claims no institution would publish on** cannot be settled: private individuals, local incidents that drew no official statement, predictions, opinions.
+- **The judgement is a model's reading of a passage.** The gate lowers the error rate; it does not remove it. The quoted sentence and the link to the original are there so the reader can check.
+- **Translations are unreviewed.** The interface strings were machine-written and have not been checked by native speakers. Answers in those languages are model-written.
+- **Limits by design.** Twenty questions per visitor per hour and two thousand a day across everyone. A rumour is answered privately until three different people have raised it. A visitor's own words are kept for thirty days, then only the neutral paraphrase remains.
+
+## How AI coding tools were used
+
+- **Claude Code** (Anthropic's command-line agent) was the main development tool throughout. Working from Hope Ogbons's instructions, most of them dictated by voice, it wrote most of the code in both halves, the tests, the migrations, the deploy scripts, the interface translations, the internal handbook and this README, in small steps that were reviewed as they landed.
+- **The decisions came first and were written down before code.** The three verdicts and the refusal to say "false"; the confidence gate on judgement rather than similarity; the four doors and who qualifies for them; the coverage switch; the palette with no red anywhere. The tool implemented those decisions; it did not make them.
+- **Checking the output.** The backend test suite runs before every deploy. Changes were exercised by hand against real rumours; the NIMC Act 2026 example on the dashboard is one of them.
+- **Known gaps from working this way.** The translations have not been reviewed by native speakers, and the sample verification articles on the landing page are placeholder content.
+- At runtime the product itself calls OpenAI models, by role, as listed under Architecture. That is separate from the tools used to build it.
+
+## Project layout
+
+```
+maat/
+├── backend/
+│   ├── accounts/       sign-in pages and the dashboard's token auth
+│   ├── ai/             interpreter, interview, judge, rerank, embeddings, translate, speech
+│   ├── api/            root API routes, health, dashboard summary
+│   ├── appsettings/    Settings: coverage, thresholds, rate limits, retention
+│   ├── core/           ISO catalogues: countries, states, currencies, time zones
+│   ├── deploy/         release hooks and the deploy notes
+│   ├── knowledge/      sources, documents, chunks, the four doors, the poller
+│   ├── telegram/       the Telegram webhook
+│   └── verification/   conversations, rumours, verdicts, publication
+├── frontend/src/
+│   ├── dashboard/      the staff dashboard
+│   ├── i18n/           languages, translations, the language store
+│   ├── landing/        the public site
+│   ├── lib/api.ts      fetch wrapper for the API
+│   └── widget/         the chat widget
+└── scripts/            dev_up, dev_down, dev_seed, dev_reset
+```
+
+## Frontend notes
+
+- **The widget** (`frontend/src/widget/`) is a floating chat panel: 380 px wide on desktop with a maximise control, full screen on phones. Its Tailwind utilities are prefixed (`maat:`), generated only from files under `src/widget/`, and emitted with `!important`; a scoped reset under `.maat-root` replaces preflight, so it drops onto any page without touching it. Any element can open it with `window.dispatchEvent(new CustomEvent('maat:open'))`.
+- **The landing page** (`frontend/src/landing/`): the hero, how it works, the verification articles and the footer. Contact details, social handles and nav links live in `src/landing/site.ts` and are placeholders. Sample articles in `src/landing/data/articles.ts` are placeholder content.
+- **Sign in** goes to Django's own login page at `/accounts/login/`, restyled to match the site (teal, gold feather, amber error state, nothing red). `FRONTEND_URL` is where its logo and "Back to the site" link.
+- **Palette.** Deep teal with a warm gold accent. Verdicts are muted green (verified), amber (unverified) and grey (insufficient evidence). Nothing is red.
