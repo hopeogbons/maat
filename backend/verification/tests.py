@@ -3,6 +3,8 @@ from unittest import mock
 from django.contrib.auth import get_user_model
 from django.core.management import call_command
 from django.db import IntegrityError
+from datetime import date
+
 from django.test import TestCase
 from django.utils import timezone
 
@@ -160,7 +162,11 @@ class PublishingTests(TestCase):
     def setUpTestData(cls):
         source = Source.objects.create(name="Federal Ministry of Health", slug="fmoh")
         document = Document.objects.create(
-            source=source, title="Immunisation schedule", identifier="epi.pdf", fingerprint="b"
+            source=source,
+            title="Immunisation schedule",
+            identifier="epi.pdf",
+            fingerprint="b",
+            published_at=date(2026, 9, 1),
         )
         cls.chunk = Chunk.objects.create(document=document, text="Routine immunisation continues in all states.")
 
@@ -229,6 +235,36 @@ class PublicArticlesTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual([a["slug"] for a in response.json()["articles"]], ["claim"])
         self.assertEqual(response.json()["tags"], ["Health"])
+
+    def test_a_cited_document_gives_the_card_its_issuer_and_date(self):
+        """A document's date is a date, not a datetime; the card must carry it as is."""
+        source = Source.objects.create(name="Federal Ministry of Health", slug="fmoh")
+        document = Document.objects.create(
+            source=source,
+            title="Immunisation schedule",
+            identifier="epi.pdf",
+            fingerprint="c",
+            published_at=date(2026, 9, 1),
+        )
+        chunk = Chunk.objects.create(document=document, text="Routine immunisation continues.")
+        rumour = Rumour.objects.create(statement="claim", slug="claim", verdict=Verdict.UNVERIFIED)
+        Evidence.objects.create(
+            rumour=rumour,
+            chunk=chunk,
+            judgement=Evidence.Judgement.CONTRADICTS,
+            score=90,
+            quote="Routine immunisation continues.",
+        )
+        Article.objects.create(
+            rumour=rumour, slug="claim", title="Claim", verdict=Verdict.UNVERIFIED, published_at=timezone.now()
+        )
+
+        response = self.client.get("/api/articles/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.json()["articles"][0]["source"], {"issuer": "Federal Ministry of Health", "date": "2026-09-01"}
+        )
 
 
 class ConversationsDashboardTests(TestCase):

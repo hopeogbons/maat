@@ -51,7 +51,7 @@ def _first_source(article: Article) -> dict | None:
         return None
     return {
         "issuer": document.source.name,
-        "date": document.published_at.date().isoformat() if document.published_at else "",
+        "date": document.published_at.isoformat() if document.published_at else "",
     }
 
 

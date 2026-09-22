@@ -88,7 +88,7 @@ def _evidence_lines(evidence: list[Evidence]) -> str:
     for item in evidence:
         document = item.chunk.document
         issuer = document.source.name if document.source_id else document.title
-        published = document.published_at.date().isoformat() if document.published_at else "no date given"
+        published = document.published_at.isoformat() if document.published_at else "no date given"
         quote = item.quote[item.highlight_start : item.highlight_end] if item.highlight_start is not None else item.quote[:300]
         lines.append(f"- {issuer} ({published}), {item.judgement}, confidence {item.score}: “{quote.strip()}”")
     return "\n".join(lines)
