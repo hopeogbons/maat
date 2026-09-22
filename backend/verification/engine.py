@@ -536,7 +536,6 @@ def _weigh(conversation: Conversation, draft: ClaimDraft, read, history: History
     )
     rumour.verdict = decision.verdict
     rumour.confidence = decision.confidence
-    _recount(rumour, threshold=settings.mentions_before_publish)
     for citation in decision.citations:
         if not citation.reference:
             continue
@@ -551,6 +550,9 @@ def _weigh(conversation: Conversation, draft: ClaimDraft, read, history: History
                 "highlight_end": citation.highlight_end,
             },
         )
+    # Evidence first, then the recount: the article written by the request
+    # that crosses the threshold is written from this evidence.
+    _recount(rumour, threshold=settings.mentions_before_publish)
 
     if decision.below_gate and not decision.degraded and not state.get("looked_up") and not scope.global_only and not scope.international:
         # Say so, and ask before looking anywhere else. Not for a claim outside
